@@ -1,0 +1,21 @@
+{
+  "name": "project-luca",
+  "version": "1.0.0",
+  "description": "🧬",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron-vite preview",
+    "dev": "electron-vite dev",
+    "prebuild": "electron-vite build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "electron-vite": "^2.3.0"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.4"
+  }
+}
