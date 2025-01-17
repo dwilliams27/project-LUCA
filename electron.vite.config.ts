@@ -1,11 +1,21 @@
-export default {
+import { resolve } from 'path'
+import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
   main: {
-    // vite config options
+    plugins: [externalizeDepsPlugin()]
   },
   preload: {
-    // vite config options
+    plugins: [externalizeDepsPlugin()]
   },
   renderer: {
-    // vite config options
+    resolve: {
+      alias: {
+        '@renderer': resolve('src/renderer/src'),
+        '@': resolve('src/')
+      }
+    },
+    plugins: [react()],
   }
-}
+})
