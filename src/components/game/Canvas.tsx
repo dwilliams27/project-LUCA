@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { GameEngine } from '@/core/engine/GameEngine';
+import { GameEngine } from '@/systems/GameEngine';
 import { useGameStore } from '@/store/gameState';
 
 export const GameCanvas: React.FC = () => {

@@ -1,8 +1,15 @@
+import { PromptCatalog } from '@/ai/PromptCatalog';
+import { GEN_PROCESS } from '@/ai/prompts/generators';
 import React from 'react';
 
-const MainMenu = () => {
+const MainMenu: React.FC = () => {
   const handleQuit = () => {
     window.Electron?.ipcRenderer.send('quit-app');
+  };
+
+  const handleGenerateText = async () => {
+    const result = await window.electronApi.generateText(PromptCatalog.getPopulatedPrompt(GEN_PROCESS, { PROCESS_DESCRIPTION: 'Generate a basic metabolic process for early-stage cells that consumes matter and produces energy.' }));
+    console.log(result);
   };
 
   const MenuButton = ({ onClick, children }) => (
@@ -61,7 +68,10 @@ const MainMenu = () => {
       </div>
 
       <div className="flex flex-col items-center z-10">
-        <MenuButton onClick={() => console.log('Start clicked')}>
+        <MenuButton onClick={() => {
+            console.log('Start clicked')
+            handleGenerateText();
+          }}>
           Start Evolution
         </MenuButton>
         <MenuButton onClick={handleQuit}>

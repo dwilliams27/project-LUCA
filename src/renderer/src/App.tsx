@@ -1,8 +1,6 @@
-import MainMenu from "@/ui/MainMenu"
+import MainMenu from "@/components/ui/MainMenu"
 
 function App(): JSX.Element {
-  const ipcHandle = (): void => window.Electron.ipcRenderer.send('ping')
-
   return (
     <>
       <MainMenu />

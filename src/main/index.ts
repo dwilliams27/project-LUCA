@@ -1,6 +1,8 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { LLMService } from '@/ai/LlmService'
+import { ServiceLocator } from '@/systems/ServiceLocator'
 
 function createWindow(): void {
   // Create the browser window.
@@ -49,6 +51,14 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  ServiceLocator.addService(new LLMService(process.env.ANTHROPIC_API_KEY));
+
+  // Define custom IPC handlers
+  ipcMain.handle('generate-text', async (event, prompt) => {
+    const llmService = ServiceLocator.getService(LLMService);
+    return await llmService.generateText(prompt);
+  });
 
   createWindow()
 

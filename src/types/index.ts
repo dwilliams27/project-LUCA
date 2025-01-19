@@ -1,3 +1,5 @@
+import type { EVProcess } from "@/systems/evoDSL/types";
+
 export enum EntityType {
   PLAYER_ORGANISM = 'PLAYER_ORGANISM',
   ENEMY = 'ENEMY',
@@ -31,19 +33,23 @@ export enum EvolutionaryStage {
   MULTICELLULAR = 'MULTICELLULAR'
 }
 
+export const EvolutionaryStageDescriptions = {
+  [EvolutionaryStage.ABIOTIC]: 'The primordial soup of the ancient world, where life has yet to emerge.',
+  [EvolutionaryStage.PROTOCELL]: 'The first self-replicating molecules, precursors to the first cells.',
+  [EvolutionaryStage.BASIC_CELL]: 'Simple, single-celled organisms that have evolved to survive in harsh environments.',
+  [EvolutionaryStage.COMPLEX_CELL]: 'Advanced cells with specialized organelles, capable of complex functions.',
+  [EvolutionaryStage.MULTICELLULAR]: 'Cells that have evolved to work together, forming complex tissues and structures.'
+}
+
 export enum ResourceType {
   ENERGY = 'ENERGY',         // Basic resource for all stages
-  MINERALS = 'MINERALS',     // Used in chemical reactions
-  NUTRIENTS = 'NUTRIENTS',   // More complex resources
-  PROTEINS = 'PROTEINS',     // Building blocks
+  MATTER = 'MATTER',         // Used for building structures
   SIGNALS = 'SIGNALS'        // For cell communication
 }
 
 export interface Resources {
   [ResourceType.ENERGY]: number;
-  [ResourceType.MINERALS]: number;
-  [ResourceType.NUTRIENTS]: number;
-  [ResourceType.PROTEINS]: number;
+  [ResourceType.MATTER]: number;
   [ResourceType.SIGNALS]: number;
 }
 
@@ -58,50 +64,12 @@ export enum CardType {
   DEFENSE = 'DEFENSE'       // Protection cards
 }
 
-export interface CardEffect {
-  resourceChanges?: Partial<Resources>;
-  drawCards?: number;
-  gainEnergy?: number;
-  evolveProgress?: number;
-  movement?: {
-    pattern: Position[];
-    range: number;
-  };
-  damage?: {
-    amount: number;
-    pattern: Position[];
-    range: number;
-  };
-  defense?: {
-    amount: number;
-    duration: number;
-  };
-  spawn?: {
-    type: EntityType;
-    count: number;
-    pattern: Position[];
-  };
-  specialEffect?: string;
-}
 
 export interface CardData {
   id: string;
   name: string;
   type: CardType;
-  cost: Partial<Resources>;
-  effects: CardEffect[];
-  minStage: EvolutionaryStage;
-  targetType: 'SELF' | 'ENEMY' | 'POSITION' | 'ALL';
-  range?: number;
-  description: string;
-  flavorText?: string;
-  isEvolved?: boolean;
-  evolutionOptions?: string[];
-  aigeneratedContent?: {
-    description?: string;
-    flavorText?: string;
-    evolutionContext?: string;
-  };
+  process: EVProcess[];
 }
 
 export interface GridState {
