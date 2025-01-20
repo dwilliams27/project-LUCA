@@ -10,7 +10,7 @@ VALIDATION RULES:
 1. Output must be parseable JSON/TypeScript
 2. All required fields must be present
 3. Values must be within specified ranges
-4. Resource conservation must be maintained
+4. Response should be the definition of an EVProcess object
 
 Example request and response:
 
@@ -52,62 +52,50 @@ If you cannot generate a valid process, output only:
 
 Type Definitions for Reference:
 <begin_types>
-type EVResourceKind = 'energy' | 'matter' | 'signal';
-type EVDirection = 'north' | 'south' | 'east' | 'west';
+export type EVResourceType = 'energy' | 'matter' | 'signal';
 
-interface EVResource {
-  kind: EVResourceKind;
+export interface EVResource {
+  type: EVResourceType;
   quantity: number;
-  properties?: Record<string, number>;
 }
 
-type EVTransformOperation = { 
+export type EVDirection = 'north' | 'south' | 'east' | 'west';
+export type EVTransformOperation = { 
   type: 'transform';
   input: EVResource;
   output: EVResource;
   multiplier: number;
   rate: number;
 }
-type EVTransferOperation = {
+export type EVTransferOperation = {
   type: 'transfer';
   resource: EVResource;
   direction: EVDirection;
   amount: number;
 }
-type EVSenseOperation = {
+export type EVSenseOperation = {
   type: 'sense';
   direction: EVDirection;
   threshold: number;
   effect: EVSpatialOperation;
 }
 
-type EVSpatialOperation = EVTransformOperation | EVTransferOperation | EVSenseOperation;
+export type EVSpatialOperation = EVTransformOperation | EVTransferOperation | EVSenseOperation;
 
-interface EVProcess {
+export interface EVProcess {
   name: string;
   conditions: EVCondition[];
   operations: EVSpatialOperation[];
   energyCost: number;
 }
 
-interface EVCondition {
+export interface EVCondition {
   type: 'threshold';
   check: {
-    resource: EVResource;
+    resourceType: EVResourceType;
     operator: '>' | '<' | '=';
     value: number;
   };
-}
-
-interface EVPosition {
-  x: number;
-  y: number;
-}
-
-interface GridCell {
-  resources: Map<EVResourceKind, EVResource>;
-  processes: EVProcess[];
-  position: EVPosition;
 }
 <end types>
 

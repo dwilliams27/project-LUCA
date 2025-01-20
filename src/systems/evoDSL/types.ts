@@ -4,7 +4,6 @@ export type EVDirection = 'north' | 'south' | 'east' | 'west';
 export interface EVResource {
   kind: EVResourceKind;
   quantity: number;
-  properties?: Record<string, number>;
 }
 
 export type EVTransformOperation = { 
@@ -39,7 +38,7 @@ export interface EVProcess {
 export interface EVCondition {
   type: 'threshold';
   check: {
-    resource: EVResource;
+    resource: EVResourceKind;
     operator: '>' | '<' | '=';
     value: number;
   };
