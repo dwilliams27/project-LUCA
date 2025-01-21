@@ -8,6 +8,7 @@ const MainMenu: React.FC = () => {
   };
 
   const handleGenerateText = async () => {
+    // @ts-ignore
     const result = await window.electronApi.generateText(PromptCatalog.getPopulatedPrompt(GEN_PROCESS, { PROCESS_DESCRIPTION: 'Generate a basic metabolic process for early-stage cells that consumes matter and produces energy.' }));
     console.log(result);
   };

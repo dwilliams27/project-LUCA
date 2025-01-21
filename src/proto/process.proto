@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package luca;
+
+enum ResourceType {
+  RESOURCE_TYPE_UNSPECIFIED = 0;
+  // Is consumed by processes
+  RESOURCE_TYPE_ENERGY = 1;
+  // Is consumed by processes
+  RESOURCE_TYPE_MATTER = 2;
+  // Is never used up; grows forever
+  RESOURCE_TYPE_INFORMATION = 3;
+}
+
+// Allow multiple of same resource type to exist in a grid cell
+enum ResourceQuality {
+  RESOURCE_QUALITY_UNSPECIFIED = 0;
+  RESOURCE_QUALITY_LOW = 1;
+  RESOURCE_QUALITY_MEDIUM = 2;
+  RESOURCE_QUALITY_HIGH = 3;
+}
+
+enum Direction {
+  DIRECTION_UNSPECIFIED = 0;
+  DIRECTION_NORTH = 1;
+  DIRECTION_EAST = 2;
+  DIRECTION_SOUTH = 3;
+  DIRECTION_WEST = 4;
+}
+
+enum ComparisonOperator {
+  COMPARISON_OPERATOR_UNSPECIFIED = 0;
+  COMPARISON_OPERATOR_EQUAL = 1;
+  COMPARISON_OPERATOR_GREATER_THAN = 2;
+  COMPARISON_OPERATOR_LESS_THAN = 3;
+}
+
+message Resource {
+  ResourceType type = 1;
+  double quantity = 2;
+  ResourceQuality quality = 3;
+  reserved 4 to 10;
+}
+
+message Condition {
+  ComparisonOperator operator = 1;
+  double value = 2;
+  reserved 3 to 10;
+}
+
+message Operation {
+  message Transform {
+    Resource input = 1;
+    Resource output = 2;
+    double rate = 3;
+    reserved 4 to 10;
+  }
+
+  message Transfer {
+    Resource resource = 1;
+    Direction direction = 2;
+    double amount = 3;
+    reserved 4 to 10;
+  }
+
+  message Sense {
+    Direction direction = 1;
+    ResourceType for_type = 2;
+    ResourceType for_quality = 3;
+    Condition condition = 4;
+    reserved 5 to 10;
+  }
+
+  oneof operation_type {
+    Transform transform = 1;
+    Transfer transfer = 2;
+    Sense sense = 3;
+  }
+
+  uint32 input = 4;
+  uint32 energy_cost = 5;
+  string operation_id = 6;
+  reserved 7 to 10;
+}
+
+message Process {
+  string process_id = 1;
+  string name = 2;
+  uint32 energy_cost = 3;
+  // This condition can only check local resources in this cell, but no sense needed
+  repeated Condition conditions = 4;
+  repeated Operation operations = 5;
+  reserved 6 to 15;
+}
+
+message Position {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+message ResourceList {
+  repeated Resource resources = 1;
+}
+
+message GridCell {
+  Position position = 1;
+  map<string, ResourceList> resourceBuckets = 2;
+  repeated Process processes = 3;
+  reserved 4 to 10;
+}
