@@ -1,11 +1,11 @@
-import MainMenu from "@/components/ui/MainMenu"
+import { AppRouter } from "@/AppRouter";
 
 function App(): JSX.Element {
   return (
     <>
-      <MainMenu />
+      <AppRouter />
     </>
   )
-}
+};
 
-export default App
+export default App;

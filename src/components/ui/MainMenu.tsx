@@ -1,16 +1,21 @@
 import { PromptCatalog } from '@/ai/PromptCatalog';
 import { GEN_PROCESS } from '@/ai/prompts/generators';
+import '@/systems/PSE/TestRendererDeepseek';
 import React from 'react';
 
-const MainMenu: React.FC = () => {
+export interface MainMenuProps {
+  onStart: () => void
+};
+
+export const MainMenu: React.FC<MainMenuProps> = ({ onStart }) => {
   const handleQuit = () => {
     window.Electron?.ipcRenderer.send('quit-app');
   };
 
   const handleGenerateText = async () => {
     // @ts-ignore
-    const result = await window.electronApi.generateText(PromptCatalog.getPopulatedPrompt(GEN_PROCESS, { PROCESS_DESCRIPTION: 'Generate a basic metabolic process for early-stage cells that consumes matter and produces energy.' }));
-    console.log(result);
+    // const result = await window.electronApi.generateText(PromptCatalog.getPopulatedPrompt(GEN_PROCESS, { PROCESS_DESCRIPTION: 'Generate a basic metabolic process for early-stage cells that consumes matter and produces energy.' }));
+    // console.log(result);
   };
 
   const MenuButton = ({ onClick, children }) => (
@@ -46,7 +51,7 @@ const MainMenu: React.FC = () => {
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center bg-gray-900 bg-evolution">
-      {/* Background "chemical soup" effect */}
+      {/* Background "chemical soup" effect (TODO: anim broken) */}
       <div className="absolute inset-0 overflow-hidden opacity-20">
         {[...Array(20)].map((_, i) => (
           <div
@@ -61,18 +66,18 @@ const MainMenu: React.FC = () => {
           />
         ))}
       </div>
-      
-      {/* Title with "evolving" text effect */}
+
       <div className="mb-16 text-center">
         <h1 className="text-6xl font-bold text-emerald-100 mb-2">Project LUCA</h1>
         <p className="text-emerald-400 text-lg italic">Climb Darwin's ladder</p>
       </div>
 
       <div className="flex flex-col items-center z-10">
-        <MenuButton onClick={() => {
-            console.log('Start clicked')
-            handleGenerateText();
-          }}>
+        <MenuButton
+          onClick={() => {
+            onStart();
+          }
+        }>
           Start Evolution
         </MenuButton>
         <MenuButton onClick={handleQuit}>
@@ -80,25 +85,9 @@ const MainMenu: React.FC = () => {
         </MenuButton>
       </div>
 
-      {/* Version number with science-y formatting */}
       <div className="absolute bottom-4 right-4 text-emerald-600 font-mono text-sm">
         v0.1.0α
       </div>
     </div>
   );
 };
-
-// Add some keyframes for the floating animation
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes float {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(20px, 20px); }
-  }
-  .animate-float {
-    animation: float linear infinite;
-  }
-`;
-document.head.appendChild(style);
-
-export default MainMenu;

@@ -5,7 +5,7 @@ interface MenuButtonProps {
   children: React.ReactNode;
 }
 
-const MenuButton: React.FC<MenuButtonProps> = ({ onClick, children }) => (
+export const MenuButton: React.FC<MenuButtonProps> = ({ onClick, children }) => (
   <button
     onClick={onClick}
     className="relative group w-64 h-16 mb-4 bg-emerald-800 text-emerald-100 rounded-lg 
@@ -34,5 +34,3 @@ const MenuButton: React.FC<MenuButtonProps> = ({ onClick, children }) => (
     </div>
   </button>
 );
-
-export default MenuButton;

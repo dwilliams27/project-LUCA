@@ -12,10 +12,12 @@ function createWindow(): void {
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: true,
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      webSecurity: true
     }
-  })
+  });
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -34,6 +36,23 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
+
+app.on('window-all-closed', () => {
+  // Kill any development servers or other processes you might have running
+  if (process.env.NODE_ENV === 'development') {
+    process.exit(0);
+  }
+  
+  // Standard electron cleanup
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+// If the quit event is triggered, make sure we exit
+app.on('quit', () => {
+  process.exit(0);
+});
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

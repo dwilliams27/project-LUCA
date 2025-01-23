@@ -1,10 +1,4 @@
-export enum EntityType {
-  PLAYER_ORGANISM = 'PLAYER_ORGANISM',
-  ENEMY = 'ENEMY',
-  RESOURCE_NODE = 'RESOURCE_NODE',
-  OBSTACLE = 'OBSTACLE',
-  EMPTY = 'EMPTY'
-}
+import { GridCell, Operation_Sense, Operation_Transfer, Operation_Transform } from "@/generated/process";
 
 export enum EvolutionaryStage {
   ABIOTIC = 'ABIOTIC',
@@ -21,3 +15,14 @@ export const EvolutionaryStageDescriptions = {
   [EvolutionaryStage.COMPLEX_CELL]: 'Advanced cells with specialized organelles, capable of complex functions.',
   [EvolutionaryStage.MULTICELLULAR]: 'Cells that have evolved to work together, forming complex tissues and structures.'
 }
+
+// UI Constants
+export const CELL_SIZE = 64;
+export const GRID_PADDING = 10;
+
+
+// Validated generated types
+export type VGridCell = Required<GridCell>;
+export type VOperationTransform = Required<Operation_Transform>;
+export type VOperationTransfer = Required<Operation_Transfer>;
+export type VOperationSense = Required<Operation_Sense>;

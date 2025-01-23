@@ -1,4 +1,5 @@
-import { ComparisonOperator, Direction, GridCell, Operation, Operation_Sense, Operation_Transfer, Operation_Transform, Position, Process, ResourceQuality, ResourceType } from "@/generated/process";
+import { ComparisonOperator, Direction, Operation, Process, ResourceQuality, ResourceType } from "@/generated/process";
+import { VGridCell, VOperationSense, VOperationTransfer, VOperationTransform } from "@/types";
 
 export interface ExecutionContext {
   depth: number;
@@ -7,16 +8,11 @@ export interface ExecutionContext {
   executionChain: string[];
 }
 
-interface ProcessReference {
-  process: Process;
-  position: Position;
-}
-
 export class ProcessHandler {
-  private grid: Required<GridCell>[][];
-  private sortedCells: Required<GridCell>[];
+  private grid: VGridCell[][];
+  private sortedCells: VGridCell[];
 
-  constructor(grid: Required<GridCell>[][]) {
+  constructor(grid: VGridCell[][]) {
     this.grid = grid;
     this.sortedCells = grid.flat();
     this.sortCells();
@@ -29,13 +25,13 @@ export class ProcessHandler {
     this.sortCells();
   }
 
-  runProcessesInCell(cell: Required<GridCell>): void {
+  runProcessesInCell(cell: VGridCell): void {
     for (const process of cell.processes) {
       this.runProcess(process, cell);
     }
   }
 
-  runProcess(process: Process, gridCell: Required<GridCell>): void {
+  runProcess(process: Process, gridCell: VGridCell): void {
     for (const operation of process.operations) {
       if (!this.runOperation(operation, gridCell)) {
         break;
@@ -43,24 +39,24 @@ export class ProcessHandler {
     }
   }
 
-  runOperation(operation: Operation, gridCell: Required<GridCell>): boolean {
+  runOperation(operation: Operation, gridCell: VGridCell): boolean {
     switch (operation.operationType.oneofKind) {
       // TODO fix types
       case 'transform': {
         return this.runTransform(
-          operation.operationType.transform as unknown as Required<Operation_Transform>,
+          operation.operationType.transform as unknown as VOperationTransform,
           gridCell
         );
       }
       case 'transfer': {
         return this.runTransfer(
-          operation.operationType.transfer as unknown as Required<Operation_Transfer>,
+          operation.operationType.transfer as unknown as VOperationTransfer,
           gridCell
         );
       }
       case 'sense': {
         return this.runSense(
-          operation.operationType.sense as unknown as Required<Operation_Sense>,
+          operation.operationType.sense as unknown as VOperationSense,
           gridCell
         );
       }
@@ -68,7 +64,7 @@ export class ProcessHandler {
     return false;
   }
 
-  runTransform(transform: Required<Operation_Transform>, gridCell: Required<GridCell>): boolean {
+  runTransform(transform: VOperationTransform, gridCell: VGridCell): boolean {
     console.log(`Running transform operation at ${gridCell.position.x}, ${gridCell.position.y}`);
     const fromResource = gridCell.resourceBuckets[transform.input.type][transform.input.quality];
     const toResource = gridCell.resourceBuckets[transform.output.type][transform.output.quality];
@@ -91,7 +87,7 @@ export class ProcessHandler {
     return true;
   }
 
-  runTransfer(transfer: Required<Operation_Transfer>, gridCell: Required<GridCell>): boolean {
+  runTransfer(transfer: VOperationTransfer, gridCell: VGridCell): boolean {
     console.log(`Running transfer operation at ${gridCell.position.x}, ${gridCell.position.y}`);
     const toCell = this.getRelativeGridCell(gridCell, transfer.direction);
     if (!toCell) {
@@ -116,7 +112,7 @@ export class ProcessHandler {
     return true;
   }
 
-  runSense(sense: Required<Operation_Sense>, gridCell: Required<GridCell>): boolean {
+  runSense(sense: VOperationSense, gridCell: VGridCell): boolean {
     console.log(`Running sense operation at ${gridCell.position.x}, ${gridCell.position.y}`);
     const fromCell = this.getRelativeGridCell(gridCell, sense.direction);
     if (!fromCell) {
@@ -134,29 +130,29 @@ export class ProcessHandler {
     return false;
   }
 
-  getRelativeGridCell(cell: Required<GridCell>, direction: Direction): Required<GridCell> | null {
+  getRelativeGridCell(cell: VGridCell, direction: Direction): VGridCell | null {
     switch (direction) {
       case Direction.NORTH: {
         if (cell.position.y > 0) {
-          return this.grid[cell.position.x][cell.position.y - 1];
+          return this.grid[cell.position.y - 1][cell.position.x];
         }
         break;
       }
       case Direction.SOUTH: {
-        if (this.grid[cell.position.x].length > cell.position.y + 1) {
-          return this.grid[cell.position.x][cell.position.y + 1];
+        if (this.grid.length < cell.position.y + 1) {
+          return this.grid[cell.position.y + 1][cell.position.x];
         }
         break;
       }
       case Direction.EAST: {
-        if (this.grid.length > cell.position.x + 1) {
-          return this.grid[cell.position.x + 1][cell.position.y];
+        if (this.grid[cell.position.y].length > cell.position.x + 1) {
+          return this.grid[cell.position.y][cell.position.x + 1];
         }
         break;
       }
       case Direction.WEST: {
         if (cell.position.x > 0) {
-          return this.grid[cell.position.x - 1][cell.position.y];
+          return this.grid[cell.position.y][cell.position.x - 1];
         }
         break;
       }
