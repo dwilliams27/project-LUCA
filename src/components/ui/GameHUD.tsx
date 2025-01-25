@@ -6,10 +6,10 @@ interface GameHUDProps {
 
 export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
   return (
-    <div className="fixed inset-0 flex flex-col bg-black">
+    <div className="fixed inset-0 flex flex-col bg-black text-white">
       <div className="shrink-0 w-full h-16 px-6 py-2 bg-gray-900 border-b border-gray-800">
         <div className="flex justify-between items-center h-full">
-          <div className="text-white font-medium">
+          <div className="font-medium">
             Top stuff
           </div>
         </div>

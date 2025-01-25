@@ -1,35 +1,50 @@
 import { PixiGridCell } from "@/components/game/PixiGridCell";
-import { CELL_SIZE, GRID_PADDING, VGridCell } from "@/types";
-import { Stage, Container } from '@pixi/react';
+import { GRID_PADDING, VGridCell } from "@/types";
+import { Container, Graphics } from '@pixi/react';
+import { useCallback } from "react";
 
 export const PixiGrid: React.FC<{
-  grid: VGridCell[][],
-  width: number,
-  height: number
+  grid: VGridCell[][];
+  width: number;
+  height: number;
 }> = ({ grid, width, height }) => {
-  const gridWidth = grid[0].length;
-  const gridHeight = grid.length;
-  const maxCellWidth = Math.floor((width - (gridWidth + 1) * GRID_PADDING) / gridWidth);
-  const maxCellHeight = Math.floor((height - (gridHeight + 1) * GRID_PADDING) / gridHeight);
-  console.log('maxCellWidth:', maxCellWidth, 'maxCellHeight:', maxCellHeight);
-  const cellSize = Math.min(maxCellWidth, maxCellHeight, CELL_SIZE);
+  const cellWidth = width / grid[0].length;
+  const cellHeight = height / grid.length;
 
-  // Recalculate total size based on cell size
-  const totalWidth = (gridWidth * (cellSize + GRID_PADDING)) + GRID_PADDING;
-  const totalHeight = (gridHeight * (cellSize + GRID_PADDING)) + GRID_PADDING;
+  const drawGrid = useCallback((g) => {
+    g.clear();
+    g.lineStyle(1, 0x00FF00);
+
+    for (let yIndex = 0; yIndex <= grid.length; yIndex += 1) {
+      g.moveTo(0, yIndex * cellHeight);
+      g.lineTo(width, yIndex * cellHeight);
+    }
+    for (let xIndex = 0; xIndex <= grid[0].length; xIndex += 1) {
+      g.moveTo(xIndex * cellWidth, 0);
+      g.lineTo(xIndex * cellWidth, height);
+    }
+  }, [width, height]);
+
   return (
     <Container>
-      {grid.map((row, y) =>
-        row.map((cell, x) => (
-          <PixiGridCell
-            key={`${x}-${y}`}
-            cell={cell}
-            size={cellSize}
-            x={x}
-            y={y}
-          />
-        ))
-      )}
+      <Graphics draw={drawGrid} zIndex={1} />
+      <Container>
+        {
+          grid.map((row, yIndex) =>
+            row.map((cell, xIndex) => (
+              <PixiGridCell
+                key={`${xIndex}-${yIndex}`}
+                cell={cell}
+                xIndex={xIndex}
+                yIndex={yIndex}
+                width={cellWidth}
+                height={cellHeight}
+              />
+            ))
+          )
+        }
+      </Container>
+      
     </Container>
   );
 };

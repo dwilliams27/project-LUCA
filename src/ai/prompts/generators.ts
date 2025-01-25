@@ -1,4 +1,4 @@
-import { Prompt } from "@/ai/prompt";
+import { Prompt } from "@/ai/Prompt";
 
 export const GEN_PROCESS = "GEN_PROCESS";
 export const generateProcess = [
@@ -52,50 +52,106 @@ If you cannot generate a valid process, output only:
 
 Type Definitions for Reference:
 <begin_types>
-export type EVResourceType = 'energy' | 'matter' | 'signal';
-
-export interface EVResource {
-  type: EVResourceType;
-  quantity: number;
+export interface Resource {
+    type: ResourceType;
+    quantity: number;
+    quality: ResourceQuality;
 }
 
-export type EVDirection = 'north' | 'south' | 'east' | 'west';
-export type EVTransformOperation = { 
-  type: 'transform';
-  input: EVResource;
-  output: EVResource;
-  multiplier: number;
-  rate: number;
-}
-export type EVTransferOperation = {
-  type: 'transfer';
-  resource: EVResource;
-  direction: EVDirection;
-  amount: number;
-}
-export type EVSenseOperation = {
-  type: 'sense';
-  direction: EVDirection;
-  threshold: number;
-  effect: EVSpatialOperation;
-}
-
-export type EVSpatialOperation = EVTransformOperation | EVTransferOperation | EVSenseOperation;
-
-export interface EVProcess {
-  name: string;
-  conditions: EVCondition[];
-  operations: EVSpatialOperation[];
-  energyCost: number;
-}
-
-export interface EVCondition {
-  type: 'threshold';
-  check: {
-    resourceType: EVResourceType;
-    operator: '>' | '<' | '=';
+export interface Condition {
+    operator: ComparisonOperator;
     value: number;
-  };
+}
+
+export interface Operation {
+    operationType: {
+        oneofKind: "transform";
+        transform: Operation_Transform;
+    } | {
+        oneofKind: "transfer";
+        transfer: Operation_Transfer;
+    } | {
+        oneofKind: "sense";
+        sense: Operation_Sense;
+    } | {
+        oneofKind: undefined;
+    };
+    input: number;
+    energyCost: number;
+    operationId: string;
+}
+
+export interface Operation_Transform {
+    input?: Resource;
+    output?: Resource;
+    rate: number;
+}
+
+export interface Operation_Transfer {
+    resource?: Resource;
+    direction: Direction;
+    amount: number;
+}
+
+export interface Operation_Sense {
+    direction: Direction;
+    forType: ResourceType;
+    forQuality: ResourceType;
+    condition?: Condition;
+}
+
+export interface Process {
+    processId: string;
+    name: string;
+    energyCost: number;
+    conditions: Condition[];
+    operations: Operation[];
+}
+
+export interface Position {
+    x: number;
+    y: number;
+}
+
+export interface ResourceList {
+    resources: Resource[];
+}
+
+export interface GridCell {
+    position?: Position;
+    resourceBuckets: {
+        [key: string]: ResourceList;
+    };
+    processes: Process[];
+}
+
+export enum ResourceType {
+    UNSPECIFIED = 0,
+    ENERGY = 1,
+    MATTER = 2,
+    INFORMATION = 3
+}
+
+export enum ResourceQuality {
+    UNSPECIFIED = 0,
+    LOW = 1,
+    MEDIUM = 2,
+    HIGH = 3
+}
+
+export enum Direction {
+    UNSPECIFIED = 0,
+    NORTH = 1,
+    EAST = 2,
+    SOUTH = 3,
+    WEST = 4
+}
+
+export enum ComparisonOperator {
+    UNSPECIFIED = 0,
+    EQUAL = 1,
+    GREATER_THAN = 2,
+    LESS_THAN = 3
 }
 <end types>
 

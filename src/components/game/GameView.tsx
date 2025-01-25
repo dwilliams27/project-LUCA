@@ -6,6 +6,8 @@ import { Stage, Container } from '@pixi/react';
 import { GRID_PADDING, VGridCell } from '@/types';
 import { PixiGrid } from '@/components/game/PixiGrid';
 import { GameHUD } from '@/components/ui/GameHUD';
+import { ResourceQuality, ResourceType } from '@/generated/process';
+import { Application } from 'pixi.js';
 
 interface GameState {
   grid: VGridCell[][];
@@ -17,18 +19,99 @@ export const GameView: React.FC = () => {
     grid: Array(5).fill(null).map((_, y) => 
       Array(5).fill(null).map((_, x) => ({
         position: { x, y },
-        resourceBuckets: {},
+        resourceBuckets: {
+          [ResourceType.ENERGY]: {
+            resources: [
+              {
+                type: ResourceType.ENERGY,
+                quantity: 10,
+                quality: ResourceQuality.LOW
+              },
+              {
+                type: ResourceType.ENERGY,
+                quantity: 10,
+                quality: ResourceQuality.MEDIUM
+              },
+              {
+                type: ResourceType.ENERGY,
+                quantity: 10,
+                quality: ResourceQuality.HIGH
+              }
+            ]
+          },
+          [ResourceType.INFORMATION]: {
+            resources: [
+              {
+                type: ResourceType.INFORMATION,
+                quantity: 10,
+                quality: ResourceQuality.LOW
+              },
+              {
+                type: ResourceType.INFORMATION,
+                quantity: 10,
+                quality: ResourceQuality.MEDIUM
+              },
+              {
+                type: ResourceType.INFORMATION,
+                quantity: 10,
+                quality: ResourceQuality.HIGH
+              }
+            ]
+          },
+          [ResourceType.MATTER]: {
+            resources: [
+              {
+                type: ResourceType.MATTER,
+                quantity: 10,
+                quality: ResourceQuality.LOW
+              },
+              {
+                type: ResourceType.MATTER,
+                quantity: 10,
+                quality: ResourceQuality.MEDIUM
+              },
+              {
+                type: ResourceType.MATTER,
+                quantity: 80,
+                quality: ResourceQuality.HIGH
+              }
+            ]
+          },
+        },
         processes: []
       }))
     ),
     selectedCell: null
   }));
-
-  const containerSize = useRef({ width: 400, height: 400 });
+  const [ containerSize, setContainerSize ] = useState({ width: 400, height: 400 });
+  const appRef = useRef<Application | null>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!gameContainerRef.current) return;
+
+    const initApp = async () => {
+      const app = new Application()
+      await app.init({
+        width: containerSize.width,
+        height:  containerSize.height,
+        backgroundColor: 0x1a1a1a,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true,
+        antialias: true,
+      });
+      appRef.current = app;
+
+      // Create systems
+      // const particleRenderer = new ParticleRenderer(app);
+      // const particleSystem = new ParticleSystem(particleRenderer);
+
+      // Set up game loop
+      app.ticker.add((delta) => {
+        // particleSystem.update(delta);
+      });
+    };
+    initApp();
 
     const updateSize = () => {
       const rect = gameContainerRef.current?.getBoundingClientRect();
@@ -37,32 +120,35 @@ export const GameView: React.FC = () => {
       const newWidth = Math.floor(rect.width);
       const newHeight = Math.floor(rect.height);
 
-      // Only update ref if size actually changed
-      if (containerSize.current.width !== newWidth ||
-          containerSize.current.height !== newHeight) {
-        console.log('Size updated:', { width: newWidth, height: newHeight });
-        containerSize.current = { width: newWidth, height: newHeight };
+      if (containerSize.width !== newWidth ||
+          containerSize.height !== newHeight) {
+        setContainerSize({ width: newWidth, height: newHeight });
       }
     };
 
-    // Initial size
-    updateSize();
-
+    // TODO: Not working for shrink??
     const resizeObserver = new ResizeObserver(() => {
       updateSize();
     });
 
     resizeObserver.observe(gameContainerRef.current);
-    return () => resizeObserver.disconnect();
+
+    return () => {
+      appRef.current?.destroy(true, {
+        children: true,
+        texture: true,
+      });
+      appRef.current = null;
+      resizeObserver.disconnect();
+    }
   }, []);
 
   return (
     <GameHUD>
       <div className="w-full h-full inset-0 bg-black" ref={gameContainerRef}>
-        {/* Main game canvas */}
         <Stage 
-          width={containerSize.current.width} 
-          height={containerSize.current.height}
+          width={containerSize.width} 
+          height={containerSize.height}
           options={{ 
             backgroundColor: 0x000000,
             antialias: true,
@@ -73,8 +159,8 @@ export const GameView: React.FC = () => {
           <Container position={[0, 0]}>
             <PixiGrid
               grid={gameState.grid}
-              width={containerSize.current.width} 
-              height={containerSize.current.height}
+              width={containerSize.width} 
+              height={containerSize.height}
             />
           </Container>
         </Stage>

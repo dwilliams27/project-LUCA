@@ -24,7 +24,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart }) => {
       className="relative group w-64 h-16 mb-4 bg-emerald-800 text-emerald-100 rounded-lg 
         overflow-hidden transition-all duration-300 hover:bg-emerald-700"
     >
-      {/* Animated "membrane" background */}
       <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
         {[...Array(6)].map((_, i) => (
           <div
@@ -33,14 +32,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart }) => {
             style={{
               left: `${(i * 30) - 20}%`,
               top: `${Math.sin(i) * 100}%`,
-              animation: `membrane-float ${2 + i * 0.5}s infinite ease-in-out`,
-              animationDelay: `${i * 0.2}s`
             }}
           />
         ))}
       </div>
-      
-      {/* Button text with DNA-like decoration */}
+
       <div className="relative flex items-center justify-center w-full h-full">
         <span className="text-xl font-semibold tracking-wide">{children}</span>
         <div className="absolute left-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-emerald-300 rounded-full" />
@@ -51,7 +47,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart }) => {
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center bg-gray-900 bg-evolution">
-      {/* Background "chemical soup" effect (TODO: anim broken) */}
       <div className="absolute inset-0 overflow-hidden opacity-20">
         {[...Array(20)].map((_, i) => (
           <div
@@ -60,8 +55,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart }) => {
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animationDuration: `${5 + Math.random() * 10}s`,
-              animationDelay: `-${Math.random() * 10}s`
             }}
           />
         ))}
