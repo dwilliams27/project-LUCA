@@ -1,4 +1,3 @@
-import { ResourceType } from '@/generated/process';
 import { GRID_PADDING, VGridCell } from '@/types';
 import { Container, Graphics, Text } from '@pixi/react';
 

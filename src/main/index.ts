@@ -5,27 +5,41 @@ import { LLMService } from '@/ai/LlmService'
 import { ServiceLocator } from '@/systems/ServiceLocator'
 
 function createWindow(): void {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
+      // TODO: Maybe revisit for security
       nodeIntegration: true,
-      contextIsolation: true,
+      contextIsolation: false,
       preload: join(__dirname, '../preload/index.js'),
       webSecurity: true
     }
   });
 
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self';" +
+          "style-src 'self' 'unsafe-inline';" +
+          "worker-src blob: ;" +
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval"
+        ]
+      }
+    });
+  });
+
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    mainWindow.show();
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
+    shell.openExternal(details.url);
+    return { action: 'deny' };
   })
 
   // HMR for renderer base on electron-vite cli.
