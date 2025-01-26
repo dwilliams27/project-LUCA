@@ -1,13 +1,14 @@
-import { PixiGridCell } from "@/components/game/PixiGridCell";
+import { GridCell } from "@/components/game/GridCell";
 import { VGridCell } from "@/types";
 import { Container, Graphics } from '@pixi/react';
 import { useCallback } from "react";
 
-export const PixiGrid: React.FC<{
+export const Grid: React.FC<{
+  zIndex: number;
   cells: VGridCell[][];
   width: number;
   height: number;
-}> = ({ cells, width, height }) => {
+}> = ({ zIndex, cells, width, height }) => {
   const cellWidth = width / cells[0].length;
   const cellHeight = height / cells.length;
 
@@ -26,13 +27,13 @@ export const PixiGrid: React.FC<{
   }, [width, height]);
 
   return (
-    <Container>
+    <Container zIndex={zIndex} >
       <Graphics draw={drawGrid} zIndex={1} />
       <Container>
         {
           cells.map((row, yIndex) =>
             row.map((cell, xIndex) => (
-              <PixiGridCell
+              <GridCell
                 key={`${xIndex}-${yIndex}`}
                 cell={cell}
               />

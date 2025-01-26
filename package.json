@@ -28,6 +28,7 @@
     "@pixi/unsafe-eval": "^7.4.2",
     "@protobuf-ts/runtime": "^2.9.4",
     "@types/pouchdb": "^6.4.2",
+    "nanoid": "^5.0.9",
     "pouchdb": "^9.0.0"
   },
   "devDependencies": {

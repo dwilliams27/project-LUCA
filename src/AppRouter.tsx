@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MainMenu } from '@/components/ui/MainMenu';
-import { GameView } from '@/components/game/GameView';
+import { MainGame } from '@/components/game/MainGame';
 
 export type View = 'MAIN_MENU' | 'GAME';
 
@@ -17,7 +17,7 @@ export const AppRouter: React.FC = () => {
         <MainMenu onStart={handleStartGame} />
       )}
       {currentView === 'GAME' && (
-        <GameView />
+        <MainGame />
       )}
     </div>
   );

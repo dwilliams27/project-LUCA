@@ -15,15 +15,19 @@ import { MessageType } from "@protobuf-ts/runtime";
  */
 export interface Resource {
     /**
-     * @generated from protobuf field: luca.ResourceType type = 1;
+     * @generated from protobuf field: string id = 1;
+     */
+    id: string;
+    /**
+     * @generated from protobuf field: luca.ResourceType type = 2;
      */
     type: ResourceType;
     /**
-     * @generated from protobuf field: double quantity = 2;
+     * @generated from protobuf field: double quantity = 3;
      */
     quantity: number;
     /**
-     * @generated from protobuf field: luca.ResourceQuality quality = 3;
+     * @generated from protobuf field: luca.ResourceQuality quality = 4;
      */
     quality: ResourceQuality;
 }
@@ -48,38 +52,40 @@ export interface Operation {
      * @generated from protobuf oneof: operation_type
      */
     operationType: {
+        oneofKind: "id";
+        /**
+         * @generated from protobuf field: string id = 1;
+         */
+        id: string;
+    } | {
         oneofKind: "transform";
         /**
-         * @generated from protobuf field: luca.Operation.Transform transform = 1;
+         * @generated from protobuf field: luca.Operation.Transform transform = 2;
          */
         transform: Operation_Transform;
     } | {
         oneofKind: "transfer";
         /**
-         * @generated from protobuf field: luca.Operation.Transfer transfer = 2;
+         * @generated from protobuf field: luca.Operation.Transfer transfer = 3;
          */
         transfer: Operation_Transfer;
     } | {
         oneofKind: "sense";
         /**
-         * @generated from protobuf field: luca.Operation.Sense sense = 3;
+         * @generated from protobuf field: luca.Operation.Sense sense = 4;
          */
         sense: Operation_Sense;
     } | {
         oneofKind: undefined;
     };
     /**
-     * @generated from protobuf field: uint32 input = 4;
+     * @generated from protobuf field: uint32 input = 5;
      */
     input: number;
     /**
-     * @generated from protobuf field: uint32 energy_cost = 5;
+     * @generated from protobuf field: uint32 energy_cost = 6;
      */
     energyCost: number;
-    /**
-     * @generated from protobuf field: string operation_id = 6;
-     */
-    operationId: string;
 }
 /**
  * @generated from protobuf message luca.Operation.Transform
@@ -141,9 +147,9 @@ export interface Operation_Sense {
  */
 export interface Process {
     /**
-     * @generated from protobuf field: string process_id = 1;
+     * @generated from protobuf field: string id = 1;
      */
-    processId: string;
+    id: string;
     /**
      * @generated from protobuf field: string name = 2;
      */
@@ -190,17 +196,21 @@ export interface ResourceList {
  */
 export interface GridCell {
     /**
-     * @generated from protobuf field: luca.Position position = 1;
+     * @generated from protobuf field: string id = 1;
+     */
+    id: string;
+    /**
+     * @generated from protobuf field: luca.Position position = 2;
      */
     position?: Position;
     /**
-     * @generated from protobuf field: map<string, luca.ResourceList> resourceBuckets = 2;
+     * @generated from protobuf field: map<string, luca.ResourceList> resourceBuckets = 3;
      */
     resourceBuckets: {
         [key: string]: ResourceList;
     };
     /**
-     * @generated from protobuf field: repeated luca.Process processes = 3;
+     * @generated from protobuf field: repeated luca.Process processes = 4;
      */
     processes: Process[];
 }
@@ -213,27 +223,19 @@ export enum ResourceType {
      */
     UNSPECIFIED = 0,
     /**
-     * Is consumed by processes
-     *
      * @generated from protobuf enum value: RESOURCE_TYPE_ENERGY = 1;
      */
     ENERGY = 1,
     /**
-     * Is consumed by processes
-     *
      * @generated from protobuf enum value: RESOURCE_TYPE_MATTER = 2;
      */
     MATTER = 2,
     /**
-     * Is never used up; grows forever
-     *
      * @generated from protobuf enum value: RESOURCE_TYPE_INFORMATION = 3;
      */
     INFORMATION = 3
 }
 /**
- * Allow multiple of same resource type to exist in a grid cell
- *
  * @generated from protobuf enum luca.ResourceQuality
  */
 export enum ResourceQuality {
@@ -304,13 +306,15 @@ export enum ComparisonOperator {
 class Resource$Type extends MessageType<Resource> {
     constructor() {
         super("luca.Resource", [
-            { no: 1, name: "type", kind: "enum", T: () => ["luca.ResourceType", ResourceType, "RESOURCE_TYPE_"] },
-            { no: 2, name: "quantity", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
-            { no: 3, name: "quality", kind: "enum", T: () => ["luca.ResourceQuality", ResourceQuality, "RESOURCE_QUALITY_"] }
+            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "type", kind: "enum", T: () => ["luca.ResourceType", ResourceType, "RESOURCE_TYPE_"] },
+            { no: 3, name: "quantity", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
+            { no: 4, name: "quality", kind: "enum", T: () => ["luca.ResourceQuality", ResourceQuality, "RESOURCE_QUALITY_"] }
         ]);
     }
     create(value?: PartialMessage<Resource>): Resource {
         const message = globalThis.Object.create((this.messagePrototype!));
+        message.id = "";
         message.type = 0;
         message.quantity = 0;
         message.quality = 0;
@@ -323,13 +327,16 @@ class Resource$Type extends MessageType<Resource> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* luca.ResourceType type */ 1:
+                case /* string id */ 1:
+                    message.id = reader.string();
+                    break;
+                case /* luca.ResourceType type */ 2:
                     message.type = reader.int32();
                     break;
-                case /* double quantity */ 2:
+                case /* double quantity */ 3:
                     message.quantity = reader.double();
                     break;
-                case /* luca.ResourceQuality quality */ 3:
+                case /* luca.ResourceQuality quality */ 4:
                     message.quality = reader.int32();
                     break;
                 default:
@@ -344,15 +351,18 @@ class Resource$Type extends MessageType<Resource> {
         return message;
     }
     internalBinaryWrite(message: Resource, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* luca.ResourceType type = 1; */
+        /* string id = 1; */
+        if (message.id !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.id);
+        /* luca.ResourceType type = 2; */
         if (message.type !== 0)
-            writer.tag(1, WireType.Varint).int32(message.type);
-        /* double quantity = 2; */
+            writer.tag(2, WireType.Varint).int32(message.type);
+        /* double quantity = 3; */
         if (message.quantity !== 0)
-            writer.tag(2, WireType.Bit64).double(message.quantity);
-        /* luca.ResourceQuality quality = 3; */
+            writer.tag(3, WireType.Bit64).double(message.quantity);
+        /* luca.ResourceQuality quality = 4; */
         if (message.quality !== 0)
-            writer.tag(3, WireType.Varint).int32(message.quality);
+            writer.tag(4, WireType.Varint).int32(message.quality);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -422,12 +432,12 @@ export const Condition = new Condition$Type();
 class Operation$Type extends MessageType<Operation> {
     constructor() {
         super("luca.Operation", [
-            { no: 1, name: "transform", kind: "message", oneof: "operationType", T: () => Operation_Transform },
-            { no: 2, name: "transfer", kind: "message", oneof: "operationType", T: () => Operation_Transfer },
-            { no: 3, name: "sense", kind: "message", oneof: "operationType", T: () => Operation_Sense },
-            { no: 4, name: "input", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 5, name: "energy_cost", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 6, name: "operation_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "id", kind: "scalar", oneof: "operationType", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "transform", kind: "message", oneof: "operationType", T: () => Operation_Transform },
+            { no: 3, name: "transfer", kind: "message", oneof: "operationType", T: () => Operation_Transfer },
+            { no: 4, name: "sense", kind: "message", oneof: "operationType", T: () => Operation_Sense },
+            { no: 5, name: "input", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 6, name: "energy_cost", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
         ]);
     }
     create(value?: PartialMessage<Operation>): Operation {
@@ -435,7 +445,6 @@ class Operation$Type extends MessageType<Operation> {
         message.operationType = { oneofKind: undefined };
         message.input = 0;
         message.energyCost = 0;
-        message.operationId = "";
         if (value !== undefined)
             reflectionMergePartial<Operation>(this, message, value);
         return message;
@@ -445,32 +454,35 @@ class Operation$Type extends MessageType<Operation> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* luca.Operation.Transform transform */ 1:
+                case /* string id */ 1:
+                    message.operationType = {
+                        oneofKind: "id",
+                        id: reader.string()
+                    };
+                    break;
+                case /* luca.Operation.Transform transform */ 2:
                     message.operationType = {
                         oneofKind: "transform",
                         transform: Operation_Transform.internalBinaryRead(reader, reader.uint32(), options, (message.operationType as any).transform)
                     };
                     break;
-                case /* luca.Operation.Transfer transfer */ 2:
+                case /* luca.Operation.Transfer transfer */ 3:
                     message.operationType = {
                         oneofKind: "transfer",
                         transfer: Operation_Transfer.internalBinaryRead(reader, reader.uint32(), options, (message.operationType as any).transfer)
                     };
                     break;
-                case /* luca.Operation.Sense sense */ 3:
+                case /* luca.Operation.Sense sense */ 4:
                     message.operationType = {
                         oneofKind: "sense",
                         sense: Operation_Sense.internalBinaryRead(reader, reader.uint32(), options, (message.operationType as any).sense)
                     };
                     break;
-                case /* uint32 input */ 4:
+                case /* uint32 input */ 5:
                     message.input = reader.uint32();
                     break;
-                case /* uint32 energy_cost */ 5:
+                case /* uint32 energy_cost */ 6:
                     message.energyCost = reader.uint32();
-                    break;
-                case /* string operation_id */ 6:
-                    message.operationId = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -484,24 +496,24 @@ class Operation$Type extends MessageType<Operation> {
         return message;
     }
     internalBinaryWrite(message: Operation, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* luca.Operation.Transform transform = 1; */
+        /* string id = 1; */
+        if (message.operationType.oneofKind === "id")
+            writer.tag(1, WireType.LengthDelimited).string(message.operationType.id);
+        /* luca.Operation.Transform transform = 2; */
         if (message.operationType.oneofKind === "transform")
-            Operation_Transform.internalBinaryWrite(message.operationType.transform, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* luca.Operation.Transfer transfer = 2; */
+            Operation_Transform.internalBinaryWrite(message.operationType.transform, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* luca.Operation.Transfer transfer = 3; */
         if (message.operationType.oneofKind === "transfer")
-            Operation_Transfer.internalBinaryWrite(message.operationType.transfer, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
-        /* luca.Operation.Sense sense = 3; */
+            Operation_Transfer.internalBinaryWrite(message.operationType.transfer, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        /* luca.Operation.Sense sense = 4; */
         if (message.operationType.oneofKind === "sense")
-            Operation_Sense.internalBinaryWrite(message.operationType.sense, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
-        /* uint32 input = 4; */
+            Operation_Sense.internalBinaryWrite(message.operationType.sense, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+        /* uint32 input = 5; */
         if (message.input !== 0)
-            writer.tag(4, WireType.Varint).uint32(message.input);
-        /* uint32 energy_cost = 5; */
+            writer.tag(5, WireType.Varint).uint32(message.input);
+        /* uint32 energy_cost = 6; */
         if (message.energyCost !== 0)
-            writer.tag(5, WireType.Varint).uint32(message.energyCost);
-        /* string operation_id = 6; */
-        if (message.operationId !== "")
-            writer.tag(6, WireType.LengthDelimited).string(message.operationId);
+            writer.tag(6, WireType.Varint).uint32(message.energyCost);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -709,7 +721,7 @@ export const Operation_Sense = new Operation_Sense$Type();
 class Process$Type extends MessageType<Process> {
     constructor() {
         super("luca.Process", [
-            { no: 1, name: "process_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 3, name: "energy_cost", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
             { no: 4, name: "conditions", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Condition },
@@ -718,7 +730,7 @@ class Process$Type extends MessageType<Process> {
     }
     create(value?: PartialMessage<Process>): Process {
         const message = globalThis.Object.create((this.messagePrototype!));
-        message.processId = "";
+        message.id = "";
         message.name = "";
         message.energyCost = 0;
         message.conditions = [];
@@ -732,8 +744,8 @@ class Process$Type extends MessageType<Process> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string process_id */ 1:
-                    message.processId = reader.string();
+                case /* string id */ 1:
+                    message.id = reader.string();
                     break;
                 case /* string name */ 2:
                     message.name = reader.string();
@@ -759,9 +771,9 @@ class Process$Type extends MessageType<Process> {
         return message;
     }
     internalBinaryWrite(message: Process, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string process_id = 1; */
-        if (message.processId !== "")
-            writer.tag(1, WireType.LengthDelimited).string(message.processId);
+        /* string id = 1; */
+        if (message.id !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.id);
         /* string name = 2; */
         if (message.name !== "")
             writer.tag(2, WireType.LengthDelimited).string(message.name);
@@ -890,13 +902,15 @@ export const ResourceList = new ResourceList$Type();
 class GridCell$Type extends MessageType<GridCell> {
     constructor() {
         super("luca.GridCell", [
-            { no: 1, name: "position", kind: "message", T: () => Position },
-            { no: 2, name: "resourceBuckets", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => ResourceList } },
-            { no: 3, name: "processes", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Process }
+            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "position", kind: "message", T: () => Position },
+            { no: 3, name: "resourceBuckets", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => ResourceList } },
+            { no: 4, name: "processes", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Process }
         ]);
     }
     create(value?: PartialMessage<GridCell>): GridCell {
         const message = globalThis.Object.create((this.messagePrototype!));
+        message.id = "";
         message.resourceBuckets = {};
         message.processes = [];
         if (value !== undefined)
@@ -908,13 +922,16 @@ class GridCell$Type extends MessageType<GridCell> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* luca.Position position */ 1:
+                case /* string id */ 1:
+                    message.id = reader.string();
+                    break;
+                case /* luca.Position position */ 2:
                     message.position = Position.internalBinaryRead(reader, reader.uint32(), options, message.position);
                     break;
-                case /* map<string, luca.ResourceList> resourceBuckets */ 2:
-                    this.binaryReadMap2(message.resourceBuckets, reader, options);
+                case /* map<string, luca.ResourceList> resourceBuckets */ 3:
+                    this.binaryReadMap3(message.resourceBuckets, reader, options);
                     break;
-                case /* repeated luca.Process processes */ 3:
+                case /* repeated luca.Process processes */ 4:
                     message.processes.push(Process.internalBinaryRead(reader, reader.uint32(), options));
                     break;
                 default:
@@ -928,7 +945,7 @@ class GridCell$Type extends MessageType<GridCell> {
         }
         return message;
     }
-    private binaryReadMap2(map: GridCell["resourceBuckets"], reader: IBinaryReader, options: BinaryReadOptions): void {
+    private binaryReadMap3(map: GridCell["resourceBuckets"], reader: IBinaryReader, options: BinaryReadOptions): void {
         let len = reader.uint32(), end = reader.pos + len, key: keyof GridCell["resourceBuckets"] | undefined, val: GridCell["resourceBuckets"][any] | undefined;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
@@ -945,19 +962,22 @@ class GridCell$Type extends MessageType<GridCell> {
         map[key ?? ""] = val ?? ResourceList.create();
     }
     internalBinaryWrite(message: GridCell, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* luca.Position position = 1; */
+        /* string id = 1; */
+        if (message.id !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.id);
+        /* luca.Position position = 2; */
         if (message.position)
-            Position.internalBinaryWrite(message.position, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* map<string, luca.ResourceList> resourceBuckets = 2; */
+            Position.internalBinaryWrite(message.position, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* map<string, luca.ResourceList> resourceBuckets = 3; */
         for (let k of globalThis.Object.keys(message.resourceBuckets)) {
-            writer.tag(2, WireType.LengthDelimited).fork().tag(1, WireType.LengthDelimited).string(k);
+            writer.tag(3, WireType.LengthDelimited).fork().tag(1, WireType.LengthDelimited).string(k);
             writer.tag(2, WireType.LengthDelimited).fork();
             ResourceList.internalBinaryWrite(message.resourceBuckets[k], writer, options);
             writer.join().join();
         }
-        /* repeated luca.Process processes = 3; */
+        /* repeated luca.Process processes = 4; */
         for (let i = 0; i < message.processes.length; i++)
-            Process.internalBinaryWrite(message.processes[i], writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+            Process.internalBinaryWrite(message.processes[i], writer.tag(4, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

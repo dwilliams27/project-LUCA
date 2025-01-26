@@ -4,15 +4,11 @@ package luca;
 
 enum ResourceType {
   RESOURCE_TYPE_UNSPECIFIED = 0;
-  // Is consumed by processes
   RESOURCE_TYPE_ENERGY = 1;
-  // Is consumed by processes
   RESOURCE_TYPE_MATTER = 2;
-  // Is never used up; grows forever
   RESOURCE_TYPE_INFORMATION = 3;
 }
 
-// Allow multiple of same resource type to exist in a grid cell
 enum ResourceQuality {
   RESOURCE_QUALITY_UNSPECIFIED = 0;
   RESOURCE_QUALITY_LOW = 1;
@@ -36,10 +32,11 @@ enum ComparisonOperator {
 }
 
 message Resource {
-  ResourceType type = 1;
-  double quantity = 2;
-  ResourceQuality quality = 3;
-  reserved 4 to 10;
+  string id = 1;
+  ResourceType type = 2;
+  double quantity = 3;
+  ResourceQuality quality = 4;
+  reserved 5 to 10;
 }
 
 message Condition {
@@ -72,19 +69,19 @@ message Operation {
   }
 
   oneof operation_type {
-    Transform transform = 1;
-    Transfer transfer = 2;
-    Sense sense = 3;
+    string id = 1;
+    Transform transform = 2;
+    Transfer transfer = 3;
+    Sense sense = 4;
   }
 
-  uint32 input = 4;
-  uint32 energy_cost = 5;
-  string operation_id = 6;
+  uint32 input = 5;
+  uint32 energy_cost = 6;
   reserved 7 to 10;
 }
 
 message Process {
-  string process_id = 1;
+  string id = 1;
   string name = 2;
   uint32 energy_cost = 3;
   // This condition can only check local resources in this cell, but no sense needed
@@ -103,8 +100,9 @@ message ResourceList {
 }
 
 message GridCell {
-  Position position = 1;
-  map<string, ResourceList> resourceBuckets = 2;
-  repeated Process processes = 3;
-  reserved 4 to 10;
+  string id = 1;
+  Position position = 2;
+  map<string, ResourceList> resourceBuckets = 3;
+  repeated Process processes = 4;
+  reserved 5 to 10;
 }

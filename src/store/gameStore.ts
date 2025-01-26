@@ -1,6 +1,7 @@
 import { Position, ResourceQuality, ResourceType } from '@/generated/process';
 import { Particle, VGridCell } from '@/types';
 import { GRID_PADDING, INIT_CANVAS_HEIGHT, INIT_CANVAS_WIDTH, GRID_SIZE } from '@/utils/constants';
+import { genId, GRID_CELL_ID, RESOURCE_ID } from '@/utils/id';
 import { create } from 'zustand';
 
 export interface GameDimensions {
@@ -24,11 +25,12 @@ interface GameState {
   };
   particles: {
     byId: Record<string, Particle>;
-    byCellId: Record<string, Set<string>>;
   };
   
   resizeGame: (width: number, height: number) => void;
-  
+
+  initGrid: (gridCells: VGridCell[][]) => void;
+  populateParticlesFromGrid: () => void;
   getCellBounds: (pos: Position) => CellBounds;
   worldToGrid: (x: number, y: number) => Position;
   gridToWorld: (pos: Position) => { x: number; y: number };
@@ -40,89 +42,59 @@ export const useGameStore = create<GameState>((set, get) => ({
     height: INIT_CANVAS_HEIGHT,
     gridLength: Math.min(INIT_CANVAS_WIDTH, INIT_CANVAS_HEIGHT),
   },
-
   grid: {
-    cells: Array(GRID_SIZE).fill(null).map((_, y) => 
-      Array(GRID_SIZE).fill(null).map((_, x) => ({
-        position: { x, y },
-        resourceBuckets: {
-          [ResourceType.ENERGY]: {
-            resources: [
-              {
-                type: ResourceType.ENERGY,
-                quantity: 10,
-                quality: ResourceQuality.LOW
-              },
-              {
-                type: ResourceType.ENERGY,
-                quantity: 10,
-                quality: ResourceQuality.MEDIUM
-              },
-              {
-                type: ResourceType.ENERGY,
-                quantity: 10,
-                quality: ResourceQuality.HIGH
-              }
-            ]
-          },
-          [ResourceType.MATTER]: {
-            resources: [
-              {
-                type: ResourceType.MATTER,
-                quantity: 10,
-                quality: ResourceQuality.LOW
-              },
-              {
-                type: ResourceType.MATTER,
-                quantity: 10,
-                quality: ResourceQuality.MEDIUM
-              },
-              {
-                type: ResourceType.MATTER,
-                quantity: 80,
-                quality: ResourceQuality.HIGH
-              }
-            ]
-          },
-          [ResourceType.INFORMATION]: {
-            resources: [
-              {
-                type: ResourceType.INFORMATION,
-                quantity: 10,
-                quality: ResourceQuality.LOW
-              },
-              {
-                type: ResourceType.INFORMATION,
-                quantity: 10,
-                quality: ResourceQuality.MEDIUM
-              },
-              {
-                type: ResourceType.INFORMATION,
-                quantity: 10,
-                quality: ResourceQuality.HIGH
-              }
-            ]
-          },
-        },
-        processes: [],
-      }))
-    ),
+    cells: [],
     selected: null,
   },
-
   particles: {
     byId: {},
-    byCellId: {},
   },
 
   resizeGame: (width: number, height: number) => {
-    set((state) => ({
+    set(() => ({
       dimensions: {
         width,
         height,
         gridLength: Math.min(width, height),
       }
-    }))
+    }));
+  },
+
+  initGrid: (gridCells: VGridCell[][]) => {
+    set(() => ({ grid: { cells: gridCells, selected: null } }));
+    get().populateParticlesFromGrid();
+  },
+
+  populateParticlesFromGrid: () => {
+    const particleMap = get().particles.byId;
+    const cellBounds = get().getCellBounds(get().grid.cells[0][0].position);
+    const cellWidth = cellBounds.right - cellBounds.left;
+    const cellHeight = cellBounds.bottom - cellBounds.top;
+    get().grid.cells.flat().forEach((gridCell) => {
+      [ResourceType.ENERGY, ResourceType.MATTER, ResourceType.INFORMATION].forEach((rType) => {
+        gridCell.resourceBuckets[rType].resources.forEach((resource) => {
+          particleMap[resource.id] = {
+            id: resource.id,
+            resourceType: resource.type,
+            resourceQuality: resource.quality,
+            x: gridCell.position.x + (Math.random() * cellWidth),
+            y: gridCell.position.y + (Math.random() * cellHeight),
+            targetX: 0,
+            targetY: 0,
+            vx: 0,
+            vy: 0,
+            transitioning: false,
+            sourceCell: gridCell
+          };
+        });
+      });
+    });
+  
+    set(() => ({
+      particles: {
+        byId: particleMap
+      }
+    }));
   },
 
   getCellBounds: (pos: Position): CellBounds => {
@@ -152,5 +124,5 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 }));
 
-export const useGrid = () => useGameStore(state => state.grid);
-export const useGameParticles = () => useGameStore(state => state.particles);
+export const useGridStore = () => useGameStore(state => state.grid);
+export const useParticleStore = () => useGameStore(state => state.particles);
