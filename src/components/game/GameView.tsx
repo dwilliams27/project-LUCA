@@ -6,10 +6,12 @@ import { PixiGrid } from '@/components/game/PixiGrid';
 import { GameHUD } from '@/components/ui/GameHUD';
 import { Application } from 'pixi.js';
 import { useGameStore, useGrid } from '@/store/gameStore';
+import { useTextStore } from '@/store/textStore';
 
 export const GameView: React.FC = () => {
+  const { initText } = useTextStore();
   const { dimensions, resizeGame } = useGameStore();
-  const { cells } = useGrid();
+  const grid = useGrid();
   const appRef = useRef<Application | null>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
 
@@ -22,7 +24,10 @@ export const GameView: React.FC = () => {
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize();
+
+    // TODO: Lol why tf does it not work without this
+    setTimeout(() => handleResize());
+    setTimeout(() => handleResize(), 10);
 
     return () => window.removeEventListener('resize', handleResize);
   }, [resizeGame]);
@@ -38,6 +43,8 @@ export const GameView: React.FC = () => {
       autoDensity: true,
       antialias: true,
     });
+
+    initText();
 
     return () => {
       appRef.current?.destroy(true, {
@@ -63,9 +70,9 @@ export const GameView: React.FC = () => {
         >
           <Container position={[0, 0]}>
             <PixiGrid
-              grid={cells}
-              width={dimensions.width} 
-              height={dimensions.height}
+              cells={grid.cells}
+              width={dimensions.gridLength}
+              height={dimensions.gridLength}
             />
           </Container>
         </Stage>

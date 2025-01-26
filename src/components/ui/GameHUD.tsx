@@ -4,10 +4,14 @@ interface GameHUDProps {
   children: React.ReactNode;
 }
 
+const TOP_H = 10;
+const BOTTOM_H = 20;
+
 export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
+
   return (
     <div className="fixed inset-0 flex flex-col bg-black text-white overflow-hidden">
-      <div className="w-full h-16 px-6 py-2 bg-gray-900 border-b border-gray-800">
+      <div className="w-full px-6 py-2 bg-gray-900 border-b border-gray-800" style={{ height: `${TOP_H}%` }}>
         <div className="flex justify-between items-center h-full">
           <div className="font-medium">
             Top stuff
@@ -15,21 +19,21 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
-        <div className="w-48 bg-gray-900 border-r border-gray-800 p-4">
+      <div className="flex flex-grow overflow-hidden">
+        <div className="flex-grow bg-gray-900 border-r border-gray-800 p-4">
           Left stuff
         </div>
 
-        <div className="flex-1 flex items-center overflow-hidden justify-center p-4">
+        <div className="items-center overflow-hidden justify-center aspect-square p-4">
           {children}
         </div>
 
-        <div className="w-48 bg-gray-900 border-l border-gray-800 p-4">
+        <div className="flex-grow bg-gray-900 border-l border-gray-800 p-4">
           Right stuff
         </div>
       </div>
 
-      <div className="w-full h-20 bg-gray-900 border-t border-gray-800 p-4">
+      <div className="h-20 w-full bg-gray-900 border-t border-gray-800 p-4"  style={{ height: `${BOTTOM_H}%` }}>
         Bottom stuff
       </div>
     </div>

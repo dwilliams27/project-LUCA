@@ -33,12 +33,6 @@ export interface Particle {
   targetCell?: VGridCell;
 };
 
-// UI Constants
-export const GRID_PADDING = 10;
-export const INIT_CELL_SIZE = 64;
-export const INIT_CANVAS_WIDTH = 800;
-export const INIT_CANVAS_HEIGHT = 600;
-
 
 // Validated generated types
 export type VGridCell = Required<GridCell>;

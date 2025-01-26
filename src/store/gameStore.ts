@@ -1,13 +1,12 @@
 import { Position, ResourceQuality, ResourceType } from '@/generated/process';
-import { INIT_CANVAS_HEIGHT, INIT_CANVAS_WIDTH, INIT_CELL_SIZE, Particle, VGridCell } from '@/types';
+import { Particle, VGridCell } from '@/types';
+import { GRID_PADDING, INIT_CANVAS_HEIGHT, INIT_CANVAS_WIDTH, GRID_SIZE } from '@/utils/constants';
 import { create } from 'zustand';
 
 export interface GameDimensions {
   width: number;
   height: number;
-  cellSize: number;
-  gridColumns: number;
-  gridRows: number;
+  gridLength: number;
 }
 
 export interface CellBounds {
@@ -24,12 +23,11 @@ interface GameState {
     selected: VGridCell | null;
   };
   particles: {
-    byId: Map<string, Particle>;
-    byCellId: Map<string, Set<string>>;
+    byId: Record<string, Particle>;
+    byCellId: Record<string, Set<string>>;
   };
   
   resizeGame: (width: number, height: number) => void;
-  setCellSize: (size: number) => void;
   
   getCellBounds: (pos: Position) => CellBounds;
   worldToGrid: (x: number, y: number) => Position;
@@ -40,13 +38,12 @@ export const useGameStore = create<GameState>((set, get) => ({
   dimensions: {
     width: INIT_CANVAS_WIDTH,
     height: INIT_CANVAS_HEIGHT,
-    cellSize: INIT_CELL_SIZE,
-    gridColumns: Math.floor(INIT_CANVAS_WIDTH / INIT_CELL_SIZE),
-    gridRows: Math.floor(INIT_CANVAS_HEIGHT / INIT_CELL_SIZE),
+    gridLength: Math.min(INIT_CANVAS_WIDTH, INIT_CANVAS_HEIGHT),
   },
+
   grid: {
-    cells: Array(Math.floor(INIT_CANVAS_WIDTH / INIT_CELL_SIZE)).fill(null).map((_, y) => 
-      Array(Math.floor(INIT_CANVAS_HEIGHT / INIT_CELL_SIZE)).fill(null).map((_, x) => ({
+    cells: Array(GRID_SIZE).fill(null).map((_, y) => 
+      Array(GRID_SIZE).fill(null).map((_, x) => ({
         position: { x, y },
         resourceBuckets: {
           [ResourceType.ENERGY]: {
@@ -114,48 +111,32 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   particles: {
-    byId: new Map(),
-    byCellId: new Map(),
+    byId: {},
+    byCellId: {},
   },
 
-  resizeGame: (width: number, height: number) => 
-    set((state) => {
-      const cellSize = state.dimensions.cellSize;
-      return {
-        dimensions: {
-          width,
-          height,
-          cellSize,
-          gridColumns: Math.floor(width / cellSize),
-          gridRows: Math.floor(height / cellSize),
-        }
-      };
-    }
-  ),
-
-  setCellSize: (cellSize: number) =>
+  resizeGame: (width: number, height: number) => {
     set((state) => ({
       dimensions: {
-        ...state.dimensions,
-        cellSize,
-        gridColumns: Math.floor(state.dimensions.width / cellSize),
-        gridRows: Math.floor(state.dimensions.height / cellSize),
+        width,
+        height,
+        gridLength: Math.min(width, height),
       }
-    })
-  ),
+    }))
+  },
 
   getCellBounds: (pos: Position): CellBounds => {
-    const { cellSize } = get().dimensions;
+    const cellSize = get().dimensions.gridLength / get().grid.cells.length;
     return {
-      left: pos.x * cellSize,
-      right: (pos.x + 1) * cellSize,
-      top: pos.y * cellSize,
-      bottom: (pos.y + 1) * cellSize,
+      left: pos.x * cellSize + GRID_PADDING / 2,
+      right: (pos.x + 1) * cellSize - GRID_PADDING / 2,
+      top: pos.y * cellSize + GRID_PADDING / 2,
+      bottom: (pos.y + 1) * cellSize - GRID_PADDING / 2,
     };
   },
 
   worldToGrid: (x: number, y: number): Position => {
-    const { cellSize } = get().dimensions;
+    const cellSize = get().dimensions.gridLength / get().grid.cells.length;
     return {
       x: Math.floor(x / cellSize),
       y: Math.floor(y / cellSize),
@@ -163,7 +144,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   gridToWorld: (pos: Position) => {
-    const { cellSize } = get().dimensions;
+    const cellSize = get().dimensions.gridLength / get().grid.cells.length;
     return {
       x: pos.x * cellSize,
       y: pos.y * cellSize,
