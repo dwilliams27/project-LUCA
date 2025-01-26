@@ -8,14 +8,16 @@ function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
+    minWidth: 900,
+    minHeight: 670,
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
       // TODO: Maybe revisit for security
       nodeIntegration: true,
       contextIsolation: false,
+      webSecurity: true,
       preload: join(__dirname, '../preload/index.js'),
-      webSecurity: true
     }
   });
 

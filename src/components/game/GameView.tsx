@@ -17,13 +17,12 @@ export const GameView: React.FC = () => {
     const handleResize = () => {
       const container = document.getElementById('game-container');
       if (container) {
-        console.log(container.clientWidth, container.clientHeight);
         resizeGame(container.clientWidth, container.clientHeight);
       }
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize(); // Initial size
+    handleResize();
 
     return () => window.removeEventListener('resize', handleResize);
   }, [resizeGame]);
@@ -51,7 +50,7 @@ export const GameView: React.FC = () => {
 
   return (
     <GameHUD>
-      <div className="w-full h-full inset-0 bg-black" ref={gameContainerRef}>
+      <div className="w-full h-full inset-0 bg-black" id="game-container" ref={gameContainerRef}>
         <Stage 
           width={dimensions.width} 
           height={dimensions.height}
