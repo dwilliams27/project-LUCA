@@ -1,4 +1,4 @@
-import { GridCell, Operation_Sense, Operation_Transfer, Operation_Transform, ResourceQuality, ResourceType } from "@/generated/process";
+import { GridCell, Operation_Sense, Operation_Transfer, Operation_Transform, Resource, ResourceQuality, ResourceType } from "@/generated/process";
 
 export enum EvolutionaryStage {
   ABIOTIC = 'ABIOTIC',
@@ -18,8 +18,7 @@ export const EvolutionaryStageDescriptions = {
 
 export interface Particle {
   id: string;
-  resourceType: ResourceType;
-  resourceQuality: ResourceQuality;
+  resource: VResource;
   // Physical properties
   x: number;
   y: number;
@@ -36,6 +35,7 @@ export interface Particle {
 
 // Validated generated types
 export type VGridCell = Required<GridCell>;
+export type VResource = Required<Resource>;
 export type VOperationTransform = Required<Operation_Transform>;
 export type VOperationTransfer = Required<Operation_Transfer>;
 export type VOperationSense = Required<Operation_Sense>;

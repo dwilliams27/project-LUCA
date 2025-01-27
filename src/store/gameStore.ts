@@ -25,6 +25,7 @@ interface GameState {
   };
   particles: {
     byId: Record<string, Particle>;
+    setup: boolean;
   };
   
   resizeGame: (width: number, height: number) => void;
@@ -48,6 +49,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   particles: {
     byId: {},
+    setup: false,
   },
 
   resizeGame: (width: number, height: number) => {
@@ -66,6 +68,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   populateParticlesFromGrid: () => {
+    if (get().particles.setup) {
+      return;
+    }
     const particleMap = get().particles.byId;
     const cellBounds = get().getCellBounds(get().grid.cells[0][0].position);
     const cellWidth = cellBounds.right - cellBounds.left;
@@ -75,8 +80,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         gridCell.resourceBuckets[rType].resources.forEach((resource) => {
           particleMap[resource.id] = {
             id: resource.id,
-            resourceType: resource.type,
-            resourceQuality: resource.quality,
+            resource: resource,
             x: gridCell.position.x + (Math.random() * cellWidth),
             y: gridCell.position.y + (Math.random() * cellHeight),
             targetX: 0,
@@ -92,7 +96,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   
     set(() => ({
       particles: {
-        byId: particleMap
+        byId: particleMap,
+        setup: true,
       }
     }));
   },

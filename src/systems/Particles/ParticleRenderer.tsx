@@ -100,8 +100,10 @@ export const ParticleRenderer: React.FC<{ zIndex: number }> = ({ zIndex }) => {
         if (!textureMapRef.current) {
           return;
         }
-        sprite = new Sprite(textureMapRef.current.get(particle.resourceType));
+        sprite = new Sprite(textureMapRef.current.get(particle.resource.type));
         sprite.name = particle.id;
+        sprite.scale = { x: particle.resource.quantity / 50, y: particle.resource.quantity / 50 };
+        sprite.alpha = particle.resource.quality / 3;
         spriteMap.set(particle.id, sprite);
         app.stage.addChild(sprite);
       }
