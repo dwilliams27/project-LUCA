@@ -1,6 +1,7 @@
 import { Position, ResourceType } from '@/generated/process';
 import { Particle, VGridCell } from '@/types';
 import { GRID_SIZE, INIT_CANVAS_HEIGHT, INIT_CANVAS_WIDTH, MAX_RESOURCES } from '@/utils/constants';
+import { genId, PARTICLE_ID } from '@/utils/id';
 import { create } from 'zustand';
 
 export interface GameDimensions {
@@ -19,6 +20,7 @@ export interface CellBounds {
 
 export interface ParticleState {
   byId: Record<string, Particle>;
+  byType: Record<string, Particle[]>;
   setup: boolean;
 }
 
@@ -34,6 +36,7 @@ interface GameState {
 
   initGrid: (gridCells: VGridCell[][]) => void;
   populateParticlesFromGrid: () => void;
+  setParticlesById: (byId: Record<string, Particle>) => void;
   getCellBounds: (pos: Position) => CellBounds;
   worldToGrid: (x: number, y: number) => Position;
   gridToWorld: (pos: Position) => { x: number; y: number };
@@ -52,6 +55,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   particles: {
     byId: {},
+    byType: {},
     setup: false,
   },
 
@@ -75,34 +79,32 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (get().particles.setup) {
       return;
     }
-    const particleMap = get().particles.byId;
+    const particleIdMap = get().particles.byId;
     const cellSize = get().dimensions.cellSize;
     get().grid.cells.flat().forEach((gridCell) => {
       [ResourceType.ENERGY, ResourceType.MATTER, ResourceType.INFORMATION].forEach((rType) => {
         gridCell.resourceBuckets[rType].resources.forEach((resource) => {
-          particleMap[resource.id] = {
-            id: resource.id,
-            resource: resource,
-            x: gridCell.position.x * cellSize + (0.5 * cellSize),
-            y: gridCell.position.y * cellSize + (0.5 * cellSize),
-            targetX: 0,
-            targetY: 0,
-            vx: 0,
-            vy: 0,
-            scale: (resource.quantity / MAX_RESOURCES),
-            transitioning: false,
-            sourceCell: gridCell,
-          };
+          for(let i = 0; i < resource.quantity; i++) {
+            const pId = genId(PARTICLE_ID);
+            particleIdMap[pId] = {
+              id: pId,
+              resource: resource,
+              x: gridCell.position.x * cellSize + (Math.random() * cellSize),
+              y: gridCell.position.y * cellSize + (Math.random() * cellSize),
+              targetX: 0,
+              targetY: 0,
+              vx: 0,
+              vy: 0,
+              scale: 1,
+              transitioning: false,
+              sourceCell: gridCell,
+            };
+          }
         });
       });
     });
   
-    set(() => ({
-      particles: {
-        byId: particleMap,
-        setup: true,
-      }
-    }));
+    get().setParticlesById(particleIdMap);
   },
 
   getCellBounds: (pos: Position): CellBounds => {
@@ -113,6 +115,24 @@ export const useGameStore = create<GameState>((set, get) => ({
       top: pos.y * cellSize,
       bottom: (pos.y + 1) * cellSize,
     };
+  },
+
+  setParticlesById(byId: Record<string, Particle>) {
+    const byType = {
+      [ResourceType.ENERGY]: [],
+      [ResourceType.INFORMATION]: [],
+      [ResourceType.MATTER]: [],
+    }
+    Object.keys(byId).forEach((key) => {
+      byType[byId[key].resource.type].push(byId[key]);
+    });
+    set(() => ({
+      particles: {
+        byId,
+        byType,
+        setup: true
+      }
+    }))
   },
 
   worldToGrid: (x: number, y: number): Position => {

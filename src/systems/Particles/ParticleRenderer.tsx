@@ -44,7 +44,7 @@ export const ParticleRenderer: React.FC<{ zIndex: number, onResize: number }> = 
       delta,
       application: app,
       particles: useGameStore.getState().particles,
-      cellSize: dimensions.cellSize
+      dimensions
     });
   });
 

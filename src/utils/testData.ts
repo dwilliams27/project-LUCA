@@ -14,19 +14,19 @@ export function genGridCells(): VGridCell[][] {
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.ENERGY,
-              quantity: 50,
+              quantity: 40,
               quality: ResourceQuality.LOW
             },
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.ENERGY,
-              quantity: 10,
+              quantity: 0,
               quality: ResourceQuality.MEDIUM
             },
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.ENERGY,
-              quantity: 40,
+              quantity: 0,
               quality: ResourceQuality.HIGH
             }
           ]
@@ -36,19 +36,19 @@ export function genGridCells(): VGridCell[][] {
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.MATTER,
-              quantity: 40,
+              quantity: 30,
               quality: ResourceQuality.LOW
             },
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.MATTER,
-              quantity: 10,
+              quantity: 0,
               quality: ResourceQuality.MEDIUM
             },
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.MATTER,
-              quantity: 70,
+              quantity: 0,
               quality: ResourceQuality.HIGH
             }
           ]
@@ -58,19 +58,19 @@ export function genGridCells(): VGridCell[][] {
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.INFORMATION,
-              quantity: 10,
+              quantity: 30,
               quality: ResourceQuality.LOW
             },
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.INFORMATION,
-              quantity: 30,
+              quantity: 0,
               quality: ResourceQuality.MEDIUM
             },
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.INFORMATION,
-              quantity: 80,
+              quantity: 0,
               quality: ResourceQuality.HIGH
             }
           ]
