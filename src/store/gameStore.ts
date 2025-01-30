@@ -1,13 +1,13 @@
-import { Position, ResourceQuality, ResourceType } from '@/generated/process';
+import { Position, ResourceType } from '@/generated/process';
 import { Particle, VGridCell } from '@/types';
-import { GRID_PADDING, INIT_CANVAS_HEIGHT, INIT_CANVAS_WIDTH, GRID_SIZE } from '@/utils/constants';
-import { genId, GRID_CELL_ID, RESOURCE_ID } from '@/utils/id';
+import { GRID_SIZE, INIT_CANVAS_HEIGHT, INIT_CANVAS_WIDTH, MAX_RESOURCES } from '@/utils/constants';
 import { create } from 'zustand';
 
 export interface GameDimensions {
   width: number;
   height: number;
   gridLength: number;
+  cellSize: number;
 }
 
 export interface CellBounds {
@@ -17,16 +17,18 @@ export interface CellBounds {
   bottom: number;
 }
 
+export interface ParticleState {
+  byId: Record<string, Particle>;
+  setup: boolean;
+}
+
 interface GameState {
   dimensions: GameDimensions;
   grid: {
     cells: VGridCell[][];
     selected: VGridCell | null;
   };
-  particles: {
-    byId: Record<string, Particle>;
-    setup: boolean;
-  };
+  particles: ParticleState;
   
   resizeGame: (width: number, height: number) => void;
 
@@ -42,6 +44,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     width: INIT_CANVAS_WIDTH,
     height: INIT_CANVAS_HEIGHT,
     gridLength: Math.min(INIT_CANVAS_WIDTH, INIT_CANVAS_HEIGHT),
+    cellSize: Math.min(INIT_CANVAS_WIDTH, INIT_CANVAS_HEIGHT) / GRID_SIZE
   },
   grid: {
     cells: [],
@@ -58,6 +61,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         width,
         height,
         gridLength: Math.min(width, height),
+        cellSize: Math.min(width, height) / GRID_SIZE
       }
     }));
   },
@@ -72,23 +76,22 @@ export const useGameStore = create<GameState>((set, get) => ({
       return;
     }
     const particleMap = get().particles.byId;
-    const cellBounds = get().getCellBounds(get().grid.cells[0][0].position);
-    const cellWidth = cellBounds.right - cellBounds.left;
-    const cellHeight = cellBounds.bottom - cellBounds.top;
+    const cellSize = get().dimensions.cellSize;
     get().grid.cells.flat().forEach((gridCell) => {
       [ResourceType.ENERGY, ResourceType.MATTER, ResourceType.INFORMATION].forEach((rType) => {
         gridCell.resourceBuckets[rType].resources.forEach((resource) => {
           particleMap[resource.id] = {
             id: resource.id,
             resource: resource,
-            x: gridCell.position.x + (Math.random() * cellWidth),
-            y: gridCell.position.y + (Math.random() * cellHeight),
+            x: gridCell.position.x * cellSize + (0.5 * cellSize),
+            y: gridCell.position.y * cellSize + (0.5 * cellSize),
             targetX: 0,
             targetY: 0,
             vx: 0,
             vy: 0,
+            scale: (resource.quantity / MAX_RESOURCES),
             transitioning: false,
-            sourceCell: gridCell
+            sourceCell: gridCell,
           };
         });
       });
@@ -103,17 +106,17 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   getCellBounds: (pos: Position): CellBounds => {
-    const cellSize = get().dimensions.gridLength / get().grid.cells.length;
+    const cellSize = get().dimensions.cellSize;
     return {
-      left: pos.x * cellSize + GRID_PADDING / 2,
-      right: (pos.x + 1) * cellSize - GRID_PADDING / 2,
-      top: pos.y * cellSize + GRID_PADDING / 2,
-      bottom: (pos.y + 1) * cellSize - GRID_PADDING / 2,
+      left: pos.x * cellSize,
+      right: (pos.x + 1) * cellSize,
+      top: pos.y * cellSize,
+      bottom: (pos.y + 1) * cellSize,
     };
   },
 
   worldToGrid: (x: number, y: number): Position => {
-    const cellSize = get().dimensions.gridLength / get().grid.cells.length;
+    const cellSize = get().dimensions.cellSize;
     return {
       x: Math.floor(x / cellSize),
       y: Math.floor(y / cellSize),
@@ -121,7 +124,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   gridToWorld: (pos: Position) => {
-    const cellSize = get().dimensions.gridLength / get().grid.cells.length;
+    const cellSize = get().dimensions.cellSize;
     return {
       x: pos.x * cellSize,
       y: pos.y * cellSize,

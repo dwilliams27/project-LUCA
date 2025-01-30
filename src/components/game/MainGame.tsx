@@ -1,6 +1,6 @@
 import '@pixi/unsafe-eval';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Container } from '@pixi/react';
 import { GameHUD } from '@/components/game/GameHUD';
 import { useGameStore } from '@/store/gameStore';
@@ -11,6 +11,7 @@ import { genGridCells } from '@/utils/testData';
 export const MainGame: React.FC = () => {
   const { initText } = useTextStore();
   const { dimensions, resizeGame, initGrid } = useGameStore();
+  const [onResize, setOnResize] = useState(0);
   const gameContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -18,6 +19,7 @@ export const MainGame: React.FC = () => {
       const container = document.getElementById('game-container');
       if (container) {
         resizeGame(container.clientWidth, container.clientHeight);
+        setOnResize((container.clientWidth * 1000) + container.clientHeight)
       }
     };
 
@@ -52,7 +54,7 @@ export const MainGame: React.FC = () => {
           }}
         >
           <Container position={[0, 0]}>
-            <GameWorld />
+            <GameWorld onResize={onResize} />
           </Container>
         </Stage>
       </div>

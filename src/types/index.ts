@@ -1,4 +1,4 @@
-import { GridCell, Operation_Sense, Operation_Transfer, Operation_Transform, Resource, ResourceQuality, ResourceType } from "@/generated/process";
+import { GridCell, Operation_Sense, Operation_Transfer, Operation_Transform, Resource } from "@/generated/process";
 
 export enum EvolutionaryStage {
   ABIOTIC = 'ABIOTIC',
@@ -26,6 +26,7 @@ export interface Particle {
   targetY: number;
   vx: number;
   vy: number;
+  scale: number;
   // For smooth transitions between cells
   transitioning: boolean;
   sourceCell?: VGridCell;
