@@ -4,6 +4,8 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { LLMService } from '@/ai/LlmService'
 import { ServiceLocator } from '@/systems/ServiceLocator'
 
+const nativeServiceLocator = new ServiceLocator();
+
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -87,11 +89,15 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
-  ServiceLocator.addService(new LLMService(process.env.ANTHROPIC_API_KEY));
+  if (process.env.ANTHROPIC_API_KEY) {
+    nativeServiceLocator.addService(new LLMService(nativeServiceLocator, process.env.ANTHROPIC_API_KEY));
+  } else {
+    console.warn('No ANTHROPIC_API_KEY found!');
+  }
 
   // Define custom IPC handlers
   ipcMain.handle('generate-text', async (event, prompt) => {
-    const llmService = ServiceLocator.getService(LLMService);
+    const llmService = nativeServiceLocator.getService(LLMService);
     return await llmService.generateText(prompt);
   });
 

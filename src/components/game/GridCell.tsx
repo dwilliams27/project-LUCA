@@ -1,4 +1,4 @@
-import { useGameStore } from '@/store/gameStore';
+import { useGridStore } from '@/store/gameStore';
 import { useTextStore } from '@/store/textStore';
 import { VGridCell } from '@/types';
 import { TextStyles } from '@/utils/constants';
@@ -7,7 +7,7 @@ import { Container, Graphics, Text } from '@pixi/react';
 export const GridCell: React.FC<{
   cell: VGridCell;
 }> = ({ cell }) => {
-  const { getCellBounds } = useGameStore();
+  const { getCellBounds } = useGridStore();
   const { textStyles } = useTextStore();
   const bounds = getCellBounds(cell.position);
   const width = bounds.right - bounds.left;

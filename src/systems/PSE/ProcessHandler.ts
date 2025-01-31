@@ -1,4 +1,5 @@
 import { ComparisonOperator, Direction, Operation, Process, ResourceQuality, ResourceType } from "@/generated/process";
+import { LocatableService } from "@/systems/ServiceLocator";
 import { VGridCell, VOperationSense, VOperationTransfer, VOperationTransform } from "@/types";
 
 export interface ExecutionContext {
@@ -8,14 +9,21 @@ export interface ExecutionContext {
   executionChain: string[];
 }
 
-export class ProcessHandler {
+export const PROCESS_HANDLER_SERVICE = "PROCESS_HANDLER_SERVICE";
+
+export class ProcessHandler extends LocatableService {
   private grid: VGridCell[][];
   private sortedCells: VGridCell[];
 
   constructor(grid: VGridCell[][]) {
+    super(PROCESS_HANDLER_SERVICE);
     this.grid = grid;
     this.sortedCells = grid.flat();
     this.sortCells();
+  }
+
+  isInitialized(): boolean {
+    return true;
   }
 
   executeStep() {

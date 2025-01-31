@@ -1,21 +1,38 @@
 import { Position, ResourceType } from "@/generated/process";
-import { GameDimensions, ParticleState } from "@/store/gameStore";
+import { dimensionStore, gridStore } from "@/store/gameStore";
+import { GameServiceLocator, LocatableGameService } from "@/systems/ServiceLocator";
 import { Particle, VGridCell } from "@/types";
 import { GRID_SIZE, PARTICLE_BASE_RADIUS, PARTICLE_SPEED, PARTICLE_TRAVEL_SPEED } from "@/utils/constants";
-import { posToStr } from "@/utils/id";
-import { Application, Sprite, Texture } from "pixi.js";
+import { genId, PARTICLE_ID, posToStr } from "@/utils/id";
+import { Graphics, Sprite, Texture } from "pixi.js";
 
 interface CenterOfMass {
   position: Position;
   runningMass: number;
 }
 
-export class ParticleSystem {
+export const ResourceTypeToColor = {
+  [ResourceType.ENERGY]: 0x00FFFF,
+  [ResourceType.MATTER]: 0xFFFF00,
+  [ResourceType.INFORMATION]: 0xFF00FF,
+}
+
+export const PARTICLE_SYSTEM_SERVICE = 'PARTICLE_SYSTEM_SERVICE';
+
+export class ParticleSystem extends LocatableGameService {
+  static name = PARTICLE_SYSTEM_SERVICE;
+
   textureMap: Map<ResourceType, Texture> = new Map();
   spriteMap: Map<string, Sprite> = new Map();
   centerOfMassMap: Map<string, Map<ResourceType, CenterOfMass>> = new Map();
 
-  constructor() {
+  byId: Record<string, Particle> = {};
+  byType: Record<string, Particle[]> = {};
+  byPosition: Record<string, Particle[]> = {};
+
+  constructor(serviceLocator: GameServiceLocator) {
+    super(PARTICLE_SYSTEM_SERVICE, serviceLocator);
+
     for(let x = 0; x < GRID_SIZE; x++) {
       for(let y = 0; y < GRID_SIZE; y++) {
         const key = `${x},${y}`;
@@ -25,17 +42,88 @@ export class ParticleSystem {
         this.centerOfMassMap.get(key)!.set(ResourceType.INFORMATION, { position: { x: 0, y: 0 }, runningMass: 1 });
       }
     }
+
+    this.textureMap.set(ResourceType.ENERGY, this.createTexture(ResourceTypeToColor[ResourceType.ENERGY]));
+    this.textureMap.set(ResourceType.MATTER, this.createTexture(ResourceTypeToColor[ResourceType.MATTER]));
+    this.textureMap.set(ResourceType.INFORMATION, this.createTexture(ResourceTypeToColor[ResourceType.INFORMATION]));
+
+    this.populateParticlesFromGrid();
   }
 
-  updateTransitioningParticle(deltaTime: number, particle: Particle, refreshGridMap: (particle: Particle) => void) {
+  isInitialized(): boolean {
+    return true;
+  }
+
+  createTexture(color: number) {
+    const gfx = new Graphics();
+    gfx.beginFill(color);
+    gfx.drawCircle(0, 0, PARTICLE_BASE_RADIUS);
+    gfx.endFill();
+    return this.application.renderer.generateTexture(gfx);
+  };
+
+  populateParticlesFromGrid() {
+    const cellSize = dimensionStore.getState().cellSize;
+    gridStore.getState().cells.flat().forEach((gridCell) => {
+      [ResourceType.ENERGY, ResourceType.MATTER, ResourceType.INFORMATION].forEach((rType) => {
+        gridCell.resourceBuckets[rType].resources.forEach((resource) => {
+          for(let i = 0; i < resource.quantity; i++) {
+            const pId = genId(PARTICLE_ID);
+            this.byId[pId] = {
+              id: pId,
+              resource: resource,
+              position: {
+                x: gridCell.position.x * cellSize + (Math.random() * cellSize),
+                y: gridCell.position.y * cellSize + (Math.random() * cellSize),
+              },
+              targetX: 0,
+              targetY: 0,
+              vx: 0,
+              vy: 0,
+              scale: 1,
+              transitioning: false,
+              sourceCell: gridCell,
+            };
+          }
+        });
+      });
+    });
+  
+    this.byType = {
+      [ResourceType.ENERGY]: [],
+      [ResourceType.INFORMATION]: [],
+      [ResourceType.MATTER]: [],
+    }
+
+    gridStore.getState().cells.flat().forEach((cell) => {
+      this.byPosition[posToStr(cell.position)] = [];
+    });
+    Object.keys(this.byId).forEach((key) => {
+      this.byType[this.byId[key].resource.type].push(this.byId[key]);
+      this.byPosition[posToStr(this.byId[key].sourceCell!.position)].push(this.byId[key]);
+    });
+  }
+
+  refreshGridMap(particle: Particle) {
+    const sourceCellKey = posToStr(particle.sourceCell?.position!);
+    const destCellKey = posToStr(particle.targetCell?.position!);
+    const index = this.byPosition[sourceCellKey].findIndex((p) => p.id === particle.id);
+    if (index !== -1) {
+        this.byPosition[sourceCellKey].splice(index, 1);
+    }
+    this.byPosition[destCellKey].push(particle);
+  }
+
+  updateTransitioningParticle(deltaTime: number, particle: Particle) {
     const dx = particle.targetX - particle.position.x;
     const dy = particle.targetY - particle.position.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist < 1) {
       particle.transitioning = false;
+      // TODO: Make transfer instant? Need guarantees for PSE execution
       particle.sourceCell = particle.targetCell;
-      refreshGridMap(particle);
+      this.refreshGridMap(particle);
       particle.targetCell = undefined;
     } else {
       particle.position.x += (dx / dist) * PARTICLE_SPEED * PARTICLE_TRAVEL_SPEED * deltaTime;
@@ -43,11 +131,12 @@ export class ParticleSystem {
     }
   }
 
-  updateCenterOfMassMap(particles: Record<string, Particle>) {
-    Object.keys(particles).forEach((key) => {
-      if (!particles[key].sourceCell) return;
-      const particle = particles[key];
-      const curCell = this.centerOfMassMap.get(posToStr(particles[key].sourceCell.position));
+  // TODO: Real inefficient
+  updateCenterOfMassMap() {
+    Object.keys(this.byId).forEach((key) => {
+      if (!this.byId[key].sourceCell) return;
+      const particle = this.byId[key];
+      const curCell = this.centerOfMassMap.get(posToStr(this.byId[key].sourceCell.position));
       const curCOM = curCell?.get(particle.resource.type);
       if (!curCell || !curCOM) return;
       curCell?.set(particle.resource.type, {
@@ -129,41 +218,35 @@ export class ParticleSystem {
 
   transferParticle(
     particleId: string,
-    state: ParticleState,
     fromCell: VGridCell,
     toCell: VGridCell,
-    dimensions: GameDimensions,
   ) {
-    const particle = state.byId[particleId];
+    const particle = this.byId[particleId];
     if (!particle) return;
     
     particle.transitioning = true;
     particle.sourceCell = fromCell;
     particle.targetCell = toCell;
 
-    particle.targetX = dimensions.cellSize * toCell.position.x + Math.random() * dimensions.cellSize;
-    particle.targetY = dimensions.cellSize * toCell.position.y + Math.random() * dimensions.cellSize;
+    const cellSize = dimensionStore.getState().cellSize;
+    particle.targetX = cellSize * toCell.position.x + Math.random() * cellSize;
+    particle.targetY = cellSize * toCell.position.y + Math.random() * cellSize;
   }
 
-  tick(opts: {
-    delta: number,
-    application: Application,
-    particles: ParticleState,
-    dimensions: GameDimensions,
-    refreshGridMap: (particle: Particle) => void,
-  }) {
-    this.updateCenterOfMassMap(opts.particles.byId);
+  tick(delta: number) {
+    this.updateCenterOfMassMap();
+    const cellSize = dimensionStore.getState().cellSize;
 
-    Object.keys(opts.particles.byId).forEach((key) => {
-      const particle = opts.particles.byId[key];
+    Object.keys(this.byId).forEach((key) => {
+      const particle = this.byId[key];
 
       // Simple brownian motion
       particle.vx += (Math.random() - 0.5) * PARTICLE_SPEED;
       particle.vy += (Math.random() - 0.5) * PARTICLE_SPEED;
       if (particle.transitioning) {
-        this.updateTransitioningParticle(opts.delta, particle, opts.refreshGridMap);
+        this.updateTransitioningParticle(delta, particle);
       } else {
-        this.updateFloatingParticle(opts.delta, particle, opts.dimensions.cellSize);
+        this.updateFloatingParticle(delta, particle, cellSize);
       }
       
       // Get or create sprite for this particle
@@ -178,7 +261,7 @@ export class ParticleSystem {
         sprite.scale = { x: particle.scale, y: particle.scale };
         sprite.alpha = particle.resource.quality / 3;
         this.spriteMap.set(particle.id, sprite);
-        opts.application.stage.addChild(sprite);
+        this.application.stage.addChild(sprite);
       }
       
       // Update sprite position

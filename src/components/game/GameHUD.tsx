@@ -1,5 +1,6 @@
 import { MenuButton } from '@/components/ui/MenuButton';
-import { useGameStore } from '@/store/gameStore';
+import { useGridStore, useServiceStore } from '@/store/gameStore';
+import { ParticleSystem } from '@/systems/Particles/ParticleSystem';
 import { GRID_SIZE } from '@/utils/constants';
 import React from 'react';
 
@@ -11,21 +12,21 @@ const TOP_H = 10;
 const BOTTOM_H = 20;
 
 export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
-  const { particles, grid, dimensions } = useGameStore();
+  const grid = useGridStore();
+  const { gameServiceLocator } = useServiceStore();
 
   const transferParticles = () => {
-    for (let key of Object.keys(particles.byId)) {
-      if (!particles.byId[key].transitioning) {
+    const particleSystem = gameServiceLocator.getService(ParticleSystem);
+    for (let key of Object.keys(particleSystem.byId)) {
+      if (!particleSystem.byId[key].transitioning) {
         const toCellPos = {
-          x: particles.byId[key].sourceCell!.position.x + 1 >= GRID_SIZE ? 0 : particles.byId[key].sourceCell!.position.x + 1,
-          y: particles.byId[key].sourceCell!.position.y
+          x: particleSystem.byId[key].sourceCell!.position.x + 1 >= GRID_SIZE ? 0 : particleSystem.byId[key].sourceCell!.position.x + 1,
+          y: particleSystem.byId[key].sourceCell!.position.y
         }
-        particles.system?.transferParticle(
+        particleSystem.transferParticle(
           key,
-          particles,
-          particles.byId[key].sourceCell!,
+          particleSystem.byId[key].sourceCell!,
           grid.cells[toCellPos.y][toCellPos.x],
-          dimensions
         );
       }
     }

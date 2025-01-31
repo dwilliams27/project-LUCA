@@ -1,4 +1,4 @@
-import { GridCell, Operation_Sense, Operation_Transfer, Operation_Transform, Resource } from "@/generated/process";
+import { GridCell, Operation_Sense, Operation_Transfer, Operation_Transform, Position, Resource } from "@/generated/process";
 
 export enum EvolutionaryStage {
   ABIOTIC = 'ABIOTIC',
@@ -20,8 +20,7 @@ export interface Particle {
   id: string;
   resource: VResource;
   // Physical properties
-  x: number;
-  y: number;
+  position: Position;
   targetX: number;
   targetY: number;
   vx: number;
