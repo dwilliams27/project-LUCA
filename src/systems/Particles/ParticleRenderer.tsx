@@ -1,9 +1,10 @@
 import { ResourceType } from "@/generated/process";
 import { useGameStore } from "@/store/gameStore";
 import { ParticleSystem } from "@/systems/Particles/ParticleSystem";
+import { PARTICLE_BASE_RADIUS } from "@/utils/constants";
 import { useApp, Container, useTick } from "@pixi/react";
 import { Graphics } from "pixi.js";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export const ResourceTypeToColor = {
   [ResourceType.ENERGY]: 0x00FFFF,
@@ -11,12 +12,14 @@ export const ResourceTypeToColor = {
   [ResourceType.INFORMATION]: 0xFF00FF,
 }
 
-export const PARTICLE_BASE_RADIUS = 10;
-
-export const ParticleRenderer: React.FC<{ zIndex: number, onResize: number }> = ({ zIndex, onResize }) => {
+export const ParticleRenderer: React.FC<{ zIndex: number, onResize: number }> = ({ zIndex }) => {
   const app = useApp();
-  const { dimensions } = useGameStore();
-  const particleSystemRef = useRef<ParticleSystem>(new ParticleSystem());
+  const {
+    dimensions,
+    particles,
+    registerParticleSystem,
+    refreshGridMap,
+  } = useGameStore();
 
   useEffect(() => {
     const createTexture = (color: number) => {
@@ -27,24 +30,27 @@ export const ParticleRenderer: React.FC<{ zIndex: number, onResize: number }> = 
       return app.renderer.generateTexture(gfx);
     };
 
-    particleSystemRef.current.textureMap.set(ResourceType.ENERGY, createTexture(ResourceTypeToColor[ResourceType.ENERGY]));
-    particleSystemRef.current.textureMap.set(ResourceType.MATTER, createTexture(ResourceTypeToColor[ResourceType.MATTER]));
-    particleSystemRef.current.textureMap.set(ResourceType.INFORMATION, createTexture(ResourceTypeToColor[ResourceType.INFORMATION]));
+    const particleSystem = new ParticleSystem();
+    registerParticleSystem(particleSystem);
+    particleSystem.textureMap.set(ResourceType.ENERGY, createTexture(ResourceTypeToColor[ResourceType.ENERGY]));
+    particleSystem.textureMap.set(ResourceType.MATTER, createTexture(ResourceTypeToColor[ResourceType.MATTER]));
+    particleSystem.textureMap.set(ResourceType.INFORMATION, createTexture(ResourceTypeToColor[ResourceType.INFORMATION]));
     
     return () => {
-      particleSystemRef.current.textureMap.forEach((texture) => {
+      particleSystem.textureMap.forEach((texture) => {
         texture.destroy();
       });
     };
   }, [app]);
 
   useTick((delta) => {
-    if (!particleSystemRef.current.textureMap) return;
-    particleSystemRef.current.tick({
+    if (!particles.system?.textureMap) return;
+    particles.system.tick({
       delta,
       application: app,
       particles: useGameStore.getState().particles,
-      dimensions
+      dimensions,
+      refreshGridMap
     });
   });
 
@@ -52,18 +58,3 @@ export const ParticleRenderer: React.FC<{ zIndex: number, onResize: number }> = 
     <Container zIndex={zIndex} />
   )
 }
-
-// TODO integrate
-// transferParticle(particleId: string, fromCell: VGridCell, toCell: VGridCell) {
-//   const particle = useGameStore.getState().particles.byId[particleId];
-//   if (!particle) return;
-  
-//   particle.transitioning = true;
-//   particle.sourceCell = fromCell;
-//   particle.targetCell = toCell;
-  
-//   const targetBounds = useGameStore.getState().getCellBounds(toCell.position);
-//   const cellSize = targetBounds.right - targetBounds.left;
-//   particle.targetX = targetBounds.left + Math.random() * cellSize;
-//   particle.targetY = targetBounds.top + Math.random() * cellSize;
-// }

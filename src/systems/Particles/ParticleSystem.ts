@@ -1,17 +1,13 @@
 import { Position, ResourceType } from "@/generated/process";
 import { GameDimensions, ParticleState } from "@/store/gameStore";
-import { PARTICLE_BASE_RADIUS } from "@/systems/Particles/ParticleRenderer";
-import { Particle } from "@/types";
-import { GRID_SIZE } from "@/utils/constants";
+import { Particle, VGridCell } from "@/types";
+import { GRID_SIZE, PARTICLE_BASE_RADIUS, PARTICLE_SPEED, PARTICLE_TRAVEL_SPEED } from "@/utils/constants";
+import { posToStr } from "@/utils/id";
 import { Application, Sprite, Texture } from "pixi.js";
 
 interface CenterOfMass {
   position: Position;
   runningMass: number;
-}
-
-function pToKey(position: Position) {
-  return `${position.x},${position.y}`;
 }
 
 export class ParticleSystem {
@@ -31,19 +27,19 @@ export class ParticleSystem {
     }
   }
 
-  updateTransitioningParticle(deltaTime: number, particle: Particle) {
-    const dx = particle.targetX - particle.x;
-    const dy = particle.targetY - particle.y;
+  updateTransitioningParticle(deltaTime: number, particle: Particle, refreshGridMap: (particle: Particle) => void) {
+    const dx = particle.targetX - particle.position.x;
+    const dy = particle.targetY - particle.position.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    
+
     if (dist < 1) {
       particle.transitioning = false;
       particle.sourceCell = particle.targetCell;
+      refreshGridMap(particle);
       particle.targetCell = undefined;
     } else {
-      const speed = 0.1;
-      particle.x += (dx / dist) * speed * deltaTime;
-      particle.y += (dy / dist) * speed * deltaTime;
+      particle.position.x += (dx / dist) * PARTICLE_SPEED * PARTICLE_TRAVEL_SPEED * deltaTime;
+      particle.position.y += (dy / dist) * PARTICLE_SPEED * PARTICLE_TRAVEL_SPEED * deltaTime;
     }
   }
 
@@ -51,13 +47,13 @@ export class ParticleSystem {
     Object.keys(particles).forEach((key) => {
       if (!particles[key].sourceCell) return;
       const particle = particles[key];
-      const curCell = this.centerOfMassMap.get(pToKey(particles[key].sourceCell.position));
+      const curCell = this.centerOfMassMap.get(posToStr(particles[key].sourceCell.position));
       const curCOM = curCell?.get(particle.resource.type);
       if (!curCell || !curCOM) return;
       curCell?.set(particle.resource.type, {
         position: {
-          x: curCOM?.position.x + particle.x * particle.scale,
-          y: curCOM?.position.y + particle.y * particle.scale,
+          x: curCOM?.position.x + particle.position.x * particle.scale,
+          y: curCOM?.position.y + particle.position.y * particle.scale,
         },
         runningMass: curCOM.runningMass + particle.scale
       });
@@ -82,17 +78,13 @@ export class ParticleSystem {
     particle: Particle,
     cellSize: number
   ) {
-    // Simple brownian motion
-    particle.vx += (Math.random() - 0.5) * 0.3;
-    particle.vy += (Math.random() - 0.5) * 0.3;
-    
     // Damping
     particle.vx *= 0.98;
     particle.vy *= 0.98;
     
     // Update position
-    particle.x += particle.vx * deltaTime;
-    particle.y += particle.vy * deltaTime;
+    particle.position.x += particle.vx * deltaTime;
+    particle.position.y += particle.vy * deltaTime;
     
     // Bounce off cell walls
     if (!particle.sourceCell) {
@@ -104,30 +96,30 @@ export class ParticleSystem {
     const cellBottom = cellTop + cellSize;
     
     const particleSize = PARTICLE_BASE_RADIUS * particle.scale * 2;
-    if (particle.x < cellLeft) {
-      particle.x = cellLeft;
+    if (particle.position.x < cellLeft) {
+      particle.position.x = cellLeft;
       particle.vx *= -1;
-    } else if (particle.x > cellRight - particleSize) {
-      particle.x = cellRight - particleSize;
+    } else if (particle.position.x > cellRight - particleSize) {
+      particle.position.x = cellRight - particleSize;
       particle.vx *= -1;
     }
     
-    if (particle.y < cellTop) {
-      particle.y = cellTop;
+    if (particle.position.y < cellTop) {
+      particle.position.y = cellTop;
       particle.vy *= -1;
-    } else if (particle.y > cellBottom - particleSize) {
-      particle.y = cellBottom - particleSize;
+    } else if (particle.position.y > cellBottom - particleSize) {
+      particle.position.y = cellBottom - particleSize;
       particle.vy *= -1;
     }
 
     // Gravitate
-    const com = this.centerOfMassMap.get(pToKey(particle.sourceCell.position))!.get(particle.resource.type)!;
-    let gx = Math.random() * 0.02;
-    if (com.position.x < particle.x) {
+    const com = this.centerOfMassMap.get(posToStr(particle.sourceCell.position))!.get(particle.resource.type)!;
+    let gx = Math.random() * PARTICLE_SPEED;
+    if (com.position.x < particle.position.x) {
       gx *= -1;
     }
-    let gy = Math.random() * 0.02;
-    if (com.position.y < particle.y) {
+    let gy = Math.random() * PARTICLE_SPEED;
+    if (com.position.y < particle.position.y) {
       gy *= -1;
     }
 
@@ -135,19 +127,41 @@ export class ParticleSystem {
     particle.vy += gy;
   }
 
+  transferParticle(
+    particleId: string,
+    state: ParticleState,
+    fromCell: VGridCell,
+    toCell: VGridCell,
+    dimensions: GameDimensions,
+  ) {
+    const particle = state.byId[particleId];
+    if (!particle) return;
+    
+    particle.transitioning = true;
+    particle.sourceCell = fromCell;
+    particle.targetCell = toCell;
+
+    particle.targetX = dimensions.cellSize * toCell.position.x + Math.random() * dimensions.cellSize;
+    particle.targetY = dimensions.cellSize * toCell.position.y + Math.random() * dimensions.cellSize;
+  }
+
   tick(opts: {
     delta: number,
     application: Application,
     particles: ParticleState,
-    dimensions: GameDimensions
+    dimensions: GameDimensions,
+    refreshGridMap: (particle: Particle) => void,
   }) {
     this.updateCenterOfMassMap(opts.particles.byId);
 
     Object.keys(opts.particles.byId).forEach((key) => {
       const particle = opts.particles.byId[key];
 
+      // Simple brownian motion
+      particle.vx += (Math.random() - 0.5) * PARTICLE_SPEED;
+      particle.vy += (Math.random() - 0.5) * PARTICLE_SPEED;
       if (particle.transitioning) {
-        this.updateTransitioningParticle(opts.delta, particle);
+        this.updateTransitioningParticle(opts.delta, particle, opts.refreshGridMap);
       } else {
         this.updateFloatingParticle(opts.delta, particle, opts.dimensions.cellSize);
       }
@@ -168,8 +182,8 @@ export class ParticleSystem {
       }
       
       // Update sprite position
-      sprite.x = particle.x;
-      sprite.y = particle.y;
+      sprite.x = particle.position.x;
+      sprite.y = particle.position.y;
     });
   }
 }

@@ -1,3 +1,6 @@
+import { MenuButton } from '@/components/ui/MenuButton';
+import { useGameStore } from '@/store/gameStore';
+import { GRID_SIZE } from '@/utils/constants';
 import React from 'react';
 
 interface GameHUDProps {
@@ -8,7 +11,25 @@ const TOP_H = 10;
 const BOTTOM_H = 20;
 
 export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
+  const { particles, grid, dimensions } = useGameStore();
 
+  const transferParticles = () => {
+    for (let key of Object.keys(particles.byId)) {
+      if (!particles.byId[key].transitioning) {
+        const toCellPos = {
+          x: particles.byId[key].sourceCell!.position.x + 1 >= GRID_SIZE ? 0 : particles.byId[key].sourceCell!.position.x + 1,
+          y: particles.byId[key].sourceCell!.position.y
+        }
+        particles.system?.transferParticle(
+          key,
+          particles,
+          particles.byId[key].sourceCell!,
+          grid.cells[toCellPos.y][toCellPos.x],
+          dimensions
+        );
+      }
+    }
+  }
   return (
     <div className="fixed inset-0 flex flex-col bg-black text-white overflow-hidden">
       <div className="w-full px-6 py-2 bg-gray-900 border-b border-gray-800" style={{ height: `${TOP_H}%` }}>
@@ -20,15 +41,17 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
       </div>
 
       <div className="flex flex-grow overflow-hidden">
-        <div className="flex-grow bg-gray-900 border-r border-gray-800 p-4">
-          Left stuff
+        <div className="w-1/3 bg-gray-900 border-r border-gray-800 p-4">
+          <MenuButton onClick={transferParticles}>
+            Transfer
+          </MenuButton>
         </div>
 
-        <div className="items-center overflow-hidden justify-center aspect-square p-4">
+        <div className="w-1/3 items-center overflow-hidden justify-center aspect-square p-4">
           {children}
         </div>
 
-        <div className="flex-grow bg-gray-900 border-l border-gray-800 p-4">
+        <div className="w-1/3 flex-grow bg-gray-900 border-l border-gray-800 p-4">
           Right stuff
         </div>
       </div>

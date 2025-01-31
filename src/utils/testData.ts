@@ -14,7 +14,7 @@ export function genGridCells(): VGridCell[][] {
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.ENERGY,
-              quantity: 40,
+              quantity: 5,
               quality: ResourceQuality.LOW
             },
             {
@@ -36,7 +36,7 @@ export function genGridCells(): VGridCell[][] {
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.MATTER,
-              quantity: 30,
+              quantity: 5,
               quality: ResourceQuality.LOW
             },
             {
@@ -58,7 +58,7 @@ export function genGridCells(): VGridCell[][] {
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.INFORMATION,
-              quantity: 30,
+              quantity: 5,
               quality: ResourceQuality.LOW
             },
             {

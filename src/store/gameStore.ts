@@ -1,7 +1,8 @@
 import { Position, ResourceType } from '@/generated/process';
+import { ParticleSystem } from '@/systems/Particles/ParticleSystem';
 import { Particle, VGridCell } from '@/types';
 import { GRID_SIZE, INIT_CANVAS_HEIGHT, INIT_CANVAS_WIDTH, MAX_RESOURCES } from '@/utils/constants';
-import { genId, PARTICLE_ID } from '@/utils/id';
+import { genId, PARTICLE_ID, posToStr } from '@/utils/id';
 import { create } from 'zustand';
 
 export interface GameDimensions {
@@ -21,6 +22,8 @@ export interface CellBounds {
 export interface ParticleState {
   byId: Record<string, Particle>;
   byType: Record<string, Particle[]>;
+  byPosition: Record<string, Particle[]>;
+  system: ParticleSystem | null;
   setup: boolean;
 }
 
@@ -31,12 +34,15 @@ interface GameState {
     selected: VGridCell | null;
   };
   particles: ParticleState;
-  
+
+  registerParticleSystem: (particleSystem: ParticleSystem) => void;
+
   resizeGame: (width: number, height: number) => void;
 
   initGrid: (gridCells: VGridCell[][]) => void;
   populateParticlesFromGrid: () => void;
   setParticlesById: (byId: Record<string, Particle>) => void;
+  refreshGridMap: (particle: Particle) => void;
   getCellBounds: (pos: Position) => CellBounds;
   worldToGrid: (x: number, y: number) => Position;
   gridToWorld: (pos: Position) => { x: number; y: number };
@@ -56,7 +62,24 @@ export const useGameStore = create<GameState>((set, get) => ({
   particles: {
     byId: {},
     byType: {},
+    byPosition: {},
+    system: null,
     setup: false,
+  },
+
+  registerParticleSystem: (particleSystem: ParticleSystem) => set({ particles: { ...get().particles, system: particleSystem } }),
+  refreshGridMap: (particle: Particle) => {
+    const byPosition = get().particles.byPosition;
+    const sourceCellKey = posToStr(particle.sourceCell?.position!);
+    const destCellKey = posToStr(particle.targetCell?.position!);
+    byPosition[sourceCellKey] = byPosition[sourceCellKey].filter((p) => p.id === particle.id);
+    byPosition[destCellKey].push(particle);
+    set(() => ({
+      particles: {
+        ...get().particles,
+        byPosition
+      }
+    }));
   },
 
   resizeGame: (width: number, height: number) => {
@@ -89,8 +112,10 @@ export const useGameStore = create<GameState>((set, get) => ({
             particleIdMap[pId] = {
               id: pId,
               resource: resource,
-              x: gridCell.position.x * cellSize + (Math.random() * cellSize),
-              y: gridCell.position.y * cellSize + (Math.random() * cellSize),
+              position: {
+                x: gridCell.position.x * cellSize + (Math.random() * cellSize),
+                y: gridCell.position.y * cellSize + (Math.random() * cellSize),
+              },
               targetX: 0,
               targetY: 0,
               vx: 0,
@@ -123,13 +148,22 @@ export const useGameStore = create<GameState>((set, get) => ({
       [ResourceType.INFORMATION]: [],
       [ResourceType.MATTER]: [],
     }
+    const byPosition = {};
+    get().grid.cells.flat().forEach((cell) => {
+      byPosition[posToStr(cell.position)] = [];
+    });
     Object.keys(byId).forEach((key) => {
       byType[byId[key].resource.type].push(byId[key]);
     });
+    Object.keys(byId).forEach((key) => {
+      byPosition[posToStr(byId[key].sourceCell!.position)].push(byId[key]);
+    });
     set(() => ({
       particles: {
+        system: get().particles.system,
         byId,
         byType,
+        byPosition,
         setup: true
       }
     }))
