@@ -26,7 +26,6 @@ export const MenuButton: React.FC<MenuButtonProps> = ({ onClick, children }) => 
       ))}
     </div>
     
-    {/* Button text with DNA-like decoration */}
     <div className="relative flex items-center justify-center w-full h-full">
       <span className="text-xl font-semibold tracking-wide">{children}</span>
       <div className="absolute left-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-emerald-300 rounded-full" />
