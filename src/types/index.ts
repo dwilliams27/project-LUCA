@@ -1,4 +1,4 @@
-import { GridCell, Operation_Sense, Operation_Transfer, Operation_Transform, Position, Resource } from "@/generated/process";
+import { GridCell, Operation_Sense, Operation_Transfer, Operation_Transform, Position, Resource, ResourceQuality, ResourceType } from "@/generated/process";
 
 export enum EvolutionaryStage {
   ABIOTIC = 'ABIOTIC',

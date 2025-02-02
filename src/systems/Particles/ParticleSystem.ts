@@ -1,7 +1,7 @@
-import { Position, ResourceType } from "@/generated/process";
+import { Direction, Position, Resource, ResourceQuality, ResourceStack, ResourceType } from "@/generated/process";
 import { dimensionStore, gridStore } from "@/store/gameStore";
 import { GameServiceLocator, LocatableGameService } from "@/systems/ServiceLocator";
-import { Particle, VGridCell } from "@/types";
+import { Particle, VGridCell, VOperationTransfer, VOperationTransform } from "@/types";
 import { GRID_SIZE, PARTICLE_BASE_RADIUS, PARTICLE_SPEED, PARTICLE_TRAVEL_SPEED } from "@/utils/constants";
 import { genId, PARTICLE_ID, posToStr } from "@/utils/id";
 import { Graphics, Sprite, Texture } from "pixi.js";
@@ -104,14 +104,20 @@ export class ParticleSystem extends LocatableGameService {
     });
   }
 
-  refreshGridMap(particle: Particle) {
-    const sourceCellKey = posToStr(particle.sourceCell?.position!);
-    const destCellKey = posToStr(particle.targetCell?.position!);
-    const index = this.byPosition[sourceCellKey].findIndex((p) => p.id === particle.id);
-    if (index !== -1) {
-        this.byPosition[sourceCellKey].splice(index, 1);
+  refreshGridMap(particles: Particle[]) {
+    for(let i = 0; i < particles.length; i++) {
+      if (particles[i].sourceCell) {
+        const sourceCellKey = posToStr(particles[i].sourceCell?.position!);
+        const index = this.byPosition[sourceCellKey].findIndex((p) => p.id === particles[i].id);
+        if (index !== -1) {
+          this.byPosition[sourceCellKey].splice(index, 1);
+        }
+      }
+      if (particles[i].targetCell) {
+        const destCellKey = posToStr(particles[i].targetCell?.position!);
+        this.byPosition[destCellKey].push(particles[i]);
+      }
     }
-    this.byPosition[destCellKey].push(particle);
   }
 
   updateTransitioningParticle(deltaTime: number, particle: Particle) {
@@ -123,7 +129,7 @@ export class ParticleSystem extends LocatableGameService {
       particle.transitioning = false;
       // TODO: Make transfer instant? Need guarantees for PSE execution
       particle.sourceCell = particle.targetCell;
-      this.refreshGridMap(particle);
+      this.refreshGridMap([particle]);
       particle.targetCell = undefined;
     } else {
       particle.position.x += (dx / dist) * PARTICLE_SPEED * PARTICLE_TRAVEL_SPEED * deltaTime;
@@ -216,21 +222,79 @@ export class ParticleSystem extends LocatableGameService {
     particle.vy += gy;
   }
 
-  transferParticle(
-    particleId: string,
+  transferParticles(
+    transfer: VOperationTransfer,
     fromCell: VGridCell,
     toCell: VGridCell,
   ) {
-    const particle = this.byId[particleId];
-    if (!particle) return;
-    
-    particle.transitioning = true;
-    particle.sourceCell = fromCell;
-    particle.targetCell = toCell;
+    const transferedParticles: Particle[] = [];
+    // TODO: Optimize
+    for(let i = 0; i < transfer.resource.quantity; i++) {
+      const particle = this.byPosition[posToStr(fromCell.position)].find(
+        (particle) => (
+          particle.resource.quality === transfer.resource.quality
+          && particle.resource.type === transfer.resource.type
+        )
+      );
+      if (!particle) {
+        console.warn("Insufficient resources in source cell for transfer");
+        return;
+      }
+      
+      particle.transitioning = true;
+      particle.sourceCell = fromCell;
+      particle.targetCell = toCell;
 
-    const cellSize = dimensionStore.getState().cellSize;
-    particle.targetX = cellSize * toCell.position.x + Math.random() * cellSize;
-    particle.targetY = cellSize * toCell.position.y + Math.random() * cellSize;
+      const cellSize = dimensionStore.getState().cellSize;
+      particle.targetX = (transfer.direction === Direction.NORTH || transfer.direction === Direction.SOUTH)
+        ? particle.position.x
+        : cellSize * toCell.position.x + (Math.random() * cellSize * 0.7 + PARTICLE_BASE_RADIUS);
+      particle.targetY = (transfer.direction === Direction.EAST || transfer.direction === Direction.WEST)
+        ? particle.position.y
+        : cellSize * toCell.position.y + (Math.random() * cellSize * 0.7 + PARTICLE_BASE_RADIUS);
+
+      transferedParticles.push(particle);
+    }
+    this.refreshGridMap(transferedParticles);
+  }
+
+  transformParticles(
+    gridCell: VGridCell,
+    transform: VOperationTransform,
+    clampedRate: number
+  ) {
+    const cellParticles = this.byPosition[posToStr(gridCell.position)];
+    // TODO: Optimize
+    for(let i = 0; i < transform.input.quantity * clampedRate; i++) {
+      const particleIndex = cellParticles.findIndex(
+        (particle) => (
+          particle.resource.quality === transform.input.quality
+          && particle.resource.type === transform.input.type
+        )
+      );
+      if (!particleIndex) {
+        console.warn("Insufficient resources in source cell for transform");
+        break;
+      }
+      cellParticles.splice(particleIndex);
+    }
+    for (let i = 0; i < transform.output.quantity * clampedRate; i++) {
+      const cellSize = dimensionStore.getState().cellSize;
+      cellParticles.push({
+        id: genId(PARTICLE_ID),
+        resource: gridCell.resourceBuckets[transform.output.type].resources[transform.output.quality],
+        position: {
+          x: cellSize * gridCell.position.x + Math.random() * cellSize,
+          y: cellSize * gridCell.position.y + Math.random() * cellSize
+        },
+        targetX: 0,
+        targetY: 0,
+        vx: 0,
+        vy: 0,
+        scale: 1,
+        transitioning: false
+      });
+    }
   }
 
   tick(delta: number) {
@@ -259,7 +323,7 @@ export class ParticleSystem extends LocatableGameService {
         sprite = new Sprite(this.textureMap.get(particle.resource.type));
         sprite.name = particle.id;
         sprite.scale = { x: particle.scale, y: particle.scale };
-        sprite.alpha = particle.resource.quality / 3;
+        sprite.alpha = (particle.resource.quality + 1) / 3;
         this.spriteMap.set(particle.id, sprite);
         this.application.stage.addChild(sprite);
       }

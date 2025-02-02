@@ -10,10 +10,9 @@ enum ResourceType {
 }
 
 enum ResourceQuality {
-  RESOURCE_QUALITY_UNSPECIFIED = 0;
-  RESOURCE_QUALITY_LOW = 1;
-  RESOURCE_QUALITY_MEDIUM = 2;
-  RESOURCE_QUALITY_HIGH = 3;
+  RESOURCE_QUALITY_LOW = 0;
+  RESOURCE_QUALITY_MEDIUM = 1;
+  RESOURCE_QUALITY_HIGH = 2;
 }
 
 enum Direction {
@@ -39,6 +38,13 @@ message Resource {
   reserved 5 to 10;
 }
 
+message ResourceStack {
+  ResourceType type = 1;
+  double quantity = 2;
+  ResourceQuality quality = 3;
+  reserved 4 to 10;
+}
+
 message Condition {
   ComparisonOperator operator = 1;
   double value = 2;
@@ -47,14 +53,14 @@ message Condition {
 
 message Operation {
   message Transform {
-    Resource input = 1;
-    Resource output = 2;
+    ResourceStack input = 1;
+    ResourceStack output = 2;
     double rate = 3;
     reserved 4 to 10;
   }
 
   message Transfer {
-    Resource resource = 1;
+    ResourceStack resource = 1;
     Direction direction = 2;
     double amount = 3;
     reserved 4 to 10;

@@ -32,6 +32,23 @@ export interface Resource {
     quality: ResourceQuality;
 }
 /**
+ * @generated from protobuf message luca.ResourceStack
+ */
+export interface ResourceStack {
+    /**
+     * @generated from protobuf field: luca.ResourceType type = 1;
+     */
+    type: ResourceType;
+    /**
+     * @generated from protobuf field: double quantity = 2;
+     */
+    quantity: number;
+    /**
+     * @generated from protobuf field: luca.ResourceQuality quality = 3;
+     */
+    quality: ResourceQuality;
+}
+/**
  * @generated from protobuf message luca.Condition
  */
 export interface Condition {
@@ -92,13 +109,13 @@ export interface Operation {
  */
 export interface Operation_Transform {
     /**
-     * @generated from protobuf field: luca.Resource input = 1;
+     * @generated from protobuf field: luca.ResourceStack input = 1;
      */
-    input?: Resource;
+    input?: ResourceStack;
     /**
-     * @generated from protobuf field: luca.Resource output = 2;
+     * @generated from protobuf field: luca.ResourceStack output = 2;
      */
-    output?: Resource;
+    output?: ResourceStack;
     /**
      * @generated from protobuf field: double rate = 3;
      */
@@ -109,9 +126,9 @@ export interface Operation_Transform {
  */
 export interface Operation_Transfer {
     /**
-     * @generated from protobuf field: luca.Resource resource = 1;
+     * @generated from protobuf field: luca.ResourceStack resource = 1;
      */
-    resource?: Resource;
+    resource?: ResourceStack;
     /**
      * @generated from protobuf field: luca.Direction direction = 2;
      */
@@ -240,21 +257,17 @@ export enum ResourceType {
  */
 export enum ResourceQuality {
     /**
-     * @generated from protobuf enum value: RESOURCE_QUALITY_UNSPECIFIED = 0;
+     * @generated from protobuf enum value: RESOURCE_QUALITY_LOW = 0;
      */
-    UNSPECIFIED = 0,
+    LOW = 0,
     /**
-     * @generated from protobuf enum value: RESOURCE_QUALITY_LOW = 1;
+     * @generated from protobuf enum value: RESOURCE_QUALITY_MEDIUM = 1;
      */
-    LOW = 1,
+    MEDIUM = 1,
     /**
-     * @generated from protobuf enum value: RESOURCE_QUALITY_MEDIUM = 2;
+     * @generated from protobuf enum value: RESOURCE_QUALITY_HIGH = 2;
      */
-    MEDIUM = 2,
-    /**
-     * @generated from protobuf enum value: RESOURCE_QUALITY_HIGH = 3;
-     */
-    HIGH = 3
+    HIGH = 2
 }
 /**
  * @generated from protobuf enum luca.Direction
@@ -373,6 +386,69 @@ class Resource$Type extends MessageType<Resource> {
  * @generated MessageType for protobuf message luca.Resource
  */
 export const Resource = new Resource$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class ResourceStack$Type extends MessageType<ResourceStack> {
+    constructor() {
+        super("luca.ResourceStack", [
+            { no: 1, name: "type", kind: "enum", T: () => ["luca.ResourceType", ResourceType, "RESOURCE_TYPE_"] },
+            { no: 2, name: "quantity", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
+            { no: 3, name: "quality", kind: "enum", T: () => ["luca.ResourceQuality", ResourceQuality, "RESOURCE_QUALITY_"] }
+        ]);
+    }
+    create(value?: PartialMessage<ResourceStack>): ResourceStack {
+        const message = globalThis.Object.create((this.messagePrototype!));
+        message.type = 0;
+        message.quantity = 0;
+        message.quality = 0;
+        if (value !== undefined)
+            reflectionMergePartial<ResourceStack>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: ResourceStack): ResourceStack {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* luca.ResourceType type */ 1:
+                    message.type = reader.int32();
+                    break;
+                case /* double quantity */ 2:
+                    message.quantity = reader.double();
+                    break;
+                case /* luca.ResourceQuality quality */ 3:
+                    message.quality = reader.int32();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: ResourceStack, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* luca.ResourceType type = 1; */
+        if (message.type !== 0)
+            writer.tag(1, WireType.Varint).int32(message.type);
+        /* double quantity = 2; */
+        if (message.quantity !== 0)
+            writer.tag(2, WireType.Bit64).double(message.quantity);
+        /* luca.ResourceQuality quality = 3; */
+        if (message.quality !== 0)
+            writer.tag(3, WireType.Varint).int32(message.quality);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message luca.ResourceStack
+ */
+export const ResourceStack = new ResourceStack$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class Condition$Type extends MessageType<Condition> {
     constructor() {
@@ -528,8 +604,8 @@ export const Operation = new Operation$Type();
 class Operation_Transform$Type extends MessageType<Operation_Transform> {
     constructor() {
         super("luca.Operation.Transform", [
-            { no: 1, name: "input", kind: "message", T: () => Resource },
-            { no: 2, name: "output", kind: "message", T: () => Resource },
+            { no: 1, name: "input", kind: "message", T: () => ResourceStack },
+            { no: 2, name: "output", kind: "message", T: () => ResourceStack },
             { no: 3, name: "rate", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ }
         ]);
     }
@@ -545,11 +621,11 @@ class Operation_Transform$Type extends MessageType<Operation_Transform> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* luca.Resource input */ 1:
-                    message.input = Resource.internalBinaryRead(reader, reader.uint32(), options, message.input);
+                case /* luca.ResourceStack input */ 1:
+                    message.input = ResourceStack.internalBinaryRead(reader, reader.uint32(), options, message.input);
                     break;
-                case /* luca.Resource output */ 2:
-                    message.output = Resource.internalBinaryRead(reader, reader.uint32(), options, message.output);
+                case /* luca.ResourceStack output */ 2:
+                    message.output = ResourceStack.internalBinaryRead(reader, reader.uint32(), options, message.output);
                     break;
                 case /* double rate */ 3:
                     message.rate = reader.double();
@@ -566,12 +642,12 @@ class Operation_Transform$Type extends MessageType<Operation_Transform> {
         return message;
     }
     internalBinaryWrite(message: Operation_Transform, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* luca.Resource input = 1; */
+        /* luca.ResourceStack input = 1; */
         if (message.input)
-            Resource.internalBinaryWrite(message.input, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* luca.Resource output = 2; */
+            ResourceStack.internalBinaryWrite(message.input, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* luca.ResourceStack output = 2; */
         if (message.output)
-            Resource.internalBinaryWrite(message.output, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+            ResourceStack.internalBinaryWrite(message.output, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
         /* double rate = 3; */
         if (message.rate !== 0)
             writer.tag(3, WireType.Bit64).double(message.rate);
@@ -589,7 +665,7 @@ export const Operation_Transform = new Operation_Transform$Type();
 class Operation_Transfer$Type extends MessageType<Operation_Transfer> {
     constructor() {
         super("luca.Operation.Transfer", [
-            { no: 1, name: "resource", kind: "message", T: () => Resource },
+            { no: 1, name: "resource", kind: "message", T: () => ResourceStack },
             { no: 2, name: "direction", kind: "enum", T: () => ["luca.Direction", Direction, "DIRECTION_"] },
             { no: 3, name: "amount", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ }
         ]);
@@ -607,8 +683,8 @@ class Operation_Transfer$Type extends MessageType<Operation_Transfer> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* luca.Resource resource */ 1:
-                    message.resource = Resource.internalBinaryRead(reader, reader.uint32(), options, message.resource);
+                case /* luca.ResourceStack resource */ 1:
+                    message.resource = ResourceStack.internalBinaryRead(reader, reader.uint32(), options, message.resource);
                     break;
                 case /* luca.Direction direction */ 2:
                     message.direction = reader.int32();
@@ -628,9 +704,9 @@ class Operation_Transfer$Type extends MessageType<Operation_Transfer> {
         return message;
     }
     internalBinaryWrite(message: Operation_Transfer, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* luca.Resource resource = 1; */
+        /* luca.ResourceStack resource = 1; */
         if (message.resource)
-            Resource.internalBinaryWrite(message.resource, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+            ResourceStack.internalBinaryWrite(message.resource, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
         /* luca.Direction direction = 2; */
         if (message.direction !== 0)
             writer.tag(2, WireType.Varint).int32(message.direction);

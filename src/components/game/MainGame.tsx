@@ -11,7 +11,6 @@ import { useDimensionStore, useGridStore, useResizeGame } from '@/store/gameStor
 
 export const MainGame: React.FC = () => {
   const { initText } = useTextStore();
-  const { initGrid } = useGridStore();
   const dimensions = useDimensionStore();
   const resizeGame = useResizeGame();
   const gameContainerRef = useRef<HTMLDivElement>(null);
@@ -35,7 +34,6 @@ export const MainGame: React.FC = () => {
 
   useEffect(() => {
     initText();
-    initGrid(genGridCells());
   }, []);
 
   return (

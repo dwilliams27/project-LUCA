@@ -25,7 +25,7 @@ export abstract class LocatableGameService extends LocatableService {
   }
 
   abstract isInitialized(): boolean;
-  abstract tick(delta: number): void;
+  tick(delta: number) {};
 }
 
 export class ServiceLocator {

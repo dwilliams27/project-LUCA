@@ -1,5 +1,6 @@
 import { ComparisonOperator, Direction, Operation, Process, ResourceQuality, ResourceType } from "@/generated/process";
-import { LocatableService } from "@/systems/ServiceLocator";
+import { ParticleSystem } from "@/systems/Particles/ParticleSystem";
+import { GameServiceLocator, LocatableGameService } from "@/systems/ServiceLocator";
 import { VGridCell, VOperationSense, VOperationTransfer, VOperationTransform } from "@/types";
 
 export interface ExecutionContext {
@@ -11,15 +12,22 @@ export interface ExecutionContext {
 
 export const PROCESS_HANDLER_SERVICE = "PROCESS_HANDLER_SERVICE";
 
-export class ProcessHandler extends LocatableService {
+export class ProcessSynthesisEngine extends LocatableGameService {
+  static name = PROCESS_HANDLER_SERVICE;
+
   private grid: VGridCell[][];
   private sortedCells: VGridCell[];
+  private particleSystem: ParticleSystem;
 
-  constructor(grid: VGridCell[][]) {
-    super(PROCESS_HANDLER_SERVICE);
+  constructor(gameServiceLocator: GameServiceLocator, grid: VGridCell[][]) {
+    super(PROCESS_HANDLER_SERVICE, gameServiceLocator);
     this.grid = grid;
     this.sortedCells = grid.flat();
     this.sortCells();
+
+    console.log('Grid', this.grid);
+
+    this.particleSystem = gameServiceLocator.getService(ParticleSystem);
   }
 
   isInitialized(): boolean {
@@ -74,24 +82,29 @@ export class ProcessHandler extends LocatableService {
 
   runTransform(transform: VOperationTransform, gridCell: VGridCell): boolean {
     console.log(`Running transform operation at ${gridCell.position.x}, ${gridCell.position.y}`);
-    const fromResource = gridCell.resourceBuckets[transform.input.type][transform.input.quality];
-    const toResource = gridCell.resourceBuckets[transform.output.type][transform.output.quality];
+    const fromResource = gridCell.resourceBuckets[transform.input.type].resources[transform.input.quality];
+    const toResource = gridCell.resourceBuckets[transform.output.type].resources[transform.output.quality];
 
     if (fromResource.quantity < transform.input.quantity) {
+      console.warn(`Unable to run transform, insufficient ${transform.input.quality} ${transform.input.type}`);
       return false;
     }
 
     // Clamp based on rate
     const clampedRate = Math.min(fromResource.quantity / transform.input.quantity, transform.rate);
 
-    gridCell.resourceBuckets[transform.input.type][transform.input.quality] = {
+    gridCell.resourceBuckets[transform.input.type].resources[transform.input.quality] = {
       ...fromResource,
       quantity: fromResource.quantity - (transform.input.quantity * clampedRate),
     };
-    gridCell.resourceBuckets[transform.output.type][transform.output.quality] = {
+    gridCell.resourceBuckets[transform.output.type].resources[transform.output.quality] = {
       ...toResource,
       quantity: toResource.quantity + (transform.output.quantity * clampedRate),
     };
+
+    // Update systems
+    this.particleSystem.transformParticles(gridCell, transform, clampedRate);
+
     return true;
   }
 
@@ -99,23 +112,32 @@ export class ProcessHandler extends LocatableService {
     console.log(`Running transfer operation at ${gridCell.position.x}, ${gridCell.position.y}`);
     const toCell = this.getRelativeGridCell(gridCell, transfer.direction);
     if (!toCell) {
-      return false;
-    }
-    
-    const fromCellResource = gridCell.resourceBuckets[transfer.resource.type][transfer.resource.quality];
-    if (fromCellResource.quantity < transfer.amount) {
+      console.warn(`Unable to run transfer, no destination found`);
       return false;
     }
 
-    const toCellResource = toCell.resourceBuckets[transfer.resource.type][transfer.resource.quality];
-    gridCell.resourceBuckets[transfer.resource.type][transfer.resource.quality] = {
+    const fromCellResource = gridCell.resourceBuckets[transfer.resource.type].resources[transfer.resource.quality];
+    if (fromCellResource.quantity < transfer.amount) {
+      console.warn(`Unable to run transfer, insufficient ${transfer.resource.quality} ${transfer.resource.type}`);
+      return false;
+    }
+
+    const toCellResource = toCell.resourceBuckets[transfer.resource.type].resources[transfer.resource.quality];
+    gridCell.resourceBuckets[transfer.resource.type].resources[transfer.resource.quality] = {
       ...fromCellResource,
       quantity: fromCellResource.quantity - transfer.amount,
     };
-    toCell.resourceBuckets[transfer.resource.type][transfer.resource.quality] ={
+    toCell.resourceBuckets[transfer.resource.type].resources[transfer.resource.quality] ={
       ...toCellResource,
       quantity: toCellResource.quantity + transfer.amount,
     };
+
+    // Update systems
+    this.particleSystem.transferParticles(
+      transfer,
+      gridCell,
+      toCell
+    );
 
     return true;
   }
@@ -126,7 +148,7 @@ export class ProcessHandler extends LocatableService {
     if (!fromCell) {
       return false;
     }
-    const sensedResource = fromCell.resourceBuckets[sense.forType][sense.forQuality];
+    const sensedResource = fromCell.resourceBuckets[sense.forType].resources[sense.forQuality];
     switch (sense.condition.operator) {
       case ComparisonOperator.EQUAL:
         return sense.condition.value === sensedResource.quantity;
@@ -173,12 +195,12 @@ export class ProcessHandler extends LocatableService {
 
   sortCells() {
     this.sortedCells.sort((a, b) => {
-      const aInformation = a.resourceBuckets[ResourceType.INFORMATION][ResourceQuality.LOW]
-        + a.resourceBuckets[ResourceType.INFORMATION][ResourceQuality.MEDIUM]
-        + a.resourceBuckets[ResourceType.INFORMATION][ResourceQuality.HIGH];
-      const bInformation = b.resourceBuckets[ResourceType.INFORMATION][ResourceQuality.LOW]
-        + b.resourceBuckets[ResourceType.INFORMATION][ResourceQuality.MEDIUM]
-        + b.resourceBuckets[ResourceType.INFORMATION][ResourceQuality.HIGH];
+      const aInformation = a.resourceBuckets[ResourceType.INFORMATION].resources[ResourceQuality.LOW]?.quantity
+        + a.resourceBuckets[ResourceType.INFORMATION].resources[ResourceQuality.MEDIUM]?.quantity
+        + a.resourceBuckets[ResourceType.INFORMATION].resources[ResourceQuality.HIGH]?.quantity;
+      const bInformation = b.resourceBuckets[ResourceType.INFORMATION].resources[ResourceQuality.LOW]?.quantity
+        + b.resourceBuckets[ResourceType.INFORMATION].resources[ResourceQuality.MEDIUM]?.quantity
+        + b.resourceBuckets[ResourceType.INFORMATION].resources[ResourceQuality.HIGH]?.quantity;
       if (aInformation > bInformation) {
         return -1;
       } else if (aInformation < bInformation) {

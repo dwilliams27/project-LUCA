@@ -2,6 +2,7 @@ import { Position } from '@/generated/process';
 import { GameServiceLocator } from '@/systems/ServiceLocator';
 import { VGridCell } from '@/types';
 import { GRID_SIZE, INIT_CANVAS_HEIGHT, INIT_CANVAS_WIDTH } from '@/utils/constants';
+import { genGridCells } from '@/utils/testData';
 import { create } from 'zustand';
 
 export interface DimensionState {
@@ -14,7 +15,6 @@ export interface DimensionState {
 export interface GridState {
   cells: VGridCell[][];
 
-  initGrid: (gridCells: VGridCell[][]) => void;
   getCellBounds: (pos: Position) => CellBounds;
   worldToGrid: (x: number, y: number) => Position;
   gridToWorld: (pos: Position) => { x: number; y: number };
@@ -50,9 +50,7 @@ const gameStore = create<GameState>((set, get) => ({
     cellSize: Math.min(INIT_CANVAS_WIDTH, INIT_CANVAS_HEIGHT) / GRID_SIZE
   },
   grid: {
-    cells: [],
-
-    initGrid: (cells: VGridCell[][]) => { set(() => ({ grid: { ...get().grid, cells } })) },
+    cells: genGridCells(),
 
     getCellBounds: (pos: Position): CellBounds => {
       const cellSize = get().dimensions.cellSize;

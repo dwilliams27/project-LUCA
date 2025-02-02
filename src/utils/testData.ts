@@ -1,7 +1,63 @@
-import { ResourceQuality, ResourceType } from "@/generated/process";
+import { Direction, Process, ResourceQuality, ResourceType } from "@/generated/process";
 import { VGridCell } from "@/types";
 import { GRID_SIZE } from "@/utils/constants";
-import { genId, GRID_CELL_ID, RESOURCE_ID } from "@/utils/id";
+import { genId, GRID_CELL_ID, PROCESS_ID, RESOURCE_ID } from "@/utils/id";
+
+function generateProcesses(x: number, y: number): Process[] {
+  if (x === 0 && y === 0) {
+    return [
+      {
+        id: genId(PROCESS_ID),
+        name: "Testing",
+        energyCost: 0,
+        conditions: [],
+        operations: [{
+          operationType: {
+            oneofKind: "transfer",
+            transfer: {
+              direction: Direction.EAST,
+              amount: 1,
+              resource: {
+                type: ResourceType.ENERGY,
+                quantity: 1,
+                quality: ResourceQuality.LOW,
+              }
+            }
+          },
+          input: 0,
+          energyCost: 0
+        }]
+      }
+    ]
+  }
+  if (x === 1 && y === 0) {
+    return [
+      {
+        id: genId(PROCESS_ID),
+        name: "Testing",
+        energyCost: 0,
+        conditions: [],
+        operations: [{
+          operationType: {
+            oneofKind: "transfer",
+            transfer: {
+              direction: Direction.WEST,
+              amount: 1,
+              resource: {
+                type: ResourceType.ENERGY,
+                quantity: 1,
+                quality: ResourceQuality.LOW,
+              }
+            }
+          },
+          input: 0,
+          energyCost: 0
+        }]
+      }
+    ]
+  }
+  return [];
+}
 
 export function genGridCells(): VGridCell[][] {
   return Array(GRID_SIZE).fill(null).map((_, y) => 
@@ -14,7 +70,7 @@ export function genGridCells(): VGridCell[][] {
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.ENERGY,
-              quantity: 5,
+              quantity: 1,
               quality: ResourceQuality.LOW
             },
             {
@@ -36,7 +92,7 @@ export function genGridCells(): VGridCell[][] {
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.MATTER,
-              quantity: 5,
+              quantity: 1,
               quality: ResourceQuality.LOW
             },
             {
@@ -58,7 +114,7 @@ export function genGridCells(): VGridCell[][] {
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.INFORMATION,
-              quantity: 5,
+              quantity: 1,
               quality: ResourceQuality.LOW
             },
             {
@@ -76,7 +132,7 @@ export function genGridCells(): VGridCell[][] {
           ]
         },
       },
-      processes: [],
+      processes: generateProcesses(x, y),
     }))
   );
 }

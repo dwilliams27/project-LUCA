@@ -1,7 +1,6 @@
 import { MenuButton } from '@/components/ui/MenuButton';
 import { useGridStore, useServiceStore } from '@/store/gameStore';
-import { ParticleSystem } from '@/systems/Particles/ParticleSystem';
-import { GRID_SIZE } from '@/utils/constants';
+import { ProcessSynthesisEngine } from '@/systems/PSE/ProcessSynthesisEngine';
 import React from 'react';
 
 interface GameHUDProps {
@@ -15,22 +14,11 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
   const grid = useGridStore();
   const { gameServiceLocator } = useServiceStore();
 
-  const transferParticles = () => {
-    const particleSystem = gameServiceLocator.getService(ParticleSystem);
-    for (let key of Object.keys(particleSystem.byId)) {
-      if (!particleSystem.byId[key].transitioning) {
-        const toCellPos = {
-          x: particleSystem.byId[key].sourceCell!.position.x + 1 >= GRID_SIZE ? 0 : particleSystem.byId[key].sourceCell!.position.x + 1,
-          y: particleSystem.byId[key].sourceCell!.position.y
-        }
-        particleSystem.transferParticle(
-          key,
-          particleSystem.byId[key].sourceCell!,
-          grid.cells[toCellPos.y][toCellPos.x],
-        );
-      }
-    }
+  const step = () => {
+    const pse = gameServiceLocator.getService(ProcessSynthesisEngine);
+    pse.executeStep();
   }
+
   return (
     <div className="fixed inset-0 flex flex-col bg-black text-white overflow-hidden">
       <div className="w-full px-6 py-2 bg-gray-900 border-b border-gray-800" style={{ height: `${TOP_H}%` }}>
@@ -43,8 +31,8 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
 
       <div className="flex flex-grow overflow-hidden">
         <div className="w-1/3 bg-gray-900 border-r border-gray-800 p-4">
-          <MenuButton onClick={transferParticles}>
-            Transfer
+          <MenuButton onClick={step}>
+            Step
           </MenuButton>
         </div>
 
