@@ -4,14 +4,30 @@ import { GRID_SIZE } from "@/utils/constants";
 import { genId, GRID_CELL_ID, PROCESS_ID, RESOURCE_ID } from "@/utils/id";
 
 function generateProcesses(x: number, y: number): Process[] {
-  if (x === 0 && y === 0) {
-    return [
-      {
-        id: genId(PROCESS_ID),
-        name: "Testing",
-        energyCost: 0,
-        conditions: [],
-        operations: [{
+  return y === 0 ? [
+    {
+      id: genId(PROCESS_ID),
+      name: "Testing",
+      energyCost: 0,
+      conditions: [],
+      operations: [
+        {
+          operationType: {
+            oneofKind: "transfer",
+            transfer: {
+              direction: Direction.WEST,
+              amount: 1,
+              resource: {
+                type: ResourceType.MATTER,
+                quantity: 1,
+                quality: ResourceQuality.LOW,
+              }
+            }
+          },
+          input: 0,
+          energyCost: 0
+        },
+        {
           operationType: {
             oneofKind: "transfer",
             transfer: {
@@ -26,37 +42,10 @@ function generateProcesses(x: number, y: number): Process[] {
           },
           input: 0,
           energyCost: 0
-        }]
-      }
-    ]
-  }
-  if (x === 1 && y === 0) {
-    return [
-      {
-        id: genId(PROCESS_ID),
-        name: "Testing",
-        energyCost: 0,
-        conditions: [],
-        operations: [{
-          operationType: {
-            oneofKind: "transfer",
-            transfer: {
-              direction: Direction.WEST,
-              amount: 1,
-              resource: {
-                type: ResourceType.ENERGY,
-                quantity: 1,
-                quality: ResourceQuality.LOW,
-              }
-            }
-          },
-          input: 0,
-          energyCost: 0
-        }]
-      }
-    ]
-  }
-  return [];
+        },
+      ]
+    }
+  ] : [];
 }
 
 export function genGridCells(): VGridCell[][] {
@@ -114,7 +103,7 @@ export function genGridCells(): VGridCell[][] {
             {
               id: genId(RESOURCE_ID),
               type: ResourceType.INFORMATION,
-              quantity: 1,
+              quantity: 0,
               quality: ResourceQuality.LOW
             },
             {

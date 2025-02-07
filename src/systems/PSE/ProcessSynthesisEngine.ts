@@ -81,7 +81,7 @@ export class ProcessSynthesisEngine extends LocatableGameService {
   }
 
   runTransform(transform: VOperationTransform, gridCell: VGridCell): boolean {
-    console.log(`Running transform operation at ${gridCell.position.x}, ${gridCell.position.y}`);
+    // console.log(`Running transform operation at ${gridCell.position.x}, ${gridCell.position.y}`);
     const fromResource = gridCell.resourceBuckets[transform.input.type].resources[transform.input.quality];
     const toResource = gridCell.resourceBuckets[transform.output.type].resources[transform.output.quality];
 
@@ -143,7 +143,7 @@ export class ProcessSynthesisEngine extends LocatableGameService {
   }
 
   runSense(sense: VOperationSense, gridCell: VGridCell): boolean {
-    console.log(`Running sense operation at ${gridCell.position.x}, ${gridCell.position.y}`);
+    // console.log(`Running sense operation at ${gridCell.position.x}, ${gridCell.position.y}`);
     const fromCell = this.getRelativeGridCell(gridCell, sense.direction);
     if (!fromCell) {
       return false;
@@ -169,7 +169,7 @@ export class ProcessSynthesisEngine extends LocatableGameService {
         break;
       }
       case Direction.SOUTH: {
-        if (this.grid.length < cell.position.y + 1) {
+        if (cell.position.y + 1 < this.grid.length) { // Fixed condition
           return this.grid[cell.position.y + 1][cell.position.x];
         }
         break;
