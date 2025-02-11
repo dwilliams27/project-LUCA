@@ -1,6 +1,5 @@
-import { Position } from '@/generated/process';
-import { GameServiceLocator } from '@/systems/ServiceLocator';
-import { VGridCell } from '@/types';
+import { GameServiceLocator } from '@/services/ServiceLocator';
+import { GridCell, Position } from '@/types';
 import { GRID_SIZE, INIT_CANVAS_HEIGHT, INIT_CANVAS_WIDTH } from '@/utils/constants';
 import { genGridCells } from '@/utils/testData';
 import { create } from 'zustand';
@@ -13,7 +12,7 @@ export interface DimensionState {
 }
 
 export interface GridState {
-  cells: VGridCell[][];
+  cells: GridCell[][];
 
   getCellBounds: (pos: Position) => CellBounds;
   worldToGrid: (x: number, y: number) => Position;
@@ -33,7 +32,7 @@ export interface CellBounds {
   bottom: number;
 }
 
-interface GameState {
+export interface GameState {
   dimensions: DimensionState;
   grid: GridState;
   particles: ParticleState;

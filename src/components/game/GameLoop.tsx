@@ -1,6 +1,6 @@
 import { useGridStore, useServiceStore } from "@/store/gameStore";
-import { ParticleSystem } from "@/systems/Particles/ParticleSystem";
-import { ProcessSynthesisEngine } from "@/systems/PSE/ProcessSynthesisEngine";
+import { ParticleSystem } from "@/services/Particles/ParticleSystem";
+import { ProcessSynthesisEngine } from "@/services/PSE/ProcessSynthesisEngine";
 import { useApp, useTick } from "@pixi/react";
 import { useEffect } from "react";
 

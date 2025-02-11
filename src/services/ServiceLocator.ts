@@ -1,30 +1,31 @@
 import { Application } from "pixi.js";
 
 export abstract class LocatableService {
-  name: string;
   serviceLocator: ServiceLocator;
 
-  constructor(name: string, serviceLocator: ServiceLocator) {
-    this.name = name;
+  constructor(serviceLocator: ServiceLocator, public readonly name: string = (this.constructor as any).name) {
+    if (!name) {
+      throw new Error('Unable to initialize service; static name property must be defined for all services');
+    }
     this.serviceLocator = serviceLocator;
-    console.log(`Created LocatableService: ${name}`);
+    console.log(`Created LocatableService: ${this.name}`);
   }
 }
 
 export abstract class LocatableGameService extends LocatableService {
   application: Application;
 
-  constructor(name: string, serviceLocator: GameServiceLocator) {
-    super(name, serviceLocator);
+  constructor(serviceLocator: GameServiceLocator) {
+    super(serviceLocator);
     const app = serviceLocator.getApplication()
     if (!app) {
       throw new Error('Must initialize application before adding services!');
     }
     this.application = app;
-    console.log(`Created LocatableGameService: ${name}`);
+    console.log(`Created LocatableGameService: ${this.name}`);
   }
 
-  abstract isInitialized(): boolean;
+  isInitialized() { return true; };
   tick(delta: number) {};
 }
 

@@ -1,9 +1,9 @@
-import { LocatableService, ServiceLocator } from "@/systems/ServiceLocator";
+import { LocatableService, ServiceLocator } from "@/services/ServiceLocator";
 import Anthropic from '@anthropic-ai/sdk';
 
-export const LLM_SERVICE = "LLMService";
-
 export class LLMService extends LocatableService {
+  static name = "LLMService";
+
   private anthropic: Anthropic;
   private costMetrics = {
     totalInputTokens: 0,
@@ -12,14 +12,10 @@ export class LLMService extends LocatableService {
   };
 
   constructor(serviceLocator: ServiceLocator, apiKey: string) {
-    super(LLM_SERVICE, serviceLocator);
+    super(serviceLocator);
     this.anthropic = new Anthropic({
       apiKey
     });
-  }
-
-  isInitialized(): boolean {
-    return true;
   }
 
   async generateText(prompt: string) {

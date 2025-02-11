@@ -1,7 +1,5 @@
-import { PromptCatalog } from '@/ai/PromptCatalog';
-import { GEN_PROCESS } from '@/ai/prompts/generators';
 import { MenuButton } from '@/components/ui/MenuButton';
-import '@/systems/PSE/TestRendererDeepseek';
+import '@/services/PSE/TestRendererDeepseek';
 import React, { useEffect, useState } from 'react';
 
 export interface MainMenuProps {

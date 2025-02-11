@@ -1,7 +1,6 @@
-import { Direction, Position, Resource, ResourceQuality, ResourceStack, ResourceType } from "@/generated/process";
 import { dimensionStore, gridStore } from "@/store/gameStore";
-import { GameServiceLocator, LocatableGameService } from "@/systems/ServiceLocator";
-import { Particle, VGridCell, VOperationTransfer, VOperationTransform } from "@/types";
+import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
+import { Direction, GridCell, Particle, Position, ResourceType, TransferOperation, TransformOperation } from "@/types";
 import { GRID_SIZE, PARTICLE_BASE_RADIUS, PARTICLE_SPEED, PARTICLE_TRAVEL_SPEED } from "@/utils/constants";
 import { genId, PARTICLE_ID, posToStr } from "@/utils/id";
 import { Graphics, Sprite, Texture } from "pixi.js";
@@ -17,10 +16,8 @@ export const ResourceTypeToColor = {
   [ResourceType.INFORMATION]: 0xFF00FF,
 }
 
-export const PARTICLE_SYSTEM_SERVICE = 'PARTICLE_SYSTEM_SERVICE';
-
 export class ParticleSystem extends LocatableGameService {
-  static name = PARTICLE_SYSTEM_SERVICE;
+  static name = "PARTICLE_SYSTEM_SERVICE";
 
   textureMap: Map<ResourceType, Texture> = new Map();
   spriteMap: Map<string, Sprite> = new Map();
@@ -31,7 +28,7 @@ export class ParticleSystem extends LocatableGameService {
   byPosition: Record<string, Particle[]> = {};
 
   constructor(serviceLocator: GameServiceLocator) {
-    super(PARTICLE_SYSTEM_SERVICE, serviceLocator);
+    super(serviceLocator);
 
     for(let x = 0; x < GRID_SIZE; x++) {
       for(let y = 0; y < GRID_SIZE; y++) {
@@ -50,10 +47,6 @@ export class ParticleSystem extends LocatableGameService {
     this.populateParticlesFromGrid();
   }
 
-  isInitialized(): boolean {
-    return true;
-  }
-
   createTexture(color: number) {
     const gfx = new Graphics();
     gfx.beginFill(color);
@@ -66,7 +59,7 @@ export class ParticleSystem extends LocatableGameService {
     const cellSize = dimensionStore.getState().cellSize;
     gridStore.getState().cells.flat().forEach((gridCell) => {
       [ResourceType.ENERGY, ResourceType.MATTER, ResourceType.INFORMATION].forEach((rType) => {
-        gridCell.resourceBuckets[rType].resources.forEach((resource) => {
+        gridCell.resourceBuckets[rType].forEach((resource) => {
           for(let i = 0; i < resource.quantity; i++) {
             const pId = genId(PARTICLE_ID);
             this.byId[pId] = {
@@ -76,8 +69,7 @@ export class ParticleSystem extends LocatableGameService {
                 x: gridCell.position.x * cellSize + (Math.random() * cellSize),
                 y: gridCell.position.y * cellSize + (Math.random() * cellSize),
               },
-              targetX: 0,
-              targetY: 0,
+              target: { x: 0, y: 0 },
               vx: 0,
               vy: 0,
               scale: 1,
@@ -121,8 +113,8 @@ export class ParticleSystem extends LocatableGameService {
   }
 
   updateTransitioningParticle(deltaTime: number, particle: Particle) {
-    const dx = particle.targetX - particle.position.x;
-    const dy = particle.targetY - particle.position.y;
+    const dx = particle.target.x - particle.position.x;
+    const dy = particle.target.y - particle.position.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist < 1) {
@@ -223,9 +215,9 @@ export class ParticleSystem extends LocatableGameService {
   }
 
   transferParticles(
-    transfer: VOperationTransfer,
-    fromCell: VGridCell,
-    toCell: VGridCell,
+    transfer: TransferOperation,
+    fromCell: GridCell,
+    toCell: GridCell,
   ) {
     const transferedParticles: Particle[] = [];
     // TODO: Optimize
@@ -246,10 +238,10 @@ export class ParticleSystem extends LocatableGameService {
       particle.targetCell = toCell;
 
       const cellSize = dimensionStore.getState().cellSize;
-      particle.targetX = (transfer.direction === Direction.NORTH || transfer.direction === Direction.SOUTH)
+      particle.target.x = (transfer.direction === Direction.NORTH || transfer.direction === Direction.SOUTH)
         ? particle.position.x
         : cellSize * toCell.position.x + (Math.random() * cellSize * 0.7 + PARTICLE_BASE_RADIUS);
-      particle.targetY = (transfer.direction === Direction.EAST || transfer.direction === Direction.WEST)
+      particle.target.y = (transfer.direction === Direction.EAST || transfer.direction === Direction.WEST)
         ? particle.position.y
         : cellSize * toCell.position.y + (Math.random() * cellSize * 0.7 + PARTICLE_BASE_RADIUS);
 
@@ -259,8 +251,8 @@ export class ParticleSystem extends LocatableGameService {
   }
 
   transformParticles(
-    gridCell: VGridCell,
-    transform: VOperationTransform,
+    gridCell: GridCell,
+    transform: TransformOperation,
     clampedRate: number
   ) {
     const cellParticles = this.byPosition[posToStr(gridCell.position)];
@@ -282,13 +274,12 @@ export class ParticleSystem extends LocatableGameService {
       const cellSize = dimensionStore.getState().cellSize;
       cellParticles.push({
         id: genId(PARTICLE_ID),
-        resource: gridCell.resourceBuckets[transform.output.type].resources[transform.output.quality],
+        resource: gridCell.resourceBuckets[transform.output.type][transform.output.quality],
         position: {
           x: cellSize * gridCell.position.x + Math.random() * cellSize,
           y: cellSize * gridCell.position.y + Math.random() * cellSize
         },
-        targetX: 0,
-        targetY: 0,
+        target: { x: 0, y: 0 },
         vx: 0,
         vy: 0,
         scale: 1,

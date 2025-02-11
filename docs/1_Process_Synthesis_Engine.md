@@ -1,4 +1,5 @@
 # Process Synthesis Engine (PSE)
+Deprecated; Moving to more agentic approach, less complex process chain generation.
 
 ## Motivation
 At the core of this game needs to be an absolutely rock-solid, rigorous, verifiable system of interaction. This ALSO needs to be able to be "plugged into" AI systems that can guide the generation of interesting processes within this system, and the holy grail is to have interesting "emergent" higher-level processes generated each run.

@@ -1,5 +1,3 @@
-import { GridCell, Operation_Sense, Operation_Transfer, Operation_Transform, Position, Resource, ResourceQuality, ResourceType } from "@/generated/process";
-
 export enum EvolutionaryStage {
   ABIOTIC = 'ABIOTIC',
   PROTOCELL = 'PROTOCELL',
@@ -18,24 +16,97 @@ export const EvolutionaryStageDescriptions = {
 
 export interface Particle {
   id: string;
-  resource: VResource;
-  // Physical properties
+  resource: Resource;
   position: Position;
-  targetX: number;
-  targetY: number;
+  target: Position;
   vx: number;
   vy: number;
   scale: number;
-  // For smooth transitions between cells
   transitioning: boolean;
-  sourceCell?: VGridCell;
-  targetCell?: VGridCell;
+  sourceCell?: GridCell;
+  targetCell?: GridCell;
 };
 
+export interface Position {
+  x: number;
+  y: number;
+}
 
-// Validated generated types
-export type VGridCell = Required<GridCell>;
-export type VResource = Required<Resource>;
-export type VOperationTransform = Required<Operation_Transform>;
-export type VOperationTransfer = Required<Operation_Transfer>;
-export type VOperationSense = Required<Operation_Sense>;
+export interface Operation {
+  type: string;
+}
+
+export interface TransferOperation extends Operation {
+  type: "TRANSFER";
+  resource: ResourceStack;
+  direction: Direction;
+  amount: number;
+}
+
+export interface TransformOperation extends Operation {
+  type: "TRANSFORM";
+  input: ResourceStack;
+  output: ResourceStack;
+  rate: number;
+}
+
+export interface GridCell {
+  id: string;
+  position: Position;
+  resourceBuckets: {
+    [key in ResourceType]: Resource[];
+  };
+  processes: BasicProcess[];
+}
+
+export enum ComparisonOperator {
+  EQUAL = 1,
+  GREATER_THAN = 2,
+  LESS_THAN = 3
+}
+
+export interface Condition {
+  operator: ComparisonOperator;
+  value: number;
+}
+
+export interface BasicProcess {
+  id: string;
+  name: string;
+  energyCost: number;
+  conditions: Condition[];
+  operations: Operation[];
+}
+
+export enum ResourceType {
+  ENERGY = 1,
+  MATTER = 2,
+  INFORMATION = 3
+}
+
+export enum ResourceQuality {
+  LOW = 0,
+  MEDIUM = 1,
+  HIGH = 2
+}
+
+export enum Direction {
+  NONE = 0,
+  NORTH = 1,
+  EAST = 2,
+  SOUTH = 3,
+  WEST = 4
+}
+
+export interface Resource {
+  id: string;
+  type: ResourceType;
+  quantity: number;
+  quality: ResourceQuality;
+}
+
+export interface ResourceStack {
+  type: ResourceType;
+  quantity: number;
+  quality: ResourceQuality;
+}

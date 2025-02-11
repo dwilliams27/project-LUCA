@@ -1,6 +1,6 @@
 import { MenuButton } from '@/components/ui/MenuButton';
 import { useGridStore, useServiceStore } from '@/store/gameStore';
-import { ProcessSynthesisEngine } from '@/systems/PSE/ProcessSynthesisEngine';
+import { ProcessSynthesisEngine } from '@/services/PSE/ProcessSynthesisEngine';
 import React from 'react';
 
 interface GameHUDProps {
