@@ -1,7 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { LLMService } from '@/services/ai/LlmService'
+import { LLMService } from '@/services/LlmService'
 import { ServiceLocator } from '@/services/ServiceLocator'
 
 const nativeServiceLocator = new ServiceLocator();

@@ -1,3 +1,4 @@
+import { CellAgentPrompt } from "@/ai/prompts/CellAgentPrompt";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
 import { Tool } from "@/services/tools/ToolService";
 import { GameState } from "@/store/gameStore";
@@ -14,7 +15,7 @@ export interface Prompt {
 export interface ContextAdapter {
   name: string;
   requiredContext: string[];
-  getContext: (gameState: GameState, miscContext: Record<string, any>) => string;
+  getText: (gameState: GameState, context: Record<string, any>) => string;
 }
 
 export class PromptService extends LocatableGameService {
@@ -24,14 +25,16 @@ export class PromptService extends LocatableGameService {
   constructor(serviceLocator: GameServiceLocator) {
     super(serviceLocator);
     this.promptCatalog = {
-      
+      CELL_AGENT_PROMPT: CellAgentPrompt
     };
   }
 
-  populate(prompt: Prompt, values: Record<string, string>): string {
+  populate(prompt: Prompt, gameState: GameState, context: Record<string, string>): string {
     let populatedText = prompt.text;
-    prompt.templateStrings.forEach(key => {
-      populatedText = populatedText.replace(`/\{\{(${key})\}\}/g`, values[key]);
+    Object.keys(prompt.templateStrings).forEach(key => {
+      for(let i = 0; i < prompt.templateStrings[key].length; i++) {
+        populatedText = populatedText.replace(`/\{\{(${key})\}\}/g`, prompt.templateStrings[key][i].getText(gameState, context));
+      }
     });
     return populatedText;
   }

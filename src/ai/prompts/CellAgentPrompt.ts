@@ -1,4 +1,4 @@
-import type { Prompt } from "@/services/ai/PromptService";
+import type { Prompt } from "@/services/PromptService";
 
 export const CELL_AGENT_PROMPT = "CELL_AGENT_PROMPT";
 export const CellAgentPrompt: Prompt = {

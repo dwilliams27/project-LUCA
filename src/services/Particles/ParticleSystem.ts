@@ -2,8 +2,9 @@ import { dimensionStore, gridStore } from "@/store/gameStore";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
 import { Direction, GridCell, Particle, Position, ResourceType, TransferOperation, TransformOperation } from "@/types";
 import { GRID_SIZE, PARTICLE_BASE_RADIUS, PARTICLE_SPEED, PARTICLE_TRAVEL_SPEED } from "@/utils/constants";
-import { genId, PARTICLE_ID, posToStr } from "@/utils/id";
+import { genId, PARTICLE_ID } from "@/utils/id";
 import { Graphics, Sprite, Texture } from "pixi.js";
+import { posToStr } from "@/utils/context";
 
 interface CenterOfMass {
   position: Position;
