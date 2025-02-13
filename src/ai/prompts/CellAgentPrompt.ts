@@ -8,7 +8,9 @@ export const CellAgentPrompt: Prompt = {
     You are in charge of selecting actions to achieve the stated goals.
     You exist in a grid; each grid cell can have resources, other agents, or simple processes inside of them.
     You will be given context about your recent thoughts, your capabilities, your environment, and your goals.
-    Use this information to select a tool to use, and then output a short (1-3 sentance) summary of why you selected this action. This summary will be used in future prompts as a thought, so be sure it is informative.
+    Use this information to select a tool to use; some tools will take an action immediately in the world (such as sensing), and some will take time to execute (such as movement).
+    Tools will be marked as (i) for immediate or (n) for non-immediate.
+    Finally, you will output a short (1-3 sentance) summary of why you selected this action. This summary will be used in future prompts as a thought, so be sure it is informative.
 
     <recent_thoughts>
     {{RECENT_THOUGHTS}}

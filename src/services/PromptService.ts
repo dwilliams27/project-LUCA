@@ -1,6 +1,6 @@
 import { CellAgentPrompt } from "@/ai/prompts/CellAgentPrompt";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
-import { Tool } from "@/services/tools/ToolService";
+import { Tool } from "@/services/ToolService";
 import { GameState } from "@/store/gameStore";
 import { cloneDeep } from "lodash-es";
 
@@ -29,7 +29,7 @@ export class PromptService extends LocatableGameService {
     };
   }
 
-  populate(prompt: Prompt, gameState: GameState, context: Record<string, string>): string {
+  populate(prompt: Prompt, gameState: GameState, context: Record<string, any>): string {
     let populatedText = prompt.text;
     Object.keys(prompt.templateStrings).forEach(key => {
       for(let i = 0; i < prompt.templateStrings[key].length; i++) {

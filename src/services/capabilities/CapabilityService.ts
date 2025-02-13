@@ -1,5 +1,5 @@
 import { LocatableGameService } from "@/services/ServiceLocator";
-import { Tool } from "@/services/tools/ToolService";
+import { Tool } from "@/services/ToolService";
 import { GameState } from "@/store/gameStore";
 
 export interface Capability {

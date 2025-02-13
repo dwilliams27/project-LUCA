@@ -10,7 +10,7 @@ export interface Goal {
   basePrompt: Prompt | null;
   basePriority: number;
   requiredContext: string[];
-  getFocusRank: (gameState: GameState, context: Record<string, string>) => number;
+  getFocusRank: (gameState: GameState, context: Record<string, any>) => number;
 }
 
 export class GoalService extends LocatableGameService {

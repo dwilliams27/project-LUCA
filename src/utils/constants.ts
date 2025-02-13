@@ -15,3 +15,6 @@ export const TextStyles = {
 export const PARTICLE_SPEED = 0.3;
 export const PARTICLE_TRAVEL_SPEED = 20;
 export const PARTICLE_BASE_RADIUS = 10;
+
+// Agents
+export const BASE_AGENT_SPEED = 10;

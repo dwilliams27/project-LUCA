@@ -8,7 +8,7 @@ export const ResourceStackContextAdapter: ContextAdapter = {
   requiredContext: [
     "RESOURCE_STACK",
   ],
-  getText: (gameState: GameState, context: Record<string, string>) => {
+  getText: (gameState: GameState, context: Record<string, any>) => {
     const resourceStack = context["RESOURCE_STACK"] as unknown as ResourceStack;
     return resourceToStr(resourceStack, true)!;
   }

@@ -9,7 +9,7 @@ export const CollectResourceGoal: Goal = {
   basePrompt: null,
   basePriority: 0,
   requiredContext: [],
-  getFocusRank: function (gameState: GameState, context: Record<string, string>): number {
+  getFocusRank: function (gameState: GameState, context: Record<string, any>): number {
     return 1;
   }
 }

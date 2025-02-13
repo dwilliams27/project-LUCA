@@ -11,7 +11,7 @@ export const GridContextAdapter: ContextAdapter = {
     // Position
     "AGENT_LOCATION"
   ],
-  getText: (gameState: GameState, context: Record<string, string>) => {
+  getText: (gameState: GameState, context: Record<string, any>) => {
     const knownCells = context["KNOWN_CELLS"] as unknown as number[][];
     const agentLocation = context["AGENT_LOCATION"] as unknown as Position;
     let text = `
