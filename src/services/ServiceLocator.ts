@@ -1,3 +1,4 @@
+import { GameState, gameStore } from "@/store/gameStore";
 import { Application } from "pixi.js";
 
 export abstract class LocatableService {
@@ -26,7 +27,7 @@ export abstract class LocatableGameService extends LocatableService {
   }
 
   isInitialized() { return true; };
-  tick(delta: number) {};
+  tick(delta: number, gameState: GameState) {};
 }
 
 export class ServiceLocator {
@@ -59,10 +60,11 @@ export class GameServiceLocator extends ServiceLocator {
   }
 
   tick(delta: number) {
+    const gameState = gameStore.getState();
     for(let key of this._services.keys()) {
       const service = this._services.get(key) as LocatableGameService;
       if (service?.isInitialized()) {
-        service.tick(delta);
+        service.tick(delta, gameState);
       }
     }
   }

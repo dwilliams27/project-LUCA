@@ -9,7 +9,14 @@ export default defineConfig({
         '@': resolve('src/')
       }
     },
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      rollupOptions: {
+        output: {
+          format: 'cjs'
+        }
+      }
+    }
   },
   preload: {
     resolve: {

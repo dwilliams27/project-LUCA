@@ -4,8 +4,9 @@ import { GameState } from "@/store/gameStore";
 import { Direction } from "@/types";
 import { getRelativeGridCell } from "@/utils/grid";
 
+export const SENSE_ADJACENT_CELL_TOOL = "SENSE_ADJACENT_CELL_TOOl";
 export const SenseAdjacentCellTool: Tool = {
-  name: "SenseAdjacentCell",
+  name: SENSE_ADJACENT_CELL_TOOL,
   description: "Get information about the contents of an adjacent cell (immediate)",
   inputSchema: {
     type: "object",

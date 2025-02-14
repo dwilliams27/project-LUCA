@@ -1,3 +1,7 @@
+import { CapabilitiesContextAdapter } from "@/ai/contextAdapters/CapabilitiesContextAdapter";
+import { EnvironmentContextAdapter } from "@/ai/contextAdapters/EnvironmentContextAdapter";
+import { GoalsContextAdapter } from "@/ai/contextAdapters/GoalsContextAdapter";
+import { RecentThoughtsContextAdapter } from "@/ai/contextAdapters/RecentThoughtsContextAdapter";
 import type { Prompt } from "@/services/PromptService";
 
 export const CELL_AGENT_PROMPT = "CELL_AGENT_PROMPT";
@@ -28,12 +32,12 @@ export const CellAgentPrompt: Prompt = {
     {{GOALS}}
     </goals>
   `,
-  templateStrings: {
-    RECENT_THOUGHTS: [],
-    CAPABILITIES: [],
-    ENVIRONMENT_CONTEXT: [],
-    GOALS: [],
-  },
+  contextAdapters: [
+    RecentThoughtsContextAdapter,
+    CapabilitiesContextAdapter,
+    EnvironmentContextAdapter,
+    GoalsContextAdapter,
+  ],
   tools: [],
   version: "1.0.0"
 }

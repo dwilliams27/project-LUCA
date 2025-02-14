@@ -4,8 +4,9 @@ import { GameState } from "@/store/gameStore";
 import { Direction } from "@/types";
 import { getRelativeGridCell } from "@/utils/grid";
 
+export const MOVE_GRID_CELL_TOOL = "MoveGridCell";
 export const MoveGridCellTool: Tool = {
-  name: "MoveGridCell",
+  name: MOVE_GRID_CELL_TOOL,
   description: "Move from one grid cell to an adjacent cell (non-immediate)",
   inputSchema: {
     type: "object",

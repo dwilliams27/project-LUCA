@@ -41,7 +41,8 @@ export interface GameState {
   resizeGame: (width: number, height: number) => void;
 }
 
-const gameStore = create<GameState>((set, get) => ({
+// Break up eventually?
+export const gameStore = create<GameState>((set, get) => ({
   dimensions: {
     width: INIT_CANVAS_WIDTH,
     height: INIT_CANVAS_HEIGHT,
@@ -124,3 +125,5 @@ export const useGridStore = () => gameStore(state => state.grid);
 export const useParticleStore = () => gameStore(state => state.particles);
 export const useDimensionStore = () => gameStore(state => state.dimensions);
 export const useServiceStore = () => gameStore(state => state.services);
+
+export const useGameStore = () => gameStore(state => state);

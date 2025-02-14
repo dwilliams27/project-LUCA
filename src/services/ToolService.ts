@@ -1,4 +1,6 @@
-import { LocatableGameService } from "@/services/ServiceLocator";
+import { MOVE_GRID_CELL_TOOL, MoveGridCellTool } from "@/ai/tools/MoveGridCellTool";
+import { SENSE_ADJACENT_CELL_TOOL, SenseAdjacentCellTool } from "@/ai/tools/SenseAdjacentCellTool";
+import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
 import { GameState } from "@/store/gameStore";
 
 export interface ToolCallResult {
@@ -26,7 +28,16 @@ export interface Tool {
 
 export class ToolService extends LocatableGameService {
   static name = "TOOL_SERVICE";
-  private toolMap: Record<string, Tool> = {};
+  private toolMap: Record<string, Tool>;
+
+  constructor(serviceLocator: GameServiceLocator) {
+    super(serviceLocator);
+
+    this.toolMap = {
+      [MOVE_GRID_CELL_TOOL]: MoveGridCellTool,
+      [SENSE_ADJACENT_CELL_TOOL]: SenseAdjacentCellTool,
+    }
+  }
 
   registerTool(tool: Tool) {
     if (this.toolMap[tool.name]) {

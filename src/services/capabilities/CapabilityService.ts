@@ -4,7 +4,8 @@ import { GameState } from "@/store/gameStore";
 
 export interface Capability {
   id: string;
-  tool: Tool;
+  description: string;
+  tools: Tool[];
 }
 
 export class CapabilityService extends LocatableGameService {

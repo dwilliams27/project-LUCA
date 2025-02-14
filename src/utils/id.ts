@@ -1,4 +1,3 @@
-import { Position } from "@/types";
 import { customAlphabet } from "nanoid";
 
 export const RESOURCE_ID = "rsrc";
@@ -7,6 +6,7 @@ export const PROCESS_ID = "prc";
 export const OPERATION_ID = "op";
 export const PARTICLE_ID = "p";
 export const AGENT_ID = "agnt";
+export const CAPABILITY_ID = "cpb";
 
 export const ID_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 export const ID_LENGTH = 16;

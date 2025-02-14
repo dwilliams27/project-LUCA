@@ -7,7 +7,6 @@ import { PromptService } from "@/services/PromptService";
 import { SpriteService } from "@/services/SpriteService";
 import { TextureService } from "@/services/TextureService";
 import { AgentService } from "@/services/AgentService";
-import { GoalService } from "@/services/GoalService";
 import { ToolService } from "@/services/ToolService";
 
 export function GameLoop() {
@@ -37,8 +36,6 @@ export function GameLoop() {
     gameServiceLocator.addService(promptService);
     const agentService = new AgentService(gameServiceLocator);
     gameServiceLocator.addService(agentService);
-    const goalService = new GoalService(gameServiceLocator);
-    gameServiceLocator.addService(goalService);
     const toolService = new ToolService(gameServiceLocator);
     gameServiceLocator.addService(toolService);
 

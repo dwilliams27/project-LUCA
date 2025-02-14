@@ -1,22 +1,35 @@
-import { Goal, GoalService } from "@/services/GoalService";
-import { PromptService } from "@/services/PromptService";
-import { Capability } from "@/services/capabilities/CapabilityService";
+import { Prompt, PromptService } from "@/services/PromptService";
+import { Capability, CapabilityService } from "@/services/capabilities/CapabilityService";
 import { LocatableGameService } from "@/services/ServiceLocator";
-import { Position } from "@/types";
-import { AGENT_ID, genId } from "@/utils/id";
-import { dimensionStore } from "@/store/gameStore";
-import { BASE_AGENT_SPEED } from "@/utils/constants";
+import { Position, ResourceQuality, ResourceType } from "@/types";
+import { AGENT_ID, CAPABILITY_ID, genId } from "@/utils/id";
+import { dimensionStore, GameState } from "@/store/gameStore";
+import { BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
 import { Sprite } from "pixi.js";
 import { GLOBAL_TEXTURES, TextureService } from "@/services/TextureService";
 import { SpriteService } from "@/services/SpriteService";
+import { LLMService } from "@/services/LlmService";
+import { ToolService } from "@/services/ToolService";
+import { MOVE_GRID_CELL_TOOL } from "@/ai/tools/MoveGridCellTool";
+import { SENSE_ADJACENT_CELL_TOOL } from "@/ai/tools/SenseAdjacentCellTool";
+import { CELL_AGENT_PROMPT, CellAgentPrompt } from "@/ai/prompts/CellAgentPrompt";
+import { COLLECT_RESOURCE_GOAL_PROMPT } from "@/ai/prompts/CollectResourceGoalPrompt";
 
 export type AgentType = "Orchestrator";
+
+export interface Goal {
+  basePrompt: Prompt | null;
+  basePriority: number;
+  requiredContext: string[];
+  getFocusRank: (gameState: GameState, context: Record<string, any>) => number;
+}
 
 export interface Agent {
   id: string;
   type: AgentType;
   goals: Goal[];
   capabilities: Capability[];
+  recentThoughts: string[];
   knownCells: number[][];
   sprite: Sprite;
   position: Position;
@@ -37,18 +50,42 @@ export class AgentService extends LocatableGameService {
     return grid;
   }
 
-  createAgent(position: Position, goals: string[]) {
-    const goalService = this.serviceLocator.getService(GoalService);
+  createAgent(position: Position) {
+    const promptService = this.serviceLocator.getService(PromptService);
     const textureService = this.serviceLocator.getService(TextureService);
     const spriteService = this.serviceLocator.getService(SpriteService);
+    const toolService = this.serviceLocator.getService(ToolService);
     const cellSize = dimensionStore.getState().cellSize;
+
+    const capabilities: Capability[] = [
+      {
+        id: genId(CAPABILITY_ID),
+        description: "Basic movement and sensing",
+        tools: [
+          toolService.getTool(MOVE_GRID_CELL_TOOL),
+          toolService.getTool(SENSE_ADJACENT_CELL_TOOL)
+        ]
+      }
+    ];
+
+    const goals: Goal[] = [
+      {
+        basePrompt: promptService.getBasePrompt(COLLECT_RESOURCE_GOAL_PROMPT),
+        basePriority: 1,
+        requiredContext: [
+          CONTEXT.RESOURCE_STACK
+        ],
+        getFocusRank: (gameState: GameState, context: Record<string, any>) => 1
+      }
+    ];
 
     const id = genId(AGENT_ID);
     const agent: Agent = {
       id,
       type: "Orchestrator",
-      goals: goals.map((goal) => goalService.getBaseGoal(goal)),
-      capabilities: [], //TODO
+      goals,
+      recentThoughts: [],
+      capabilities,
       knownCells: this.createKnownCellsGrid(position, dimensionStore.getState().gridLength),
       sprite: spriteService.createSprite(id, textureService.getTexture(GLOBAL_TEXTURES.DEBUG_AGENT)),
       position: { x: position.x * cellSize + Math.random() * cellSize, y: position.y * cellSize + Math.random() * cellSize },
@@ -62,14 +99,15 @@ export class AgentService extends LocatableGameService {
     return agent;
   }
 
-  tick(delta: number) {
+  tick(delta: number, gameState: GameState) {
+
     Object.keys(this.agents).forEach((key) => {
       const agent = this.agents[key];
       if (agent.moving) {
         this.updateMovingAgent(delta, agent);
       } else if (!agent.thinking) {
         agent.thinking = true;
-        this.makeDecision(agent);
+        this.makeDecision(agent, gameState);
       }
     })
   }
@@ -98,8 +136,23 @@ export class AgentService extends LocatableGameService {
     agent.sprite.y = agent.position.y;
   }
 
-  makeDecision(agent: Agent) {
-    // TODO IMPLEMENT
+  makeDecision(agent: Agent, gameState: GameState) {
     const promptService = this.serviceLocator.getService(PromptService);
+    const llmService = this.serviceLocator.getService(LLMService);
+
+    const tools = agent.capabilities.map((capability) => capability.tools).flat();
+    const context = {
+      [CONTEXT.AGENT_OBJECT]: agent,
+      [CONTEXT.PROMPT_SERVICE]: promptService,
+      [CONTEXT.RESOURCE_STACK]: {
+        type: ResourceType.ENERGY,
+        quantity: 10,
+        quality: ResourceQuality.LOW,
+      }
+    };
+
+    const agentPrompt = promptService.getBasePrompt(CELL_AGENT_PROMPT);
+    const prompt = promptService.populate(agentPrompt, gameState, context);
+    console.log('$$$$', prompt);
   }
 }
