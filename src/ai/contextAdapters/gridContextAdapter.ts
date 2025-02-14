@@ -18,7 +18,6 @@ export const GridContextAdapter: ContextAdapter = {
       Known grid cells will have information about resources within them, and unknown grid cells will just be '[X]'
       Each known grid cell will be in the format [RESOURCE|RESOURCE|RESOURCE|...]
       The grid cell you are currently in will have a !
-      Example row with 4 items: [M,0,10|E,1,1|E,2,3] [X] [X] [!|I,0,42|I,1,5]
       
       <grid_state>
     `;
