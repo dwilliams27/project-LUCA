@@ -10,13 +10,6 @@ export default defineConfig({
       }
     },
     plugins: [externalizeDepsPlugin()],
-    build: {
-      rollupOptions: {
-        output: {
-          format: 'cjs'
-        }
-      }
-    }
   },
   preload: {
     resolve: {
