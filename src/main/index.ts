@@ -1,10 +1,7 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { LLMService } from '@/services/LlmService'
-import { ServiceLocator } from '@/services/ServiceLocator'
-
-const nativeServiceLocator = new ServiceLocator();
+import { app, shell, BrowserWindow, ipcMain, contextBridge, ipcRenderer } from 'electron';
+import { join } from 'path';
+import { electronApp, optimizer, is } from '@electron-toolkit/utils';
+import { LLMService } from './LlmService';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -87,19 +84,15 @@ app.whenReady().then(() => {
   })
 
   // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.on('ping', () => console.log('pong'));
+
+  let llmService: LLMService | null = null;
 
   if (process.env.ANTHROPIC_API_KEY) {
-    nativeServiceLocator.addService(new LLMService(nativeServiceLocator, process.env.ANTHROPIC_API_KEY));
+    llmService = new LLMService(process.env.ANTHROPIC_API_KEY);
   } else {
     console.warn('No ANTHROPIC_API_KEY found!');
   }
-
-  // Define custom IPC handlers
-  ipcMain.handle('generate-text', async (event, prompt) => {
-    const llmService = nativeServiceLocator.getService(LLMService);
-    return await llmService.generateText(prompt);
-  });
 
   createWindow()
 

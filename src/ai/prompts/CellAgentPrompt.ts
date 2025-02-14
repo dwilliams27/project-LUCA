@@ -15,6 +15,10 @@ export const CellAgentPrompt: Prompt = {
     Use this information to select a tool to use; some tools will take an action immediately in the world (such as sensing), and some will take time to execute (such as movement).
     Tools will be marked as (i) for immediate or (n) for non-immediate.
     Finally, you will output a short (1-3 sentance) summary of why you selected this action. This summary will be used in future prompts as a thought, so be sure it is informative.
+    All references to a RESOURCE will be in the format TYPE,QUALITY,QUANTITY
+    TYPE: Matter = M, Energy = E, Information = I
+    QUALITY: Low = 0, Medium = 1, High = 2
+
 
     <recent_thoughts>
     {{RECENT_THOUGHTS}}
@@ -25,7 +29,7 @@ export const CellAgentPrompt: Prompt = {
     </capabilities>
 
     <environment_context>
-    {{ENVIRONMENT_CONTEXT}}
+    {{ENVIRONMENT}}
     </environment_context>
 
     <goals>

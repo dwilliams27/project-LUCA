@@ -35,7 +35,7 @@ export class PromptService extends LocatableGameService {
   populate(prompt: Prompt, gameState: GameState, context: Record<string, any>): string {
     let populatedText = prompt.text;
     prompt.contextAdapters.forEach((contextAdapter) => {
-      populatedText = populatedText.replace(`/\{\{(${contextAdapter.name})\}\}/g`, contextAdapter.getText(gameState, context));
+      populatedText = populatedText.replace(new RegExp(`\\{\\{${contextAdapter.templateString}\\}\\}`, 'g'), contextAdapter.getText(gameState, context));
     });
     return populatedText;
   }

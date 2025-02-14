@@ -16,10 +16,8 @@ export const GridContextAdapter: ContextAdapter = {
     let text = `
       <grid_context>
       Known grid cells will have information about resources within them, and unknown grid cells will just be '[X]'
-      Each known grid cell will be in the format [TYPE,QUALITY,QUANTITY|TYPE,QUALITY,QUANTITY,...]
+      Each known grid cell will be in the format [RESOURCE|RESOURCE|RESOURCE|...]
       The grid cell you are currently in will have a !
-      Type: Matter = M, Energy = E, Information = I
-      Quality: Low = 0, Medium = 1, High = 2
       Example row with 4 items: [M,0,10|E,1,1|E,2,3] [X] [X] [!|I,0,42|I,1,5]
       
       <grid_state>
@@ -33,7 +31,7 @@ export const GridContextAdapter: ContextAdapter = {
             ...gameState.grid.cells[y][x].resourceBuckets[ResourceType.MATTER].flat(),
             ...gameState.grid.cells[y][x].resourceBuckets[ResourceType.INFORMATION].flat(),
           ];
-          row.push(`[${agent.position.x === x && agent.position.y === y ? '!|' : ''}${resources.map((resource) => resourceToStr(resource)).filter((resourceStr) => !!resourceStr).join('|')}]`);
+          row.push(`[${agent.currentCell.x === x && agent.currentCell.y === y ? '!|' : ''}${resources.map((resource) => resourceToStr(resource)).filter((resourceStr) => !!resourceStr).join('|')}]`);
         } else {
           row.push(`[X]`);
         }

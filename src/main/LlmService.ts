@@ -1,7 +1,6 @@
-import { LocatableService, ServiceLocator } from "@/services/ServiceLocator";
 import Anthropic from '@anthropic-ai/sdk';
 
-export class LLMService extends LocatableService {
+export class LLMService {
   static name = "LLMService";
 
   private anthropic: Anthropic;
@@ -11,8 +10,7 @@ export class LLMService extends LocatableService {
     totalCost: 0
   };
 
-  constructor(serviceLocator: ServiceLocator, apiKey: string) {
-    super(serviceLocator);
+  constructor(apiKey: string) {
     this.anthropic = new Anthropic({
       apiKey
     });

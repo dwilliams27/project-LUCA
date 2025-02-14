@@ -1,11 +1,11 @@
-import { GridCell } from "@/components/game/GridCell";
-import { VGridCell } from "@/types";
+import { GridCellComponent } from "@/components/game/GridCell";
+import { GridCell } from "@/types";
 import { Container, Graphics } from '@pixi/react';
 import { useCallback } from "react";
 
 export const Grid: React.FC<{
   zIndex: number;
-  cells: VGridCell[][];
+  cells: GridCell[][];
   width: number;
   height: number;
 }> = ({ zIndex, cells, width, height }) => {
@@ -33,7 +33,7 @@ export const Grid: React.FC<{
         {
           cells.map((row, yIndex) =>
             row.map((cell, xIndex) => (
-              <GridCell
+              <GridCellComponent
                 key={`${xIndex}-${yIndex}`}
                 cell={cell}
               />

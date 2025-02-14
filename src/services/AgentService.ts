@@ -1,5 +1,4 @@
 import { Prompt, PromptService } from "@/services/PromptService";
-import { Capability, CapabilityService } from "@/services/capabilities/CapabilityService";
 import { LocatableGameService } from "@/services/ServiceLocator";
 import { Position, ResourceQuality, ResourceType } from "@/types";
 import { AGENT_ID, CAPABILITY_ID, genId } from "@/utils/id";
@@ -8,11 +7,10 @@ import { BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
 import { Sprite } from "pixi.js";
 import { GLOBAL_TEXTURES, TextureService } from "@/services/TextureService";
 import { SpriteService } from "@/services/SpriteService";
-import { LLMService } from "@/services/LlmService";
-import { ToolService } from "@/services/ToolService";
+import { Tool, ToolService } from "@/services/ToolService";
 import { MOVE_GRID_CELL_TOOL } from "@/ai/tools/MoveGridCellTool";
 import { SENSE_ADJACENT_CELL_TOOL } from "@/ai/tools/SenseAdjacentCellTool";
-import { CELL_AGENT_PROMPT, CellAgentPrompt } from "@/ai/prompts/CellAgentPrompt";
+import { CELL_AGENT_PROMPT } from "@/ai/prompts/CellAgentPrompt";
 import { COLLECT_RESOURCE_GOAL_PROMPT } from "@/ai/prompts/CollectResourceGoalPrompt";
 
 export type AgentType = "Orchestrator";
@@ -22,6 +20,12 @@ export interface Goal {
   basePriority: number;
   requiredContext: string[];
   getFocusRank: (gameState: GameState, context: Record<string, any>) => number;
+}
+
+export interface Capability {
+  id: string;
+  description: string;
+  tools: Tool[];
 }
 
 export interface Agent {
@@ -138,7 +142,6 @@ export class AgentService extends LocatableGameService {
 
   makeDecision(agent: Agent, gameState: GameState) {
     const promptService = this.serviceLocator.getService(PromptService);
-    const llmService = this.serviceLocator.getService(LLMService);
 
     const tools = agent.capabilities.map((capability) => capability.tools).flat();
     const context = {
@@ -154,5 +157,8 @@ export class AgentService extends LocatableGameService {
     const agentPrompt = promptService.getBasePrompt(CELL_AGENT_PROMPT);
     const prompt = promptService.populate(agentPrompt, gameState, context);
     console.log('$$$$', prompt);
+
+    // TODO: Fix contextBridge/IPC stuff
+    // window.electronApi.generateText(prompt).then((res) => console.log('AI RES', res));
   }
 }
