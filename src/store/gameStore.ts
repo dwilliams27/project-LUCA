@@ -1,3 +1,4 @@
+import { Agent } from '@/services/AgentService';
 import { GameServiceLocator } from '@/services/ServiceLocator';
 import { GridCell, Position } from '@/types';
 import { GRID_SIZE, INIT_CANVAS_HEIGHT, INIT_CANVAS_WIDTH } from '@/utils/constants';
@@ -11,6 +12,7 @@ export interface DimensionState {
   cellSize: number;
 }
 
+// TODO: Cleanup, move methods to a service
 export interface GridState {
   cells: GridCell[][];
 
@@ -23,6 +25,10 @@ export interface ServiceState {
   gameServiceLocator: GameServiceLocator;
 }
 
+export interface AgentState {
+  agentMap: Record<string, Agent>;
+}
+
 export interface ParticleState {}
 
 export interface CellBounds {
@@ -33,6 +39,7 @@ export interface CellBounds {
 }
 
 export interface GameState {
+  agents: AgentState;
   dimensions: DimensionState;
   grid: GridState;
   particles: ParticleState;
@@ -41,8 +48,10 @@ export interface GameState {
   resizeGame: (width: number, height: number) => void;
 }
 
-// Break up eventually?
 export const gameStore = create<GameState>((set, get) => ({
+  agents: {
+    agentMap: {},
+  },
   dimensions: {
     width: INIT_CANVAS_WIDTH,
     height: INIT_CANVAS_HEIGHT,
@@ -94,6 +103,14 @@ export const gameStore = create<GameState>((set, get) => ({
     }));
   },
 }));
+
+export const agentStore = {
+  getState: () => gameStore.getState().agents,
+  setState: (agentState: Partial<AgentState>) => 
+    gameStore.setState(state => ({ 
+      agents: { ...state.agents, ...agentState } 
+    })),
+};
 
 export const dimensionStore = {
   getState: () => gameStore.getState().dimensions,

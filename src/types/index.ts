@@ -118,8 +118,12 @@ export const IPC_CALLS = {
   LLM_CHAT: "LLM_CHAT",
   LLM_STATUS: "LLM_STATUS"
 }
+export interface LucaMessage {
+  role: "assistant" | "user";
+  content: string;
+}
 export interface IpcLlmChatRequest {
-  query: string,
+  messages: LucaMessage[],
   tools: Tool[],
 }
 export interface IpcLlmChatResponse {

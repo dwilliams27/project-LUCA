@@ -1,8 +1,8 @@
 import { Prompt, PromptService } from "@/services/PromptService";
-import { LocatableGameService } from "@/services/ServiceLocator";
-import { Position, ResourceQuality, ResourceType } from "@/types";
+import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
+import { LucaMessage, Position, Resource, ResourceQuality, ResourceType } from "@/types";
 import { AGENT_ID, CAPABILITY_ID, genId } from "@/utils/id";
-import { dimensionStore, GameState } from "@/store/gameStore";
+import { agentStore, dimensionStore, GameState } from "@/store/gameStore";
 import { BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
 import { Sprite } from "pixi.js";
 import { GLOBAL_TEXTURES, TextureService } from "@/services/TextureService";
@@ -13,6 +13,8 @@ import { SENSE_ADJACENT_CELL_TOOL } from "@/ai/tools/SenseAdjacentCellTool";
 import { CELL_AGENT_PROMPT } from "@/ai/prompts/CellAgentPrompt";
 import { COLLECT_RESOURCE_GOAL_PROMPT } from "@/ai/prompts/CollectResourceGoalPrompt";
 import { IpcService } from "@/services/IpcService";
+import { CELL_AGENT_SYSTEM_PROMPT } from "@/ai/prompts/CellAgentSystemPrompt";
+import { GATHER_RESOURCE_TOOL } from "@/ai/tools/GatherResourceTool";
 
 export type AgentType = "Orchestrator";
 
@@ -35,6 +37,9 @@ export interface Agent {
   goals: Goal[];
   capabilities: Capability[];
   recentThoughts: string[];
+  resourceBuckets: {
+    [key in ResourceType]: Resource[];
+  }, 
   knownCells: number[][];
   sprite: Sprite;
   position: Position;
@@ -47,7 +52,16 @@ export interface Agent {
 
 export class AgentService extends LocatableGameService {
   static name = "AGENT_SERVICE";
-  private agents: Record<string, Agent> = {};
+  private systemMessage: LucaMessage;
+
+  constructor(serviceLocator: GameServiceLocator) {
+    super(serviceLocator);
+    const baseSystemPrompt = serviceLocator.getService(PromptService).getBasePrompt(CELL_AGENT_SYSTEM_PROMPT);
+    this.systemMessage = {
+      role: "assistant",
+      content: baseSystemPrompt.text
+    }
+  }
 
   private createKnownCellsGrid(position: Position, size: number): number[][] {
     const grid = Array(size).fill(0).map(() => Array(size).fill(0));
@@ -65,10 +79,11 @@ export class AgentService extends LocatableGameService {
     const capabilities: Capability[] = [
       {
         id: genId(CAPABILITY_ID),
-        description: "Basic movement and sensing",
+        description: "Basic movement, sensing, and resource gathering.",
         tools: [
+          toolService.getTool(GATHER_RESOURCE_TOOL),
           toolService.getTool(MOVE_GRID_CELL_TOOL),
-          toolService.getTool(SENSE_ADJACENT_CELL_TOOL)
+          toolService.getTool(SENSE_ADJACENT_CELL_TOOL),
         ]
       }
     ];
@@ -89,6 +104,11 @@ export class AgentService extends LocatableGameService {
       id,
       type: "Orchestrator",
       goals,
+      resourceBuckets: {
+        [ResourceType.ENERGY]: [],
+        [ResourceType.MATTER]: [],
+        [ResourceType.INFORMATION]: [],
+      },
       recentThoughts: [],
       capabilities,
       knownCells: this.createKnownCellsGrid(position, dimensionStore.getState().gridLength),
@@ -100,21 +120,29 @@ export class AgentService extends LocatableGameService {
       moving: false,
       thinking: false
     }
-    this.agents[agent.id] = agent;
+    agentStore.setState({
+      agentMap: {
+        ...agentStore.getState().agentMap,
+        [agent.id]: agent
+      }
+    });
+
     return agent;
   }
 
-  tick(delta: number, gameState: GameState) {
-
-    Object.keys(this.agents).forEach((key) => {
-      const agent = this.agents[key];
+  tick(delta: number) {
+    // Note new agents created wont get ticked this cycle
+    const agentIds = Object.keys(agentStore.getState().agentMap);
+    agentIds.forEach((key) => {
+      // Still some race condition-y things I think... revisit if problems
+      const agent = agentStore.getState().agentMap[key];
       if (agent.moving) {
         this.updateMovingAgent(delta, agent);
       } else if (!agent.thinking) {
         agent.thinking = true;
-        this.makeDecision(agent, gameState);
+        this.makeDecision(agent);
       }
-    })
+    });
   }
 
   updateMovingAgent(deltaTime: number, agent: Agent) {
@@ -141,15 +169,14 @@ export class AgentService extends LocatableGameService {
     agent.sprite.y = agent.position.y;
   }
 
-  async makeDecision(agent: Agent, gameState: GameState) {
+  async makeDecision(agent: Agent) {
     const promptService = this.serviceLocator.getService(PromptService);
     const toolService = this.serviceLocator.getService(ToolService);
     const ipcService = this.serviceLocator.getService(IpcService);
 
     const tools = agent.capabilities.map((capability) => capability.tools).flat();
     const context = {
-      [CONTEXT.AGENT_OBJECT]: agent,
-      [CONTEXT.PROMPT_SERVICE]: promptService,
+      [CONTEXT.AGENT_ID]: agent.id,
       [CONTEXT.RESOURCE_STACK]: {
         type: ResourceType.ENERGY,
         quantity: 10,
@@ -158,16 +185,19 @@ export class AgentService extends LocatableGameService {
     };
 
     const agentPrompt = promptService.getBasePrompt(CELL_AGENT_PROMPT);
-    const promptText = promptService.constructPromptText(agentPrompt, gameState, context);
+    const userMessage: LucaMessage = {
+      role: "user",
+      content: promptService.constructPromptText(agentPrompt, context)
+    }
     
     try {
       const response = await ipcService.llmChat({
-        query: promptText,
+        messages: [this.systemMessage, userMessage],
         tools: toolService.getAnthropicRepresentation(tools)
       });
       console.log('IPC Response', response);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error invoking IPC llmChat:', error);
     }
   }
 }

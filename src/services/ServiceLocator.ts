@@ -15,9 +15,11 @@ export abstract class LocatableService {
 
 export abstract class LocatableGameService extends LocatableService {
   application: Application;
+  serviceLocator: GameServiceLocator;
 
   constructor(serviceLocator: GameServiceLocator) {
     super(serviceLocator);
+    this.serviceLocator = serviceLocator;
     const app = serviceLocator.getApplication()
     if (!app) {
       throw new Error('Must initialize application before adding services!');
@@ -27,7 +29,7 @@ export abstract class LocatableGameService extends LocatableService {
   }
 
   isInitialized() { return true; };
-  tick(delta: number, gameState: GameState) {};
+  tick(delta: number) {};
 }
 
 export class ServiceLocator {
@@ -60,11 +62,10 @@ export class GameServiceLocator extends ServiceLocator {
   }
 
   tick(delta: number) {
-    const gameState = gameStore.getState();
     for(let key of this._services.keys()) {
       const service = this._services.get(key) as LocatableGameService;
       if (service?.isInitialized()) {
-        service.tick(delta, gameState);
+        service.tick(delta);
       }
     }
   }

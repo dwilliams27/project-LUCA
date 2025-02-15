@@ -1,7 +1,7 @@
+import { GATHER_RESOURCE_TOOL, GatherResourceTool } from "@/ai/tools/GatherResourceTool";
 import { MOVE_GRID_CELL_TOOL, MoveGridCellTool } from "@/ai/tools/MoveGridCellTool";
 import { SENSE_ADJACENT_CELL_TOOL, SenseAdjacentCellTool } from "@/ai/tools/SenseAdjacentCellTool";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
-import { GameState } from "@/store/gameStore";
 import { Tool } from "@anthropic-ai/sdk/resources";
 
 export interface ToolCallResult {
@@ -24,7 +24,7 @@ export interface LucaTool {
     required?: string[];
   };
   requiredContext: string[];
-  implementation: (params: any, gameState: GameState, context: Record<string, any>) => ToolCallResult;
+  implementation: (params: any, serviceLocator: GameServiceLocator, context: Record<string, any>) => ToolCallResult;
 }
 
 export class ToolService extends LocatableGameService {
@@ -35,6 +35,7 @@ export class ToolService extends LocatableGameService {
     super(serviceLocator);
 
     this.toolMap = {
+      [GATHER_RESOURCE_TOOL]: GatherResourceTool,
       [MOVE_GRID_CELL_TOOL]: MoveGridCellTool,
       [SENSE_ADJACENT_CELL_TOOL]: SenseAdjacentCellTool,
     }

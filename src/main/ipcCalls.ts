@@ -10,7 +10,7 @@ export function defineIpcCalls(llmService: LLMService | null) {
 
     const request: IpcLlmChatRequest = JSON.parse(serializedChatRequest);
     try {
-      const response = await llmService.query(request.query, request.tools);
+      const response = await llmService.query(request.messages, request.tools);
       return { message: response };
     } catch (error) {
       console.error('Error in llm:chat handler:', error);

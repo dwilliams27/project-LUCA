@@ -1,5 +1,6 @@
 import { CellAgentPrompt } from "@/ai/prompts/CellAgentPrompt";
-import { COLLECT_RESOURCE_GOAL_PROMPT, CollectResourceGoalPrompt } from "@/ai/prompts/CollectResourceGoalPrompt";
+import { CellAgentSystemPrompt } from "@/ai/prompts/CellAgentSystemPrompt";
+import { CollectResourceGoalPrompt } from "@/ai/prompts/CollectResourceGoalPrompt";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
 import { LucaTool } from "@/services/ToolService";
 import { GameState } from "@/store/gameStore";
@@ -17,7 +18,7 @@ export interface ContextAdapter {
   name: string;
   templateString: string;
   requiredContext: string[];
-  getText: (gameState: GameState, context: Record<string, any>) => string;
+  getText: (serviceLocator: GameServiceLocator, context: Record<string, any>) => string;
 }
 
 export class PromptService extends LocatableGameService {
@@ -28,14 +29,15 @@ export class PromptService extends LocatableGameService {
     super(serviceLocator);
     this.promptCatalog = {
       CELL_AGENT_PROMPT: CellAgentPrompt,
+      CELL_AGENT_SYSTEM_PROMPT: CellAgentSystemPrompt,
       COLLECT_RESOURCE_GOAL_PROMPT: CollectResourceGoalPrompt
     };
   }
 
-  constructPromptText(prompt: Prompt, gameState: GameState, context: Record<string, any>): string {
+  constructPromptText(prompt: Prompt, context: Record<string, any>): string {
     let populatedText = prompt.text;
     prompt.contextAdapters.forEach((contextAdapter) => {
-      populatedText = populatedText.replace(new RegExp(`\\{\\{${contextAdapter.templateString}\\}\\}`, 'g'), contextAdapter.getText(gameState, context));
+      populatedText = populatedText.replace(new RegExp(`\\{\\{${contextAdapter.templateString}\\}\\}`, 'g'), contextAdapter.getText(this.serviceLocator, context));
     });
     return populatedText;
   }

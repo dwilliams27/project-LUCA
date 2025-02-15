@@ -1,3 +1,4 @@
+import { LucaMessage } from '@/types';
 import Anthropic from '@anthropic-ai/sdk';
 import { Message, Tool } from '@anthropic-ai/sdk/resources';
 
@@ -17,15 +18,12 @@ export class LLMService {
     });
   }
 
-  async query(prompt: string, tools: Tool[]): Promise<Message> {
-    console.log('Sending query to LLM:', prompt, tools);
+  async query(messages: LucaMessage[], tools: Tool[]): Promise<Message> {
+    console.log('Sending query to LLM:', messages, tools);
     const message = await this.anthropic.messages.create({
-      model: "claude-3-sonnet-20240229",
+      model: "claude-3-5-sonnet-latest",
       max_tokens: 1024,
-      messages: [{
-        role: "user",
-        content: prompt
-      }],
+      messages: messages.map((m) => ({ role: m.role, content: [{ type: 'text', text: m.content }]})),
       tools
     });
 
@@ -35,6 +33,8 @@ export class LLMService {
     this.costMetrics.totalCost += queryCost;
 
     console.warn(`LLM Call: $${queryCost.toFixed(4)} ${message.usage.input_tokens} in, ${message.usage.output_tokens} out`);
+
+    console.log('LLM response:', message)
 
     return message;
   }

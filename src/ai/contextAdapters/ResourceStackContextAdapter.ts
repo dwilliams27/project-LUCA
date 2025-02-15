@@ -1,5 +1,5 @@
 import type { ContextAdapter } from "@/services/PromptService";
-import { GameState } from "@/store/gameStore";
+import { GameServiceLocator } from "@/services/ServiceLocator";
 import { ResourceStack } from "@/types";
 import { CONTEXT } from "@/utils/constants";
 import { resourceToStr } from "@/utils/context";
@@ -10,7 +10,7 @@ export const ResourceStackContextAdapter: ContextAdapter = {
   requiredContext: [
     CONTEXT.RESOURCE_STACK,
   ],
-  getText: (gameState: GameState, context: Record<string, any>) => {
+  getText: (serviceLocator: GameServiceLocator, context: Record<string, any>) => {
     const resourceStack = context[CONTEXT.RESOURCE_STACK] as unknown as ResourceStack;
     return resourceToStr(resourceStack, true)!;
   }

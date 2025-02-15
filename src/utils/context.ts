@@ -14,6 +14,17 @@ export function resourceToStr(resource: Resource | ResourceStack, includeZero = 
   return `${rtype},${resource.quality},${resource.quantity}`;
 }
 
+export function resourceAbrToType(resourceAbr: string): ResourceType | null {
+  if (resourceAbr === "E") {
+    return ResourceType.ENERGY;
+  } else if (resourceAbr === "M") {
+    return ResourceType.MATTER;
+  } else if (resourceAbr === "I") {
+    return ResourceType.INFORMATION;
+  }
+  return null;
+}
+
 export function posToStr(position: Position) {
   return `${position.x},${position.y}`;
 }
