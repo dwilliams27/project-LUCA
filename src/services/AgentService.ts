@@ -12,7 +12,7 @@ import { MOVE_GRID_CELL_TOOL } from "@/ai/tools/MoveGridCellTool";
 import { SENSE_ADJACENT_CELL_TOOL } from "@/ai/tools/SenseAdjacentCellTool";
 import { CELL_AGENT_PROMPT } from "@/ai/prompts/CellAgentPrompt";
 import { COLLECT_RESOURCE_GOAL_PROMPT } from "@/ai/prompts/CollectResourceGoalPrompt";
-import { Tool } from "@anthropic-ai/sdk/resources";
+import { IpcService } from "@/services/IpcService";
 
 export type AgentType = "Orchestrator";
 
@@ -141,9 +141,10 @@ export class AgentService extends LocatableGameService {
     agent.sprite.y = agent.position.y;
   }
 
-  makeDecision(agent: Agent, gameState: GameState) {
+  async makeDecision(agent: Agent, gameState: GameState) {
     const promptService = this.serviceLocator.getService(PromptService);
     const toolService = this.serviceLocator.getService(ToolService);
+    const ipcService = this.serviceLocator.getService(IpcService);
 
     const tools = agent.capabilities.map((capability) => capability.tools).flat();
     const context = {
@@ -159,14 +160,12 @@ export class AgentService extends LocatableGameService {
     const agentPrompt = promptService.getBasePrompt(CELL_AGENT_PROMPT);
     const promptText = promptService.constructPromptText(agentPrompt, gameState, context);
     
-    this.llmChatRequest(promptText, toolService.getAnthropicRepresentation(tools));
-  }
-
-  async llmChatRequest(query: string, tools: Tool[]) {
-    console.log('Invoking llm...');
     try {
-      const response = await window.electron.ipcRenderer.invoke('llm:chat', JSON.stringify({ query, tools }));
-      console.log('AI Response:', response);
+      const response = await ipcService.llmChat({
+        query: promptText,
+        tools: toolService.getAnthropicRepresentation(tools)
+      });
+      console.log('IPC Response', response);
     } catch (error) {
       console.error('Error:', error);
     }

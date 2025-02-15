@@ -1,3 +1,5 @@
+import { Message, Tool } from "@anthropic-ai/sdk/resources";
+
 export enum EvolutionaryStage {
   ABIOTIC = 'ABIOTIC',
   PROTOCELL = 'PROTOCELL',
@@ -109,4 +111,17 @@ export interface ResourceStack {
   type: ResourceType;
   quantity: number;
   quality: ResourceQuality;
+}
+
+// IPC stuff
+export const IPC_CALLS = {
+  LLM_CHAT: "LLM_CHAT",
+  LLM_STATUS: "LLM_STATUS"
+}
+export interface IpcLlmChatRequest {
+  query: string,
+  tools: Tool[],
+}
+export interface IpcLlmChatResponse {
+  message: Message
 }

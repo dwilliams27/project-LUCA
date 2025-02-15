@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, ipcMain, contextBridge, ipcRenderer } from '
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { LLMService } from './LlmService';
-import { Tool } from '@anthropic-ai/sdk/resources';
+import { defineIpcCalls } from '@/main/ipcCalls';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -95,28 +95,7 @@ app.whenReady().then(() => {
     console.warn('No ANTHROPIC_API_KEY found!');
   }
 
-  ipcMain.handle('llm:chat', async (_event, serializedChatRequest: string) => {
-    if (!llmService) {
-      throw new Error('LLM service not initialized');
-    }
-
-    const { query, tools } = JSON.parse(serializedChatRequest);
-    try {
-      const response = await llmService.query(query, tools);
-      console.log('LLM Res', response);
-      return response;
-    } catch (error) {
-      console.error('Error in llm:chat handler:', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('llm:status', (_event) => {
-    return {
-      initialized: !!llmService,
-      hasApiKey: !!process.env.ANTHROPIC_API_KEY
-    };
-  });
+  defineIpcCalls(llmService);
 
   createWindow()
 
@@ -136,5 +115,3 @@ app.on('window-all-closed', () => {
   }
 })
 
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.

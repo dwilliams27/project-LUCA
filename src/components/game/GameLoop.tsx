@@ -8,6 +8,7 @@ import { SpriteService } from "@/services/SpriteService";
 import { TextureService } from "@/services/TextureService";
 import { AgentService } from "@/services/AgentService";
 import { ToolService } from "@/services/ToolService";
+import { IpcService } from "@/services/IpcService";
 
 export function GameLoop() {
   const { gameServiceLocator } = useServiceStore();
@@ -38,6 +39,8 @@ export function GameLoop() {
     gameServiceLocator.addService(agentService);
     const toolService = new ToolService(gameServiceLocator);
     gameServiceLocator.addService(toolService);
+    const ipcService = new IpcService(gameServiceLocator);
+    gameServiceLocator.addService(ipcService);
 
     const spriteService = new SpriteService(gameServiceLocator);
     gameServiceLocator.addService(spriteService);
