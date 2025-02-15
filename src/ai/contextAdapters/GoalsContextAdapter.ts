@@ -13,6 +13,6 @@ export const GoalsContextAdapter: ContextAdapter = {
   getText: (gameState: GameState, context: Record<string, any>) => {
     const agent = context[CONTEXT.AGENT_OBJECT] as unknown as Agent;
     const promptService = context[CONTEXT.PROMPT_SERVICE] as unknown as PromptService;
-    return `<goal>${agent.goals.filter((goal) => goal.basePrompt).map((goal) => promptService.populate(goal.basePrompt!, gameState, context)).join("</goal><goal>")}</goal>`;
+    return `<goal>${agent.goals.filter((goal) => goal.basePrompt).map((goal) => promptService.constructPromptText(goal.basePrompt!, gameState, context)).join("</goal><goal>")}</goal>`;
   }
 }

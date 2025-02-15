@@ -1,14 +1,14 @@
 import { Agent } from "@/services/AgentService";
-import { Tool } from "@/services/ToolService";
+import { LucaTool } from "@/services/ToolService";
 import { GameState } from "@/store/gameStore";
 import { Direction } from "@/types";
 import { getRelativeGridCell } from "@/utils/grid";
 
-export const MOVE_GRID_CELL_TOOL = "MoveGridCell";
-export const MoveGridCellTool: Tool = {
+export const MOVE_GRID_CELL_TOOL = "MOVE_GRID_CELL_TOOL";
+export const MoveGridCellTool: LucaTool = {
   name: MOVE_GRID_CELL_TOOL,
   description: "Move from one grid cell to an adjacent cell (non-immediate)",
-  inputSchema: {
+  input_schema: {
     type: "object",
     properties: {
       direction: {

@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { Message, Tool } from '@anthropic-ai/sdk/resources';
 
 export class LLMService {
   static name = "LLMService";
@@ -16,7 +17,8 @@ export class LLMService {
     });
   }
 
-  async generateText(prompt: string) {
+  async query(prompt: string, tools: Tool[]): Promise<Message> {
+    console.log('Sending query to LLM:', prompt, tools);
     const message = await this.anthropic.messages.create({
       model: "claude-3-sonnet-20240229",
       max_tokens: 1024,
@@ -24,6 +26,7 @@ export class LLMService {
         role: "user",
         content: prompt
       }],
+      tools
     });
 
     this.costMetrics.totalInputTokens += message.usage.input_tokens;
@@ -32,8 +35,8 @@ export class LLMService {
     this.costMetrics.totalCost += queryCost;
 
     console.warn(`LLM Call: $${queryCost.toFixed(4)} ${message.usage.input_tokens} in, ${message.usage.output_tokens} out`);
-    
-    return message.content;
+
+    return message;
   }
 
   private calculateCost(inputTokens: number, outputTokens: number) {

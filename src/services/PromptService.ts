@@ -1,7 +1,7 @@
 import { CellAgentPrompt } from "@/ai/prompts/CellAgentPrompt";
 import { COLLECT_RESOURCE_GOAL_PROMPT, CollectResourceGoalPrompt } from "@/ai/prompts/CollectResourceGoalPrompt";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
-import { Tool } from "@/services/ToolService";
+import { LucaTool } from "@/services/ToolService";
 import { GameState } from "@/store/gameStore";
 import { cloneDeep } from "lodash-es";
 
@@ -9,7 +9,7 @@ export interface Prompt {
   name: string;
   text: string;
   contextAdapters: ContextAdapter[];
-  tools: Tool[];
+  tools: LucaTool[];
   version: string;
 }
 
@@ -32,7 +32,7 @@ export class PromptService extends LocatableGameService {
     };
   }
 
-  populate(prompt: Prompt, gameState: GameState, context: Record<string, any>): string {
+  constructPromptText(prompt: Prompt, gameState: GameState, context: Record<string, any>): string {
     let populatedText = prompt.text;
     prompt.contextAdapters.forEach((contextAdapter) => {
       populatedText = populatedText.replace(new RegExp(`\\{\\{${contextAdapter.templateString}\\}\\}`, 'g'), contextAdapter.getText(gameState, context));

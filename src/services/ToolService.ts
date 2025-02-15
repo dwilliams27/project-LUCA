@@ -2,17 +2,18 @@ import { MOVE_GRID_CELL_TOOL, MoveGridCellTool } from "@/ai/tools/MoveGridCellTo
 import { SENSE_ADJACENT_CELL_TOOL, SenseAdjacentCellTool } from "@/ai/tools/SenseAdjacentCellTool";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
 import { GameState } from "@/store/gameStore";
+import { Tool } from "@anthropic-ai/sdk/resources";
 
 export interface ToolCallResult {
   status: number;
   context: Record<string, any>;
 }
 
-export interface Tool {
+export interface LucaTool {
   name: string;
   description: string;
-  inputSchema: {
-    type: string;
+  input_schema: {
+    type: "object";
     properties: Record<string, {
       type: string;
       description?: string;
@@ -28,7 +29,7 @@ export interface Tool {
 
 export class ToolService extends LocatableGameService {
   static name = "TOOL_SERVICE";
-  private toolMap: Record<string, Tool>;
+  private toolMap: Record<string, LucaTool>;
 
   constructor(serviceLocator: GameServiceLocator) {
     super(serviceLocator);
@@ -39,7 +40,7 @@ export class ToolService extends LocatableGameService {
     }
   }
 
-  registerTool(tool: Tool) {
+  registerTool(tool: LucaTool) {
     if (this.toolMap[tool.name]) {
       console.warn(`Failed to register ${tool.name}; duplicate tool already exists`);
       return;
@@ -49,5 +50,12 @@ export class ToolService extends LocatableGameService {
 
   getTool(name: string) {
     return this.toolMap[name];
+  }
+
+  getAnthropicRepresentation(tools: LucaTool[]): Tool[] {
+    return tools.map((tool) => ({
+      name: tool.name,
+      input_schema: tool.input_schema
+    }));
   }
 }

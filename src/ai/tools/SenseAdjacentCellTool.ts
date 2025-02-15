@@ -1,14 +1,14 @@
 import { Agent } from "@/services/AgentService";
-import { Tool } from "@/services/ToolService";
+import { LucaTool } from "@/services/ToolService";
 import { GameState } from "@/store/gameStore";
 import { Direction } from "@/types";
 import { getRelativeGridCell } from "@/utils/grid";
 
 export const SENSE_ADJACENT_CELL_TOOL = "SENSE_ADJACENT_CELL_TOOl";
-export const SenseAdjacentCellTool: Tool = {
+export const SenseAdjacentCellTool: LucaTool = {
   name: SENSE_ADJACENT_CELL_TOOL,
   description: "Get information about the contents of an adjacent cell (immediate)",
-  inputSchema: {
+  input_schema: {
     type: "object",
     properties: {
       direction: {

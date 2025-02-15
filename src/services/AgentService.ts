@@ -7,11 +7,12 @@ import { BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
 import { Sprite } from "pixi.js";
 import { GLOBAL_TEXTURES, TextureService } from "@/services/TextureService";
 import { SpriteService } from "@/services/SpriteService";
-import { Tool, ToolService } from "@/services/ToolService";
+import { LucaTool, ToolService } from "@/services/ToolService";
 import { MOVE_GRID_CELL_TOOL } from "@/ai/tools/MoveGridCellTool";
 import { SENSE_ADJACENT_CELL_TOOL } from "@/ai/tools/SenseAdjacentCellTool";
 import { CELL_AGENT_PROMPT } from "@/ai/prompts/CellAgentPrompt";
 import { COLLECT_RESOURCE_GOAL_PROMPT } from "@/ai/prompts/CollectResourceGoalPrompt";
+import { Tool } from "@anthropic-ai/sdk/resources";
 
 export type AgentType = "Orchestrator";
 
@@ -25,7 +26,7 @@ export interface Goal {
 export interface Capability {
   id: string;
   description: string;
-  tools: Tool[];
+  tools: LucaTool[];
 }
 
 export interface Agent {
@@ -142,6 +143,7 @@ export class AgentService extends LocatableGameService {
 
   makeDecision(agent: Agent, gameState: GameState) {
     const promptService = this.serviceLocator.getService(PromptService);
+    const toolService = this.serviceLocator.getService(ToolService);
 
     const tools = agent.capabilities.map((capability) => capability.tools).flat();
     const context = {
@@ -155,10 +157,18 @@ export class AgentService extends LocatableGameService {
     };
 
     const agentPrompt = promptService.getBasePrompt(CELL_AGENT_PROMPT);
-    const prompt = promptService.populate(agentPrompt, gameState, context);
-    console.log('$$$$', prompt);
+    const promptText = promptService.constructPromptText(agentPrompt, gameState, context);
+    
+    this.llmChatRequest(promptText, toolService.getAnthropicRepresentation(tools));
+  }
 
-    // TODO: Fix contextBridge/IPC stuff
-    // window.electronApi.generateText(prompt).then((res) => console.log('AI RES', res));
+  async llmChatRequest(query: string, tools: Tool[]) {
+    console.log('Invoking llm...');
+    try {
+      const response = await window.electron.ipcRenderer.invoke('llm:chat', JSON.stringify({ query, tools }));
+      console.log('AI Response:', response);
+    } catch (error) {
+      console.error('Error:', error);
+    }
   }
 }
