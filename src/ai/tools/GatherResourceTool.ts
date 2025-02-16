@@ -30,32 +30,34 @@ export const GatherResourceTool: LucaTool = {
     required: ["resource"]
   },
   requiredContext: [CONTEXT.AGENT_ID],
-  implementation: (params: { resource: { resourceType: string, resourceQuality: number, amount: number } }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {
+  implementation: (params: { resourceType: string, resourceQuality: number, amount: number }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {
+    console.log('Gather params:', params);
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
     const agentState = agentStore.getState();
     const gridState = gridStore.getState();
     const gridCells = cloneDeep(gridState.cells);
     const agent = cloneDeep(agentState.agentMap[agentId]);
 
-    const resourceType = resourceAbrToType(params.resource.resourceType);
+    const resourceType = resourceAbrToType(params.resourceType);
     if (!resourceType) {
-      console.warn(`Cannot gather ${params.resource.resourceType}; invalid resource type`);
+      console.warn(`Cannot gather ${params.resourceType}; invalid resource type`);
       return { status: 0, context: {} };
     }
 
-    if (!(params.resource.resourceQuality in ResourceQuality)) {
-      console.warn(`Cannot gather ${params.resource.resourceType}; invalid resource quality ${params.resource.resourceQuality}`);
+    if (!(params.resourceQuality in ResourceQuality)) {
+      console.warn(`Cannot gather ${params.resourceType}; invalid resource quality ${params.resourceQuality}`);
       return { status: 0, context: {} };
     }
 
     const resourceStack: ResourceStack = {
       type: resourceType,
-      quantity: params.resource.amount,
-      quality: params.resource.resourceQuality
+      quantity: params.amount,
+      quality: params.resourceQuality
     };
     const quantityTaken = Math.max(gridCells[agent.currentCell.y][agent.currentCell.x].resourceBuckets[resourceStack.type][resourceStack.quality].quantity - resourceStack.quantity, 0);
 
     gridCells[agent.currentCell.y][agent.currentCell.x].resourceBuckets[resourceStack.type][resourceStack.quality].quantity -= quantityTaken;
+    console.log("agetn rec buckets", agent.resourceBuckets);
     agent.resourceBuckets[resourceStack.type][resourceStack.quality].quantity += quantityTaken;
 
     gridStore.setState({

@@ -11,6 +11,8 @@ export class LLMService {
     totalOutputTokens: 0,
     totalCost: 0
   };
+  private lastQueryTime = 0;
+  private readonly RATE_LIMIT_MS = 5000;
 
   constructor(apiKey: string) {
     this.anthropic = new Anthropic({
@@ -18,7 +20,20 @@ export class LLMService {
     });
   }
 
+  private async enforceRateLimit() {
+    const now = Date.now();
+    const timeSinceLastQuery = now - this.lastQueryTime;
+    if (timeSinceLastQuery < this.RATE_LIMIT_MS) {
+      console.warn('LLM Rate limit hit');
+      const delayMs = this.RATE_LIMIT_MS - timeSinceLastQuery;
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+    this.lastQueryTime = Date.now();
+  }
+
   async query(messages: LucaMessage[], tools: Tool[]): Promise<Message> {
+    console.log('Queuing LLM query...');
+    await this.enforceRateLimit();
     console.log('Sending query to LLM:', messages, tools);
     const message = await this.anthropic.messages.create({
       model: "claude-3-5-sonnet-latest",
