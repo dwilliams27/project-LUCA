@@ -9,25 +9,21 @@ export const CELL_AGENT_PROMPT = "CELL_AGENT_PROMPT";
 export const CellAgentPrompt: Prompt = {
   name: CELL_AGENT_PROMPT,
   text: `
-    <recent_thoughts>
-    {{RECENT_THOUGHTS}}
-    </recent_thoughts>
-
-    <current_resources>
-    {{CELL_AGENT_RESOURCES}}
-    </current_resources>
-
-    <capabilities>
-    {{CAPABILITIES}}
-    </capabilities>
-
-    <environment_context>
-    {{ENVIRONMENT}}
-    </environment_context>
-
-    <goals>
-    {{GOALS}}
-    </goals>
+<recent_thoughts>
+{{RECENT_THOUGHTS}}
+</recent_thoughts>
+<current_resources>
+{{CELL_AGENT_RESOURCES}}
+</current_resources>
+<capabilities>
+{{CAPABILITIES}}
+</capabilities>
+<environment_context>
+{{ENVIRONMENT}}
+</environment_context>
+<goals>
+{{GOALS}}
+</goals>
   `,
   contextAdapters: [
     RecentThoughtsContextAdapter,

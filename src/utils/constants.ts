@@ -17,6 +17,7 @@ export const PARTICLE_TRAVEL_SPEED = 20;
 export const PARTICLE_BASE_RADIUS = 2;
 
 // Agents
+export const AGENT_RANDOM_MOTION = 0.3;
 export const BASE_AGENT_SPEED = 10;
 export const CONTEXT = {
   RESOURCE_STACK: "RESOURCE_STACK",

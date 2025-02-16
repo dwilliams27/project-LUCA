@@ -3,10 +3,8 @@ import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLoca
 import { LucaMessage, Position, Resource, ResourceQuality, ResourceType } from "@/types";
 import { AGENT_ID, CAPABILITY_ID, genId } from "@/utils/id";
 import { agentStore, dimensionStore, GameState } from "@/store/gameStore";
-import { BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
-import { Sprite } from "pixi.js";
-import { GLOBAL_TEXTURES, TextureService } from "@/services/TextureService";
-import { SpriteService } from "@/services/SpriteService";
+import { AGENT_RANDOM_MOTION, BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
+import { Sprite, Text } from "pixi.js";
 import { LucaTool, ToolService } from "@/services/ToolService";
 import { MOVE_GRID_CELL_TOOL } from "@/ai/tools/MoveGridCellTool";
 import { SENSE_ADJACENT_CELL_TOOL } from "@/ai/tools/SenseAdjacentCellTool";
@@ -15,6 +13,7 @@ import { COLLECT_RESOURCE_GOAL_PROMPT } from "@/ai/prompts/CollectResourceGoalPr
 import { IpcService } from "@/services/IpcService";
 import { CELL_AGENT_SYSTEM_PROMPT } from "@/ai/prompts/CellAgentSystemPrompt";
 import { GATHER_RESOURCE_TOOL } from "@/ai/tools/GatherResourceTool";
+import { TextService } from "@/services/TextService";
 
 export type AgentType = "Orchestrator";
 
@@ -41,13 +40,17 @@ export interface Agent {
     [key in ResourceType]: Resource[];
   }, 
   knownCells: number[][];
-  sprite: Sprite;
+  sprite: Sprite | null;
+  displayText: Text;
   position: Position;
+  vx: number;
+  vy: number;
   currentCell: Position;
   destinationCell: Position | null;
   destinationPos: Position | null;
   moving: boolean;
   thinking: boolean;
+  readyToThink: boolean;
 }
 
 export class AgentService extends LocatableGameService {
@@ -71,9 +74,8 @@ export class AgentService extends LocatableGameService {
 
   createAgent(position: Position) {
     const promptService = this.serviceLocator.getService(PromptService);
-    const textureService = this.serviceLocator.getService(TextureService);
-    const spriteService = this.serviceLocator.getService(SpriteService);
     const toolService = this.serviceLocator.getService(ToolService);
+    const textService = this.serviceLocator.getService(TextService);
     const cellSize = dimensionStore.getState().cellSize;
 
     const capabilities: Capability[] = [
@@ -112,14 +114,20 @@ export class AgentService extends LocatableGameService {
       recentThoughts: [],
       capabilities,
       knownCells: this.createKnownCellsGrid(position, dimensionStore.getState().gridLength),
-      sprite: spriteService.createSprite(id, textureService.getTexture(GLOBAL_TEXTURES.DEBUG_AGENT)),
+      sprite: null,
+      displayText: textService.createText("🤔", 32),
       position: { x: position.x * cellSize + Math.random() * cellSize, y: position.y * cellSize + Math.random() * cellSize },
       currentCell: { x: position.x, y: position.y },
       destinationCell: null,
       destinationPos: null,
+      vx: 0,
+      vy: 0,
       moving: false,
-      thinking: false
-    }
+      thinking: false,
+      readyToThink: true
+    };
+    agent.displayText.x = agent.position.x;
+    agent.displayText.y = agent.position.y;
     agentStore.setState({
       agentMap: {
         ...agentStore.getState().agentMap,
@@ -138,9 +146,13 @@ export class AgentService extends LocatableGameService {
       const agent = agentStore.getState().agentMap[key];
       if (agent.moving) {
         this.updateMovingAgent(delta, agent);
-      } else if (!agent.thinking) {
-        agent.thinking = true;
-        this.makeDecision(agent);
+      } else {
+        if (!agent.thinking && agent.readyToThink) {
+          agent.thinking = true;
+          this.makeDecision(agent);
+        }
+        agent.vx += (Math.random() - 0.5) * AGENT_RANDOM_MOTION;
+        agent.vy += (Math.random() - 0.5) * AGENT_RANDOM_MOTION;
       }
     });
   }
@@ -165,8 +177,12 @@ export class AgentService extends LocatableGameService {
       agent.position.y += (dy / dist) * BASE_AGENT_SPEED * deltaTime;
     }
 
-    agent.sprite.x = agent.position.x;
-    agent.sprite.y = agent.position.y;
+    agent.displayText.x = agent.position.x;
+    agent.displayText.y = agent.position.y;
+    if (agent.sprite) {
+      agent.sprite.x = agent.position.x;
+      agent.sprite.y = agent.position.y;
+    }
   }
 
   async makeDecision(agent: Agent) {

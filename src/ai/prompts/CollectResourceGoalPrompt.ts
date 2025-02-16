@@ -5,7 +5,7 @@ export const COLLECT_RESOURCE_GOAL_PROMPT = "COLLECT_RESOURCE_GOAL_PROMPT";
 export const CollectResourceGoalPrompt: Prompt = {
   name: COLLECT_RESOURCE_GOAL_PROMPT,
   text: `
-    Collect {{RESOURCE_STACK}}
+Collect {{RESOURCE_STACK}}
   `,
   contextAdapters: [ResourceStackContextAdapter],
   tools: [],

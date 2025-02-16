@@ -3,8 +3,8 @@ import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLoca
 import { Direction, GridCell, Particle, Position, ResourceType, TransferOperation, TransformOperation } from "@/types";
 import { GRID_SIZE, PARTICLE_BASE_RADIUS, PARTICLE_SPEED, PARTICLE_TRAVEL_SPEED } from "@/utils/constants";
 import { genId, PARTICLE_ID } from "@/utils/id";
-import { Graphics, Sprite, Texture } from "pixi.js";
-import { posToStr } from "@/utils/context";
+import { Graphics, Sprite, Text, Texture } from "pixi.js";
+import { posToStr, resourceTypeToEmoji } from "@/utils/context";
 
 interface CenterOfMass {
   position: Position;
@@ -17,11 +17,13 @@ export const ResourceTypeToColor = {
   [ResourceType.INFORMATION]: 0xFF00FF,
 }
 
+// TODO: This dude needs some refactoring
 export class ParticleSystem extends LocatableGameService {
   static name = "PARTICLE_SYSTEM_SERVICE";
 
   textureMap: Map<ResourceType, Texture> = new Map();
   spriteMap: Map<string, Sprite> = new Map();
+  textMap: Map<string, Text> = new Map();
   centerOfMassMap: Map<string, Map<ResourceType, CenterOfMass>> = new Map();
 
   byId: Record<string, Particle> = {};
@@ -73,6 +75,8 @@ export class ParticleSystem extends LocatableGameService {
               target: { x: 0, y: 0 },
               vx: 0,
               vy: 0,
+              width: 1,
+              height: 1,
               scale: 1,
               transitioning: false,
               sourceCell: gridCell,
@@ -182,21 +186,20 @@ export class ParticleSystem extends LocatableGameService {
     const cellRight = cellLeft + cellSize;
     const cellTop = particle.sourceCell.position.y * cellSize;
     const cellBottom = cellTop + cellSize;
-    
-    const particleSize = PARTICLE_BASE_RADIUS * particle.scale * 2;
-    if (particle.position.x < cellLeft) {
-      particle.position.x = cellLeft;
+
+    if (particle.position.x - particle.width / 2 < cellLeft) {
+      particle.position.x = cellLeft + particle.width / 2;
       particle.vx *= -1;
-    } else if (particle.position.x > cellRight - particleSize) {
-      particle.position.x = cellRight - particleSize;
+    } else if (particle.position.x + particle.width / 2 > cellRight) {
+      particle.position.x = cellRight - particle.width / 2;
       particle.vx *= -1;
     }
     
-    if (particle.position.y < cellTop) {
-      particle.position.y = cellTop;
+    if (particle.position.y - particle.height / 2 < cellTop) {
+      particle.position.y = cellTop + particle.height / 2;
       particle.vy *= -1;
-    } else if (particle.position.y > cellBottom - particleSize) {
-      particle.position.y = cellBottom - particleSize;
+    } else if (particle.position.y + particle.height / 2 > cellBottom) {
+      particle.position.y = cellBottom - particle.height / 2;
       particle.vy *= -1;
     }
 
@@ -241,10 +244,10 @@ export class ParticleSystem extends LocatableGameService {
       const cellSize = dimensionStore.getState().cellSize;
       particle.target.x = (transfer.direction === Direction.NORTH || transfer.direction === Direction.SOUTH)
         ? particle.position.x
-        : cellSize * toCell.position.x + (Math.random() * cellSize * 0.7 + PARTICLE_BASE_RADIUS);
+        : cellSize * toCell.position.x + (Math.random() * cellSize * 0.7 + particle.width / 2);
       particle.target.y = (transfer.direction === Direction.EAST || transfer.direction === Direction.WEST)
         ? particle.position.y
-        : cellSize * toCell.position.y + (Math.random() * cellSize * 0.7 + PARTICLE_BASE_RADIUS);
+        : cellSize * toCell.position.y + (Math.random() * cellSize * 0.7 + particle.height / 2);
 
       transferedParticles.push(particle);
     }
@@ -283,6 +286,8 @@ export class ParticleSystem extends LocatableGameService {
         target: { x: 0, y: 0 },
         vx: 0,
         vy: 0,
+        width: 1,
+        height: 1,
         scale: 1,
         transitioning: false
       });
@@ -306,23 +311,40 @@ export class ParticleSystem extends LocatableGameService {
       }
       
       // Get or create sprite for this particle
-      let sprite = this.spriteMap.get(particle.id);
+      // let sprite = this.spriteMap.get(particle.id);
+      let text = this.textMap.get(particle.id);
       
-      if (!sprite) {
-        if (!this.textureMap) {
+      // if (!sprite) {
+      //   if (!this.textureMap) {
+      //     return;
+      //   }
+      //   sprite = new Sprite(this.textureMap.get(particle.resource.type));
+      //   sprite.name = particle.id;
+      //   sprite.scale = { x: particle.scale, y: particle.scale };
+      //   sprite.alpha = (particle.resource.quality + 1) / 3;
+      //   this.spriteMap.set(particle.id, sprite);
+      //   this.application.stage.addChild(sprite);
+      // }
+      if (!text) {
+        if (!this.textMap) {
           return;
         }
-        sprite = new Sprite(this.textureMap.get(particle.resource.type));
-        sprite.name = particle.id;
-        sprite.scale = { x: particle.scale, y: particle.scale };
-        sprite.alpha = (particle.resource.quality + 1) / 3;
-        this.spriteMap.set(particle.id, sprite);
-        this.application.stage.addChild(sprite);
+        text = new Text(resourceTypeToEmoji(particle.resource.type) || "?", {
+          fontFamily: 'Arial',
+          fontSize: 12,
+          fill: 0x000000
+        });
+        text.anchor.set(0.5);
+        particle.width = text.width;
+        particle.height = text.height;
+        this.textMap.set(particle.id, text);
+        this.application.stage.addChild(text);
       }
       
-      // Update sprite position
-      sprite.x = particle.position.x;
-      sprite.y = particle.position.y;
+      // sprite.x = particle.position.x;
+      // sprite.y = particle.position.y;
+      text.x = particle.position.x;
+      text.y = particle.position.y;
     });
   }
 }

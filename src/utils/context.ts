@@ -14,15 +14,30 @@ export function resourceToStr(resource: Resource | ResourceStack, includeZero = 
   return `${rtype},${resource.quality},${resource.quantity}`;
 }
 
-export function resourceAbrToType(resourceAbr: string): ResourceType | null {
-  if (resourceAbr === "E") {
-    return ResourceType.ENERGY;
-  } else if (resourceAbr === "M") {
-    return ResourceType.MATTER;
-  } else if (resourceAbr === "I") {
-    return ResourceType.INFORMATION;
+export function resourceTypeToEmoji(resourceType: ResourceType) {
+  switch (resourceType) {
+    case ResourceType.ENERGY:
+      return "⚡️";
+    case ResourceType.MATTER:
+      return "⚛️";
+    case ResourceType.INFORMATION:
+      return "🧬";
+    default:
+      return null;
   }
-  return null;
+}
+
+export function resourceAbrToType(resourceAbr: string): ResourceType | null {
+  switch (resourceAbr) {
+    case "E":
+      return ResourceType.ENERGY;
+    case "M":
+      return ResourceType.MATTER;
+    case "I":
+      return ResourceType.INFORMATION;
+    default:
+      return null;
+  }
 }
 
 export function posToStr(position: Position) {

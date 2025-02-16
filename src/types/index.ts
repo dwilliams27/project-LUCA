@@ -27,6 +27,8 @@ export interface Particle {
   transitioning: boolean;
   sourceCell?: GridCell;
   targetCell?: GridCell;
+  width: number;
+  height: number;
 };
 
 export interface Position {
