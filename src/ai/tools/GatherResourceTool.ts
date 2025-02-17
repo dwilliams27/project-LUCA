@@ -42,13 +42,13 @@ export const GatherResourceTool: LucaTool = {
     const resourceType = resourceAbrToType(params.resourceType);
     if (!resourceType) {
       console.warn(`Cannot gather ${params.resourceType}; invalid resource type`);
-      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } });
+      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } } as any, true);
       return { status: 0, context: {} };
     }
 
     if (!(params.resourceQuality in ResourceQuality)) {
       console.warn(`Cannot gather ${params.resourceType}; invalid resource quality ${params.resourceQuality}`);
-      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } });
+      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } } as any, true);
       return { status: 0, context: {} };
     }
 
@@ -73,7 +73,7 @@ export const GatherResourceTool: LucaTool = {
     agentUpdates.inventory.resourceBuckets[resourceStack.type][resourceStack.quality].quantity += quantityTaken;
     agentUpdates.mental.readyToThink = true;
 
-    applyAgentUpdates({ [agentId]: agentUpdates });
+    applyAgentUpdates({ [agentId]: agentUpdates }, true);
 
     console.log('Gather resource Tool complete', agentUpdates);
     return { status: 1, context: {} };

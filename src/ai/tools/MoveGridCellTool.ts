@@ -1,7 +1,8 @@
+import { Agent } from "@/services/AgentService";
 import { GameServiceLocator } from "@/services/ServiceLocator";
 import { LucaTool } from "@/services/ToolService";
 import { agentStore } from "@/store/gameStore";
-import { Direction } from "@/types";
+import { DeepPartial, Direction } from "@/types";
 import { CONTEXT } from "@/utils/constants";
 import { getRelativeGridCell } from "@/utils/grid";
 import { cloneWithMaxDepth } from "@/utils/helpers";
@@ -27,23 +28,23 @@ export const MoveGridCellTool: LucaTool = {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
     const agentState = agentStore.getState();
     const agentRef = agentState.agentMap[agentId];
-    const agentUpdates = {
-      mental: cloneWithMaxDepth(agentRef.mental, 3),
-      physics: cloneWithMaxDepth(agentRef.physics, 3),
+    const agentUpdates: DeepPartial<Agent> = {
+      mental: { readyToThink: true, knownCells: cloneWithMaxDepth(agentRef.mental.knownCells, 2) },
+      physics: {},
     };
     const newCell = getRelativeGridCell(agentRef.physics.currentCell, parseInt(params.direction));
 
-    if (agentUpdates.physics.moving || !newCell) {
-      console.warn('Agent is moving but to where? No destination cell, exiting MoveGridCell tool early');
-      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } });
+    if (!newCell) {
+      console.warn('No destination cell, exiting MoveGridCell tool early');
+      applyAgentUpdates({ [agentId]: agentUpdates } as Record<string, Partial<Agent>>, true);
       return { status: 0, context: {} };
     }
 
-    agentUpdates.physics.moving = true;
-    agentUpdates.physics.destinationCell = newCell;
-    agentUpdates.mental.knownCells[newCell.y][newCell.x] = 1;
+    agentUpdates.physics!.moving = true;
+    agentUpdates.physics!.destinationCell = newCell;
+    agentUpdates.mental!.knownCells![newCell.y]![newCell.x] = 1;
 
-    applyAgentUpdates({ [agentId]: agentUpdates });
+    applyAgentUpdates({ [agentId]: agentUpdates } as Record<string, Partial<Agent>>, true);
 
     console.log('Move grid cell Tool complete', agentUpdates);
 

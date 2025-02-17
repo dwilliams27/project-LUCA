@@ -30,7 +30,7 @@ export const SenseAdjacentCellTool: LucaTool = {
     const newCell = getRelativeGridCell(agentRef.physics.currentCell, parseInt(params.direction));
     if (!newCell) {
       console.warn('No new cell found, exiting early for sense');
-      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } });
+      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } } as any, true);
       return { status: 0, context: {} };
     }
 
@@ -40,7 +40,7 @@ export const SenseAdjacentCellTool: LucaTool = {
     agentUpdates.mental.knownCells[newCell.y][newCell.x] = 1;
     agentUpdates.mental.readyToThink = true;
 
-    applyAgentUpdates({ [agentId]: agentUpdates });
+    applyAgentUpdates({ [agentId]: agentUpdates }, true);
 
     console.log('Sense resource Tool complete', agentUpdates);
 

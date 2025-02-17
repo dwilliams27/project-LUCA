@@ -1,6 +1,6 @@
 import { Prompt, PromptService } from "@/services/PromptService";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
-import { IpcLlmChatResponse, LucaMessage, Position, Resource, ResourceQuality, ResourceType } from "@/types";
+import { DeepPartial, IpcLlmChatResponse, LucaMessage, Position, Resource, ResourceQuality, ResourceType } from "@/types";
 import { AGENT_ID, CAPABILITY_ID, genId } from "@/utils/id";
 import { agentStore, dimensionStore, GameState } from "@/store/gameStore";
 import { AGENT_DAMP, AGENT_RANDOM_MOTION, BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
@@ -21,6 +21,7 @@ import { generateEmptyResourceBucket } from "@/utils/resources";
 import { applyAgentUpdates } from "@/utils/state";
 
 export type AgentType = "Orchestrator";
+export type AgentPhysicsUpdate = DeepPartial<Agent["physics"]> & { position: Position };
 
 export interface Goal {
   basePrompt: Prompt | null;
@@ -187,45 +188,55 @@ export class AgentService extends LocatableGameService {
 
     Object.values(agentMap).forEach((agentRef) => {
       updates[agentRef.id] = {};
-      const physicsUpdate = cloneWithMaxDepth(agentRef.physics, 3);
+      const physicsUpdate: AgentPhysicsUpdate = {
+        position: { x: agentRef.physics.position.x, y: agentRef.physics.position.y }
+      };
       const pixiRef = agentRef.pixi;
       
       if (physicsUpdate.moving) {
-        this.updateMovingAgent(delta, physicsUpdate);
-        this.tickAgentPos(delta, physicsUpdate, pixiRef);
+        this.updateMovingAgent(delta, physicsUpdate, agentRef);
+        this.tickAgentPos(delta, physicsUpdate, agentRef);
       } else {
         if (!agentRef.mental.thinking && agentRef.mental.readyToThink && this.debugTotalDecisions < DEBUG_MAX_DECISIONS) {
           console.log('$$ Prethink agent state', agentRef);
           console.log("Making a decision...");
-          const mentalUpdate = cloneWithMaxDepth(agentRef.mental, 3);
+          const mentalUpdate: DeepPartial<Agent["mental"]> = {};
           mentalUpdate.thinking = true;
           mentalUpdate.readyToThink = false;
-          updates[agentRef.id].mental = mentalUpdate;
+          updates[agentRef.id].mental = mentalUpdate as Agent["mental"];
           this.makeDecision(agentRef);
+        }
+        if (!physicsUpdate.vx || !physicsUpdate.vy) {
+          physicsUpdate.vx = agentRef.physics.vx;
+          physicsUpdate.vy = agentRef.physics.vy;
         }
         physicsUpdate.vx += (Math.random() - 0.5) * AGENT_RANDOM_MOTION;
         physicsUpdate.vy += (Math.random() - 0.5) * AGENT_RANDOM_MOTION;
         physicsUpdate.vx *= AGENT_DAMP;
         physicsUpdate.vy *= AGENT_DAMP;
-        this.tickAgentPos(delta, physicsUpdate, pixiRef);
+        this.tickAgentPos(delta, physicsUpdate, agentRef);
       }
 
       this.agentVisualSync(pixiRef, physicsUpdate.position);
       // console.log('Agent mental updates', updates[agentRef.id]?.mental, agentRef.mental);
-      updates[agentRef.id].physics = physicsUpdate;
+      updates[agentRef.id].physics = physicsUpdate as Agent["physics"];
     });
 
     applyAgentUpdates(updates);
   }
 
-  tickAgentPos(deltaTime: number, physicsUpdate: Agent["physics"], pixiRef: Agent["pixi"]) {
+  tickAgentPos(deltaTime: number, physicsUpdate: AgentPhysicsUpdate, agentRef: Agent) {
     const collisionService = this.serviceLocator.getService(CollisionService);
 
-    physicsUpdate.position.x += physicsUpdate.vx * BASE_AGENT_SPEED * deltaTime;
-    physicsUpdate.position.y += physicsUpdate.vy * BASE_AGENT_SPEED * deltaTime;
+    physicsUpdate.position.x += agentRef.physics.vx * BASE_AGENT_SPEED * deltaTime;
+    physicsUpdate.position.y += agentRef.physics.vy * BASE_AGENT_SPEED * deltaTime;
 
-    const { v, p } = collisionService.enforceGridCellBoundaries(physicsUpdate.position, { x: pixiRef.mainText.width, y: pixiRef.mainText.height }, physicsUpdate.currentCell);
+    const { v, p } = collisionService.enforceGridCellBoundaries(physicsUpdate.position as Position, { x: agentRef.pixi.mainText.width, y: agentRef.pixi.mainText.height }, agentRef.physics.currentCell);
     physicsUpdate.position = p;
+    if (!physicsUpdate.vx || !physicsUpdate.vy) {
+      physicsUpdate.vx = agentRef.physics.vx;
+      physicsUpdate.vy = agentRef.physics.vy;
+    }
     physicsUpdate.vx *= v.x;
     physicsUpdate.vy *= v.y;
   }
@@ -243,14 +254,14 @@ export class AgentService extends LocatableGameService {
     }
   }
 
-  updateMovingAgent(deltaTime: number, physicsUpdate: Agent["physics"]) {
+  updateMovingAgent(deltaTime: number, physicsUpdate: AgentPhysicsUpdate, agentRef: Agent) {
     if (!physicsUpdate.destinationPos || !physicsUpdate.destinationCell) {
       physicsUpdate.moving = false;
       return;
     }
 
-    const dx = physicsUpdate.destinationPos.x - physicsUpdate.position.x;
-    const dy = physicsUpdate.destinationPos.y - physicsUpdate.position.y;
+    const dx = physicsUpdate.destinationPos.x! - physicsUpdate.position.x;
+    const dy = physicsUpdate.destinationPos.y! - physicsUpdate.position.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist < 1) {
@@ -259,8 +270,8 @@ export class AgentService extends LocatableGameService {
       physicsUpdate.destinationCell = null;
       physicsUpdate.destinationPos = null;
     } else {
-      physicsUpdate.position.x += (dx / dist) * BASE_AGENT_SPEED * deltaTime;
-      physicsUpdate.position.y += (dy / dist) * BASE_AGENT_SPEED * deltaTime;
+      physicsUpdate.position!.x! += (dx / dist) * BASE_AGENT_SPEED * deltaTime;
+      physicsUpdate.position!.y! += (dy / dist) * BASE_AGENT_SPEED * deltaTime;
     }
   }
 
@@ -307,9 +318,10 @@ export class AgentService extends LocatableGameService {
       content.text.length > 0
     ) as TextBlock;
     const agentRef = agentStore.getState().agentMap[agentId];
-    const mentalUpdate = cloneWithMaxDepth(agentRef.mental, 3);
+    const mentalUpdate: DeepPartial<Agent["mental"]> = {};
 
     if (thoughtContent) {
+      mentalUpdate.recentThoughts = [...agentRef.mental.recentThoughts];
       mentalUpdate.recentThoughts.push(thoughtContent.text);
       if (mentalUpdate.recentThoughts.length > 5) {
         mentalUpdate.recentThoughts.shift();
@@ -328,11 +340,9 @@ export class AgentService extends LocatableGameService {
       }
     }
 
-    // For sync tool calls, must be sue to reread state for readytoThink
-    mentalUpdate.readyToThink = agentStore.getState().agentMap[agentId].mental.readyToThink;
     mentalUpdate.thinking = false;
 
     this.debugTotalDecisions += 1;
-    applyAgentUpdates({ [agentRef.id]: { mental: mentalUpdate } });
+    applyAgentUpdates({ [agentRef.id]: { mental: mentalUpdate } } as any, true);
   }
 }
