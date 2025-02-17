@@ -4,7 +4,8 @@ import { agentStore } from "@/store/gameStore";
 import { Direction } from "@/types";
 import { CONTEXT } from "@/utils/constants";
 import { getRelativeGridCell } from "@/utils/grid";
-import { cloneDeep } from "lodash-es";
+import { cloneWithMaxDepth } from "@/utils/helpers";
+import { applyAgentUpdates } from "@/utils/state";
 
 export const MOVE_GRID_CELL_TOOL = "MOVE_GRID_CELL_TOOL";
 export const MoveGridCellTool: LucaTool = {
@@ -25,24 +26,25 @@ export const MoveGridCellTool: LucaTool = {
   implementation: (params: { direction: Direction }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
     const agentState = agentStore.getState();
-    const agent = cloneDeep(agentState.agentMap[agentId]);
-    const newCell = getRelativeGridCell(agent.currentCell, params.direction);
+    const agentRef = agentState.agentMap[agentId];
+    const agentUpdates = {
+      mental: cloneWithMaxDepth(agentRef.mental, 3),
+      physics: cloneWithMaxDepth(agentRef.physics, 3),
+    };
+    const newCell = getRelativeGridCell(agentRef.physics.currentCell, params.direction);
 
-    if (agent.moving || !newCell) {
+    if (agentUpdates.physics.moving || !newCell) {
       return { status: 0, context: {} };
     }
 
-    agent.moving = true;
-    agent.destinationCell = newCell;
-    agent.knownCells[newCell.y][newCell.x] = 1;
+    agentUpdates.physics.moving = true;
+    agentUpdates.physics.destinationCell = newCell;
+    agentUpdates.mental.knownCells[newCell.y][newCell.x] = 1;
+    agentUpdates.mental.readyToThink = true;
 
-    agentStore.setState({
-      ...agentState,
-      agentMap: {
-        ...agentState.agentMap,
-        [agentId]: agent
-      }
-    });
+    applyAgentUpdates({ [agentId]: agentUpdates });
+
+    console.log('Move grid cell Tool complete', agentUpdates);
 
     return { status: 1, context: {} };
   }

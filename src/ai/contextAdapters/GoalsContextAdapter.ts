@@ -11,8 +11,8 @@ export const GoalsContextAdapter: ContextAdapter = {
   ],
   getText: (serviceLocator: GameServiceLocator, context: Record<string, any>) => {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
-    const agent = agentStore.getState().agentMap[agentId];
+    const agentRef = agentStore.getState().agentMap[agentId];
     const promptService = serviceLocator.getService(PromptService);
-    return `<goal>${agent.goals.filter((goal) => goal.basePrompt).map((goal) => promptService.constructPromptText(goal.basePrompt!, context)).join("</goal><goal>")}</goal>`;
+    return `<goal>${agentRef.goals.filter((goal) => goal.basePrompt).map((goal) => promptService.constructPromptText(goal.basePrompt!, context)).join("</goal><goal>")}</goal>`;
   }
 }

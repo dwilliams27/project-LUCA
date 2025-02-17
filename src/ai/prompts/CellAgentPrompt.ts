@@ -1,5 +1,5 @@
 import { CapabilitiesContextAdapter } from "@/ai/contextAdapters/CapabilitiesContextAdapter";
-import { CurrentCellAgentResourcesContextAdapter } from "@/ai/contextAdapters/CurrentAgentResourcesContextAdapter";
+import { InventoryContextAdapter } from "@/ai/contextAdapters/InventoryContextAdapter";
 import { EnvironmentContextAdapter } from "@/ai/contextAdapters/EnvironmentContextAdapter";
 import { GoalsContextAdapter } from "@/ai/contextAdapters/GoalsContextAdapter";
 import { RecentThoughtsContextAdapter } from "@/ai/contextAdapters/RecentThoughtsContextAdapter";
@@ -12,9 +12,9 @@ export const CellAgentPrompt: Prompt = {
 <recent_thoughts>
 {{RECENT_THOUGHTS}}
 </recent_thoughts>
-<current_resources>
-{{CELL_AGENT_RESOURCES}}
-</current_resources>
+<inventory>
+{{INVENTORY}}
+</inventory>
 <capabilities>
 {{CAPABILITIES}}
 </capabilities>
@@ -27,7 +27,7 @@ export const CellAgentPrompt: Prompt = {
   `,
   contextAdapters: [
     RecentThoughtsContextAdapter,
-    CurrentCellAgentResourcesContextAdapter,
+    InventoryContextAdapter,
     CapabilitiesContextAdapter,
     EnvironmentContextAdapter,
     GoalsContextAdapter,

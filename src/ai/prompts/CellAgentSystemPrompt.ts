@@ -13,7 +13,7 @@ Tools will be marked as (immediate) or (non-immediate).
 All references to a RESOURCE will be in the format TYPE,QUALITY,QUANTITY
 TYPE: Matter = M, Energy = E, Information = I
 QUALITY: Low = 0, Medium = 1, High = 2
-The first character you output must be an emoji summarizing your decision.
+The first character you output must be an emoji (only output emojis created before the year 2020) summarizing your decision.
 Then include a SHORT (1-2 sentance) summary of why you selected this action. DO NOT INCLUDE ANY LISTS OR OBJECTS IN THE SUMMARY
 This summary will be used in future prompts as a thought, so be sure it is concise and informative.
   `,

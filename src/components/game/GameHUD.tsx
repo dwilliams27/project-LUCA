@@ -24,8 +24,6 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
 
     if (!agent) {
       setAgent(agentService.createAgent({ x: 0, y: 0 }));
-    } else if(!agent.thinking) {
-      agentService.makeDecision(agent, game);
     }
   }
 

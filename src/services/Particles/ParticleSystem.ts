@@ -301,7 +301,6 @@ export class ParticleSystem extends LocatableGameService {
     Object.keys(this.byId).forEach((key) => {
       const particle = this.byId[key];
 
-      // Simple brownian motion
       particle.vx += (Math.random() - 0.5) * PARTICLE_SPEED;
       particle.vy += (Math.random() - 0.5) * PARTICLE_SPEED;
       if (particle.transitioning) {

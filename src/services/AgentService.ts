@@ -1,7 +1,7 @@
 import { Prompt, PromptService } from "@/services/PromptService";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
 import { IpcLlmChatResponse, LucaMessage, Position, Resource, ResourceQuality, ResourceType } from "@/types";
-import { AGENT_ID, CAPABILITY_ID, genId, RESOURCE_ID } from "@/utils/id";
+import { AGENT_ID, CAPABILITY_ID, genId } from "@/utils/id";
 import { agentStore, dimensionStore, GameState } from "@/store/gameStore";
 import { AGENT_DAMP, AGENT_RANDOM_MOTION, BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
 import { Sprite, Text } from "pixi.js";
@@ -18,6 +18,7 @@ import { cloneWithMaxDepth } from "@/utils/helpers";
 import { CollisionService } from "@/services/CollisionService";
 import { TextBlock } from "@anthropic-ai/sdk/resources";
 import { generateEmptyResourceBucket } from "@/utils/resources";
+import { applyAgentUpdates } from "@/utils/state";
 
 export type AgentType = "Orchestrator";
 
@@ -39,33 +40,41 @@ export interface Agent {
   type: AgentType;
   goals: Goal[];
   capabilities: Capability[];
-  recentThoughts: string[];
-  resourceBuckets: {
-    [key in ResourceType]: Resource[];
-  }, 
-  knownCells: number[][];
-  display: {
+  // Dont clone and update these, let PIXI handle
+  pixi: {
     sprite: Sprite | null;
     mainText: Text;
     thoughtBubble: Text;
     thoughtEmoji: Text;
   },
-  position: Position;
-  vx: number;
-  vy: number;
-  width: number;
-  height: number;
-  currentCell: Position;
-  destinationCell: Position | null;
-  destinationPos: Position | null;
-  moving: boolean;
-  thinking: boolean;
-  readyToThink: boolean;
+  physics: {
+    position: Position;
+    vx: number;
+    vy: number;
+    moving: boolean;
+    currentCell: Position;
+    destinationCell: Position | null;
+    destinationPos: Position | null;
+  },
+  mental: {
+    thinking: boolean;
+    readyToThink: boolean;
+    recentThoughts: string[];
+    knownCells: number[][];
+  },
+  inventory: {
+    resourceBuckets: {
+      [key in ResourceType]: Resource[];
+    },
+  },
 }
+
+const DEBUG_MAX_DECISIONS = 5;
 
 export class AgentService extends LocatableGameService {
   static name = "AGENT_SERVICE";
   private systemMessage: LucaMessage;
+  private debugTotalDecisions = 0;
 
   constructor(serviceLocator: GameServiceLocator) {
     super(serviceLocator);
@@ -112,9 +121,9 @@ export class AgentService extends LocatableGameService {
     ];
 
     const id = genId(AGENT_ID);
-    const mainText = textService.createText("🤔", 32);
-    const thoughtBubble = textService.createText("💭", 38, { x: -0.5, y: 1 });
-    const thoughtEmoji = textService.createText("X", 38, { x: -0.5, y: 1 });
+    const mainText = textService.createText("🤨", 32);
+    const thoughtBubble = textService.createText("💭", 42, { x: -0.5, y: 1 });
+    const thoughtEmoji = textService.createText("X", 24, { x: -1.20, y: 1.5 });
     mainText.zIndex = 2;
     thoughtBubble.visible = false;
     thoughtBubble.zIndex = 5;
@@ -130,31 +139,35 @@ export class AgentService extends LocatableGameService {
       id,
       type: "Orchestrator",
       goals,
-      resourceBuckets: {
-        [ResourceType.ENERGY]: generateEmptyResourceBucket(ResourceType.ENERGY),
-        [ResourceType.MATTER]: generateEmptyResourceBucket(ResourceType.MATTER),
-        [ResourceType.INFORMATION]: generateEmptyResourceBucket(ResourceType.INFORMATION),
-      },
-      recentThoughts: [],
       capabilities,
-      knownCells: this.createKnownCellsGrid(position, dimensionStore.getState().gridLength),
-      display: {
+      pixi: {
         sprite: null,
         mainText,
         thoughtBubble,
         thoughtEmoji,
       },
-      position: agentPosition,
-      currentCell: { x: position.x, y: position.y },
-      destinationCell: null,
-      destinationPos: null,
-      vx: 0,
-      vy: 0,
-      width: mainText.width,
-      height: mainText.height,
-      moving: false,
-      thinking: false,
-      readyToThink: true
+      physics: {
+        position: agentPosition,
+        vx: 0,
+        vy: 0,
+        currentCell: { x: position.x, y: position.y },
+        destinationCell: null,
+        destinationPos: null,
+        moving: false,
+      },
+      mental: {
+        thinking: false,
+        readyToThink: true,
+        recentThoughts: [],
+        knownCells: this.createKnownCellsGrid(position, dimensionStore.getState().gridLength),
+      },
+      inventory: {
+        resourceBuckets: {
+          [ResourceType.ENERGY]: generateEmptyResourceBucket(ResourceType.ENERGY),
+          [ResourceType.MATTER]: generateEmptyResourceBucket(ResourceType.MATTER),
+          [ResourceType.INFORMATION]: generateEmptyResourceBucket(ResourceType.INFORMATION),
+        },
+      },
     };
     
     agentStore.setState({
@@ -170,96 +183,99 @@ export class AgentService extends LocatableGameService {
   tick(delta: number) {
     const currentState = agentStore.getState();
     const agentMap = currentState.agentMap;
-    const updates: Record<string, Agent> = {};
+    const updates: Record<string, Partial<Agent>> = {};
 
-    Object.values(agentMap).forEach((agent) => {
-      // May need to adjust cloning if changing nested props
-      const updatedAgent = cloneWithMaxDepth(agent, 3);
+    Object.values(agentMap).forEach((agentRef) => {
+      updates[agentRef.id] = {};
+      const physicsUpdate = cloneWithMaxDepth(agentRef.physics, 3);
+      const pixiRef = agentRef.pixi;
       
-      if (updatedAgent.moving) {
-        this.updateMovingAgent(delta, updatedAgent);
+      if (physicsUpdate.moving) {
+        this.updateMovingAgent(delta, physicsUpdate);
+        this.tickAgentPos(delta, physicsUpdate, pixiRef);
       } else {
-        if (!updatedAgent.thinking && updatedAgent.readyToThink) {
-          updatedAgent.thinking = true;
-          updatedAgent.readyToThink = false;
-          this.makeDecision(updatedAgent);
+        if (!agentRef.mental.thinking && agentRef.mental.readyToThink && this.debugTotalDecisions < DEBUG_MAX_DECISIONS) {
+          console.log('$$ Prethink agent state', agentRef);
+          console.log("Making a decision...");
+          const mentalUpdate = cloneWithMaxDepth(agentRef.mental, 3);
+          mentalUpdate.thinking = true;
+          mentalUpdate.readyToThink = false;
+          updates[agentRef.id].mental = mentalUpdate;
+          this.makeDecision(agentRef);
         }
-        updatedAgent.vx += (Math.random() - 0.5) * AGENT_RANDOM_MOTION;
-        updatedAgent.vy += (Math.random() - 0.5) * AGENT_RANDOM_MOTION;
-        updatedAgent.vx *= AGENT_DAMP;
-        updatedAgent.vy *= AGENT_DAMP;
-        this.tickAgentPos(delta, updatedAgent);
+        physicsUpdate.vx += (Math.random() - 0.5) * AGENT_RANDOM_MOTION;
+        physicsUpdate.vy += (Math.random() - 0.5) * AGENT_RANDOM_MOTION;
+        physicsUpdate.vx *= AGENT_DAMP;
+        physicsUpdate.vy *= AGENT_DAMP;
+        this.tickAgentPos(delta, physicsUpdate, pixiRef);
       }
 
-      this.agentVisualSync(updatedAgent);
-      updates[updatedAgent.id] = updatedAgent;
+      this.agentVisualSync(pixiRef, physicsUpdate.position);
+      // console.log('Agent mental updates', updates[agentRef.id]?.mental, agentRef.mental);
+      updates[agentRef.id].physics = physicsUpdate;
     });
 
-    // Fine for now agents dont get updates on each other until next tick
-    agentStore.setState({
-      agentMap: {
-        ...agentMap,
-        ...updates
-      }
-    });
+    applyAgentUpdates(updates);
   }
 
-  tickAgentPos(deltaTime: number, agent: Agent) {
+  tickAgentPos(deltaTime: number, physicsUpdate: Agent["physics"], pixiRef: Agent["pixi"]) {
     const collisionService = this.serviceLocator.getService(CollisionService);
 
-    agent.position.x += agent.vx * BASE_AGENT_SPEED * deltaTime;
-    agent.position.y += agent.vy * BASE_AGENT_SPEED * deltaTime;
+    physicsUpdate.position.x += physicsUpdate.vx * BASE_AGENT_SPEED * deltaTime;
+    physicsUpdate.position.y += physicsUpdate.vy * BASE_AGENT_SPEED * deltaTime;
 
-    const { v, p } = collisionService.enforceGridCellBoundaries(agent.position, { x: agent.width, y: agent.height }, agent.currentCell);
-    agent.position = p;
-    agent.vx *= v.x;
-    agent.vy *= v.y;
+    const { v, p } = collisionService.enforceGridCellBoundaries(physicsUpdate.position, { x: pixiRef.mainText.width, y: pixiRef.mainText.height }, physicsUpdate.currentCell);
+    physicsUpdate.position = p;
+    physicsUpdate.vx *= v.x;
+    physicsUpdate.vy *= v.y;
   }
 
-  agentVisualSync(agent: Agent) {
-    agent.display.mainText.x = agent.position.x;
-    agent.display.mainText.y = agent.position.y;
-    agent.display.thoughtBubble.x = agent.position.x;
-    agent.display.thoughtBubble.y = agent.position.y;
-    if (agent.display.sprite) {
-      agent.display.sprite.x = agent.position.x;
-      agent.display.sprite.y = agent.position.y;
+  agentVisualSync(pixiRef: Agent["pixi"], position: Position) {
+    pixiRef.mainText.x = position.x;
+    pixiRef.mainText.y = position.y;
+    pixiRef.thoughtBubble.x = position.x;
+    pixiRef.thoughtBubble.y = position.y;
+    pixiRef.thoughtEmoji.x = position.x;
+    pixiRef.thoughtEmoji.y = position.y;
+    if (pixiRef.sprite) {
+      pixiRef.sprite.x = position.x;
+      pixiRef.sprite.y = position.y;
     }
   }
 
-  updateMovingAgent(deltaTime: number, agent: Agent) {
-    if (!agent.destinationPos || !agent.destinationCell) {
-      agent.moving = false;
+  updateMovingAgent(deltaTime: number, physicsUpdate: Agent["physics"]) {
+    if (!physicsUpdate.destinationPos || !physicsUpdate.destinationCell) {
+      physicsUpdate.moving = false;
       return;
     }
 
-    const dx = agent.destinationPos.x - agent.position.x;
-    const dy = agent.destinationPos.y - agent.position.y;
+    const dx = physicsUpdate.destinationPos.x - physicsUpdate.position.x;
+    const dy = physicsUpdate.destinationPos.y - physicsUpdate.position.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist < 1) {
-      agent.moving = false;
-      agent.currentCell = agent.destinationCell;
-      agent.destinationCell = null;
-      agent.destinationPos = null;
+      physicsUpdate.moving = false;
+      physicsUpdate.currentCell = physicsUpdate.destinationCell;
+      physicsUpdate.destinationCell = null;
+      physicsUpdate.destinationPos = null;
     } else {
-      agent.position.x += (dx / dist) * BASE_AGENT_SPEED * deltaTime;
-      agent.position.y += (dy / dist) * BASE_AGENT_SPEED * deltaTime;
+      physicsUpdate.position.x += (dx / dist) * BASE_AGENT_SPEED * deltaTime;
+      physicsUpdate.position.y += (dy / dist) * BASE_AGENT_SPEED * deltaTime;
     }
   }
 
-  async makeDecision(agent: Agent) {
-    agent.display.thoughtBubble.visible = true;
-    agent.display.thoughtEmoji.text = "🤔";
-    agent.display.thoughtEmoji.visible = true;
+  async makeDecision(agentRef: Agent) {
+    agentRef.pixi.thoughtBubble.visible = true;
+    agentRef.pixi.thoughtEmoji.text = "🤔";
+    agentRef.pixi.thoughtEmoji.visible = true;
 
     const promptService = this.serviceLocator.getService(PromptService);
     const toolService = this.serviceLocator.getService(ToolService);
     const ipcService = this.serviceLocator.getService(IpcService);
 
-    const tools = agent.capabilities.map((capability) => capability.tools).flat();
+    const tools = agentRef.capabilities.map((capability) => capability.tools).flat();
     const context = {
-      [CONTEXT.AGENT_ID]: agent.id,
+      [CONTEXT.AGENT_ID]: agentRef.id,
       [CONTEXT.RESOURCE_STACK]: {
         type: ResourceType.ENERGY,
         quantity: 10,
@@ -271,7 +287,7 @@ export class AgentService extends LocatableGameService {
     const userMessage: LucaMessage = {
       role: "user",
       content: promptService.constructPromptText(agentPrompt, context)
-    }
+    };
     
     try {
       const response = await ipcService.llmChat({
@@ -279,26 +295,27 @@ export class AgentService extends LocatableGameService {
         tools: toolService.getAnthropicRepresentation(tools)
       });
       console.log('IPC Response', response);
-      this.handleLlmResponse(agent, tools, response, context);
+      this.handleLlmResponse(agentRef.id, tools, response, context);
     } catch (error) {
       console.error('Error invoking IPC llmChat:', error);
     }
   }
 
-  handleLlmResponse(agent: Agent, tools: LucaTool[], response: IpcLlmChatResponse, context: Record<string, any>) {
+  handleLlmResponse(agentId: string, tools: LucaTool[], response: IpcLlmChatResponse, context: Record<string, any>) {
     const thoughtContent = response.message.content.find((content) => 
       content.type === "text" && 
-      content.text.length > 0 && 
-      /\p{Emoji}/u.test(content.text[0])
+      content.text.length > 0
     ) as TextBlock;
+    const agentRef = agentStore.getState().agentMap[agentId];
+    const mentalUpdate = cloneWithMaxDepth(agentRef.mental, 3);
 
     if (thoughtContent) {
-      agent.recentThoughts.push(thoughtContent.text);
-      if (agent.recentThoughts.length > 5) {
-        agent.recentThoughts.shift();
+      mentalUpdate.recentThoughts.push(thoughtContent.text);
+      if (mentalUpdate.recentThoughts.length > 5) {
+        mentalUpdate.recentThoughts.shift();
       }
-      if (agent.display.thoughtEmoji) {
-        agent.display.thoughtEmoji.text = thoughtContent.text.charAt(0);
+      if (agentRef.pixi.thoughtEmoji) {
+        agentRef.pixi.thoughtEmoji.text = thoughtContent.text.charAt(0);
       }
     }
     if (response.message.stop_reason === "tool_use") {
@@ -310,5 +327,12 @@ export class AgentService extends LocatableGameService {
         invokedTool.implementation(firstCall.input, this.serviceLocator, context);
       }
     }
+
+    // For sync tool calls, must be sue to reread state for readytoThink
+    mentalUpdate.readyToThink = agentStore.getState().agentMap[agentId].mental.readyToThink;
+    mentalUpdate.thinking = false;
+
+    this.debugTotalDecisions += 1;
+    applyAgentUpdates({ [agentRef.id]: { mental: mentalUpdate } });
   }
 }

@@ -4,6 +4,8 @@ import { agentStore } from "@/store/gameStore";
 import { Direction } from "@/types";
 import { CONTEXT } from "@/utils/constants";
 import { getRelativeGridCell } from "@/utils/grid";
+import { cloneWithMaxDepth } from "@/utils/helpers";
+import { applyAgentUpdates } from "@/utils/state";
 import { cloneDeep } from "lodash-es";
 
 export const SENSE_ADJACENT_CELL_TOOL = "SENSE_ADJACENT_CELL_TOOL";
@@ -25,21 +27,21 @@ export const SenseAdjacentCellTool: LucaTool = {
   implementation: (params: { direction: Direction }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
     const agentState = agentStore.getState();
-    const agent = cloneDeep(agentState.agentMap[agentId]);
-    const newCell = getRelativeGridCell(agent.position, params.direction);
+    const agentRef = agentState.agentMap[agentId];
+    const newCell = getRelativeGridCell(agentRef.physics.position, params.direction);
     if (!newCell) {
       return { status: 0, context: {} };
     }
 
-    agent.knownCells[newCell.y][newCell.x] = 1;
+    const agentUpdates = {
+      mental: cloneWithMaxDepth(agentRef.mental, 3)
+    };
+    agentUpdates.mental.knownCells[newCell.y][newCell.x] = 1;
+    agentUpdates.mental.readyToThink = true;
 
-    agentStore.setState({
-      ...agentState,
-      agentMap: {
-        ...agentState.agentMap,
-        [agentId]: agent
-      }
-    });
+    applyAgentUpdates({ [agentId]: agentUpdates });
+
+    console.log('Sense resource Tool complete', agentUpdates);
 
     return { status: 1, context: {} };
   }

@@ -11,7 +11,7 @@ export const CapabilitiesContextAdapter: ContextAdapter = {
   ],
   getText: (serviceLocator: GameServiceLocator, context: Record<string, any>) => {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
-    const agent = agentStore.getState().agentMap[agentId];
-    return `<capability>${agent.capabilities.map((capability) => capability.description).join("</capability><capability>")}</capability>`;
+    const agentRef = agentStore.getState().agentMap[agentId];
+    return `<capability>${agentRef.capabilities.map((capability) => capability.description).join("</capability><capability>")}</capability>`;
   }
 }

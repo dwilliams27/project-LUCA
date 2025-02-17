@@ -13,26 +13,26 @@ export const GridContextAdapter: ContextAdapter = {
   ],
   getText: (serviceLocator: GameServiceLocator, context: Record<string, any>) => {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
-    const agent = agentStore.getState().agentMap[agentId];
-    const cells = gridStore.getState().cells;
+    const agentRef = agentStore.getState().agentMap[agentId];
+    const cellsRef = gridStore.getState().cells;
     let text = `
 <grid_context>
 Known grid cells will have information about resources within them, and unknown grid cells will just be '[X]'
 Each grid cell can have many different types of resources and qualities within it.
 Each known grid cell will be in the format [RESOURCE|RESOURCE|RESOURCE|...]
-The grid cell you are currently in will have a ! inside, such as [!|E,0,10|I,1,5|...]
+The grid cell you are currently in will have a !, such as [!|RESOURCE|...]
 <grid_state>
     `;
-    for (let y = 0; y < cells.length; y++) {
+    for (let y = 0; y < cellsRef.length; y++) {
       const row: string[] = [];
-      for (let x = 0; x < cells[y].length; x++) {
-        if (agent.knownCells[y][x] === 1) {
+      for (let x = 0; x < cellsRef[y].length; x++) {
+        if (agentRef.mental.knownCells[y][x] === 1) {
           const resources = [
-            ...cells[y][x].resourceBuckets[ResourceType.ENERGY].flat(),
-            ...cells[y][x].resourceBuckets[ResourceType.MATTER].flat(),
-            ...cells[y][x].resourceBuckets[ResourceType.INFORMATION].flat(),
+            ...cellsRef[y][x].resourceBuckets[ResourceType.ENERGY].flat(),
+            ...cellsRef[y][x].resourceBuckets[ResourceType.MATTER].flat(),
+            ...cellsRef[y][x].resourceBuckets[ResourceType.INFORMATION].flat(),
           ];
-          row.push(`[${agent.currentCell.x === x && agent.currentCell.y === y ? '!|' : ''}${resources.map((resource) => resourceToStr(resource)).filter((resourceStr) => !!resourceStr).join('|')}]`);
+          row.push(`[${agentRef.physics.currentCell.x === x && agentRef.physics.currentCell.y === y ? '!|' : ''}${resources.map((resource) => resourceToStr(resource)).filter((resourceStr) => !!resourceStr).join('|')}]`);
         } else {
           row.push(`[X]`);
         }

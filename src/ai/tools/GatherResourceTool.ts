@@ -4,6 +4,8 @@ import { agentStore, gridStore } from "@/store/gameStore";
 import { ResourceQuality, ResourceStack } from "@/types";
 import { CONTEXT } from "@/utils/constants";
 import { resourceAbrToType } from "@/utils/context";
+import { cloneWithMaxDepth } from "@/utils/helpers";
+import { applyAgentUpdates } from "@/utils/state";
 import { cloneDeep } from "lodash-es";
 
 export const GATHER_RESOURCE_TOOL = "GATHER_RESOURCE_TOOL";
@@ -35,8 +37,8 @@ export const GatherResourceTool: LucaTool = {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
     const agentState = agentStore.getState();
     const gridState = gridStore.getState();
-    const gridCells = cloneDeep(gridState.cells);
-    const agent = cloneDeep(agentState.agentMap[agentId]);
+    const gridCellsUpdate = cloneWithMaxDepth(gridState.cells, 10);
+    const agentRef = agentState.agentMap[agentId];
 
     const resourceType = resourceAbrToType(params.resourceType);
     if (!resourceType) {
@@ -54,24 +56,25 @@ export const GatherResourceTool: LucaTool = {
       quantity: params.amount,
       quality: params.resourceQuality
     };
-    const quantityTaken = Math.max(gridCells[agent.currentCell.y][agent.currentCell.x].resourceBuckets[resourceStack.type][resourceStack.quality].quantity - resourceStack.quantity, 0);
+    const quantityTaken = Math.min(gridCellsUpdate[agentRef.physics.currentCell.y][agentRef.physics.currentCell.x].resourceBuckets[resourceStack.type][resourceStack.quality].quantity, resourceStack.quantity);
 
-    gridCells[agent.currentCell.y][agent.currentCell.x].resourceBuckets[resourceStack.type][resourceStack.quality].quantity -= quantityTaken;
-    console.log("agetn rec buckets", agent.resourceBuckets);
-    agent.resourceBuckets[resourceStack.type][resourceStack.quality].quantity += quantityTaken;
+    gridCellsUpdate[agentRef.physics.currentCell.y][agentRef.physics.currentCell.x].resourceBuckets[resourceStack.type][resourceStack.quality].quantity -= quantityTaken;
 
     gridStore.setState({
       ...gridState,
-      cells: gridCells
-    });
-    agentStore.setState({
-      ...agentState,
-      agentMap: {
-        ...agentState.agentMap,
-        [agentId]: agent
-      }
+      cells: gridCellsUpdate
     });
 
+    const agentUpdates = {
+      inventory: cloneWithMaxDepth(agentRef.inventory, 5),
+      mental: cloneWithMaxDepth(agentRef.mental, 3)
+    };
+    agentUpdates.inventory.resourceBuckets[resourceStack.type][resourceStack.quality].quantity += quantityTaken;
+    agentUpdates.mental.readyToThink = true;
+
+    applyAgentUpdates({ [agentId]: agentUpdates });
+
+    console.log('Gather resource Tool complete', agentUpdates);
     return { status: 1, context: {} };
   }
 }
