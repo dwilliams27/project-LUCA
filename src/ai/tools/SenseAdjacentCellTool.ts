@@ -6,12 +6,11 @@ import { CONTEXT } from "@/utils/constants";
 import { getRelativeGridCell } from "@/utils/grid";
 import { cloneWithMaxDepth } from "@/utils/helpers";
 import { applyAgentUpdates } from "@/utils/state";
-import { cloneDeep } from "lodash-es";
 
 export const SENSE_ADJACENT_CELL_TOOL = "SENSE_ADJACENT_CELL_TOOL";
 export const SenseAdjacentCellTool: LucaTool = {
   name: SENSE_ADJACENT_CELL_TOOL,
-  description: "Get information about the contents of an adjacent cell (immediate)",
+  description: "Get information about the contents of an adjacent cell. Has no effect if you already know the contents of the cell.",
   input_schema: {
     type: "object",
     properties: {
@@ -24,12 +23,14 @@ export const SenseAdjacentCellTool: LucaTool = {
     required: ["direction"]
   },
   requiredContext: [CONTEXT.AGENT_ID],
-  implementation: (params: { direction: Direction }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {
+  implementation: (params: { direction: string }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
     const agentState = agentStore.getState();
     const agentRef = agentState.agentMap[agentId];
-    const newCell = getRelativeGridCell(agentRef.physics.position, params.direction);
+    const newCell = getRelativeGridCell(agentRef.physics.currentCell, parseInt(params.direction));
     if (!newCell) {
+      console.warn('No new cell found, exiting early for sense');
+      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } });
       return { status: 0, context: {} };
     }
 

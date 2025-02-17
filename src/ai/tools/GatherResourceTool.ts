@@ -6,12 +6,11 @@ import { CONTEXT } from "@/utils/constants";
 import { resourceAbrToType } from "@/utils/context";
 import { cloneWithMaxDepth } from "@/utils/helpers";
 import { applyAgentUpdates } from "@/utils/state";
-import { cloneDeep } from "lodash-es";
 
 export const GATHER_RESOURCE_TOOL = "GATHER_RESOURCE_TOOL";
 export const GatherResourceTool: LucaTool = {
   name: GATHER_RESOURCE_TOOL,
-  description: "Collect a stack of resources from the current cell (immediate)",
+  description: "Collect a stack of resources from the current cell",
   input_schema: {
     type: "object",
     properties: {
@@ -43,11 +42,13 @@ export const GatherResourceTool: LucaTool = {
     const resourceType = resourceAbrToType(params.resourceType);
     if (!resourceType) {
       console.warn(`Cannot gather ${params.resourceType}; invalid resource type`);
+      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } });
       return { status: 0, context: {} };
     }
 
     if (!(params.resourceQuality in ResourceQuality)) {
       console.warn(`Cannot gather ${params.resourceType}; invalid resource quality ${params.resourceQuality}`);
+      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } });
       return { status: 0, context: {} };
     }
 

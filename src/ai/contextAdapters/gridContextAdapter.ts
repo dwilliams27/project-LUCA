@@ -18,9 +18,11 @@ export const GridContextAdapter: ContextAdapter = {
     let text = `
 <grid_context>
 Known grid cells will have information about resources within them, and unknown grid cells will just be '[X]'
+You can gain information about what is in an unknown grid cell by moving there or sensing it
 Each grid cell can have many different types of resources and qualities within it.
 Each known grid cell will be in the format [RESOURCE|RESOURCE|RESOURCE|...]
 The grid cell you are currently in will have a !, such as [!|RESOURCE|...]
+
 <grid_state>
     `;
     for (let y = 0; y < cellsRef.length; y++) {

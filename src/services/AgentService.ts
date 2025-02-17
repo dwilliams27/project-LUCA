@@ -104,7 +104,7 @@ export class AgentService extends LocatableGameService {
         tools: [
           toolService.getTool(GATHER_RESOURCE_TOOL),
           toolService.getTool(MOVE_GRID_CELL_TOOL),
-          toolService.getTool(SENSE_ADJACENT_CELL_TOOL),
+          // toolService.getTool(SENSE_ADJACENT_CELL_TOOL),
         ]
       }
     ];

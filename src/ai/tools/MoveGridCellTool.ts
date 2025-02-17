@@ -10,7 +10,7 @@ import { applyAgentUpdates } from "@/utils/state";
 export const MOVE_GRID_CELL_TOOL = "MOVE_GRID_CELL_TOOL";
 export const MoveGridCellTool: LucaTool = {
   name: MOVE_GRID_CELL_TOOL,
-  description: "Move from one grid cell to an adjacent cell (non-immediate)",
+  description: "Move to an adjacent grid cell",
   input_schema: {
     type: "object",
     properties: {
@@ -23,7 +23,7 @@ export const MoveGridCellTool: LucaTool = {
     required: ["direction"]
   },
   requiredContext: [CONTEXT.AGENT_ID],
-  implementation: (params: { direction: Direction }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {
+  implementation: (params: { direction: string }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
     const agentState = agentStore.getState();
     const agentRef = agentState.agentMap[agentId];
@@ -31,16 +31,17 @@ export const MoveGridCellTool: LucaTool = {
       mental: cloneWithMaxDepth(agentRef.mental, 3),
       physics: cloneWithMaxDepth(agentRef.physics, 3),
     };
-    const newCell = getRelativeGridCell(agentRef.physics.currentCell, params.direction);
+    const newCell = getRelativeGridCell(agentRef.physics.currentCell, parseInt(params.direction));
 
     if (agentUpdates.physics.moving || !newCell) {
+      console.warn('Agent is moving but to where? No destination cell, exiting MoveGridCell tool early');
+      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } });
       return { status: 0, context: {} };
     }
 
     agentUpdates.physics.moving = true;
     agentUpdates.physics.destinationCell = newCell;
     agentUpdates.mental.knownCells[newCell.y][newCell.x] = 1;
-    agentUpdates.mental.readyToThink = true;
 
     applyAgentUpdates({ [agentId]: agentUpdates });
 
