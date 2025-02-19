@@ -5,7 +5,8 @@ import { agentStore } from "@/store/gameStore";
 export function applyAgentUpdates(updates: Record<string, Partial<Agent>>, log = false) {
   const currentState = agentStore.getState();
   const updatedAgentMap = { ...currentState.agentMap };
-  if (log) console.log('-- STATE UPDATE --');
+  if (log) console.warn('-- STATE UPDATE --');
+  if (log) console.log('Update payload', updates);
 
   Object.entries(updates).forEach(([agentId, update]) => {
     if (updatedAgentMap[agentId]) {
@@ -23,7 +24,7 @@ export function applyAgentUpdates(updates: Record<string, Partial<Agent>>, log =
     }
   });
 
-  if (log) console.log('-------------------');
+  if (log) console.warn('-------------------');
   agentStore.setState({
     agentMap: updatedAgentMap
   });

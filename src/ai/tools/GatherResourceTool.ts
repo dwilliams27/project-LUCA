@@ -32,7 +32,6 @@ export const GatherResourceTool: LucaTool = {
   },
   requiredContext: [CONTEXT.AGENT_ID],
   implementation: (params: { resourceType: string, resourceQuality: number, amount: number }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {
-    console.log('Gather params:', params);
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
     const agentState = agentStore.getState();
     const gridState = gridStore.getState();

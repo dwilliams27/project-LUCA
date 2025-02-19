@@ -14,11 +14,12 @@ import { IpcService } from "@/services/IpcService";
 import { CELL_AGENT_SYSTEM_PROMPT } from "@/ai/prompts/CellAgentSystemPrompt";
 import { GATHER_RESOURCE_TOOL } from "@/ai/tools/GatherResourceTool";
 import { TextService } from "@/services/TextService";
-import { cloneWithMaxDepth } from "@/utils/helpers";
 import { CollisionService } from "@/services/CollisionService";
 import { TextBlock } from "@anthropic-ai/sdk/resources";
 import { generateEmptyResourceBucket } from "@/utils/resources";
 import { applyAgentUpdates } from "@/utils/state";
+
+const DEBUG_MAX_DECISIONS = 3;
 
 export type AgentType = "Orchestrator";
 export type AgentPhysicsUpdate = DeepPartial<Agent["physics"]> & { position: Position };
@@ -28,13 +29,13 @@ export interface Goal {
   basePriority: number;
   requiredContext: string[];
   getFocusRank: (gameState: GameState, context: Record<string, any>) => number;
-}
+};
 
 export interface Capability {
   id: string;
   description: string;
   tools: LucaTool[];
-}
+};
 
 export interface Agent {
   id: string;
@@ -68,9 +69,7 @@ export interface Agent {
       [key in ResourceType]: Resource[];
     },
   },
-}
-
-const DEBUG_MAX_DECISIONS = 5;
+};
 
 export class AgentService extends LocatableGameService {
   static name = "AGENT_SERVICE";
@@ -193,13 +192,12 @@ export class AgentService extends LocatableGameService {
       };
       const pixiRef = agentRef.pixi;
       
-      if (physicsUpdate.moving) {
+      if (agentRef.physics.moving) {
         this.updateMovingAgent(delta, physicsUpdate, agentRef);
         this.tickAgentPos(delta, physicsUpdate, agentRef);
       } else {
         if (!agentRef.mental.thinking && agentRef.mental.readyToThink && this.debugTotalDecisions < DEBUG_MAX_DECISIONS) {
-          console.log('$$ Prethink agent state', agentRef);
-          console.log("Making a decision...");
+          console.log("Making a decision...", agentRef);
           const mentalUpdate: DeepPartial<Agent["mental"]> = {};
           mentalUpdate.thinking = true;
           mentalUpdate.readyToThink = false;
@@ -305,7 +303,6 @@ export class AgentService extends LocatableGameService {
         messages: [this.systemMessage, userMessage],
         tools: toolService.getAnthropicRepresentation(tools)
       });
-      console.log('IPC Response', response);
       this.handleLlmResponse(agentRef.id, tools, response, context);
     } catch (error) {
       console.error('Error invoking IPC llmChat:', error);
