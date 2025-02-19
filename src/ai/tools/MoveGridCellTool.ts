@@ -1,7 +1,7 @@
 import { Agent } from "@/services/AgentService";
 import { GameServiceLocator } from "@/services/ServiceLocator";
 import { LucaTool } from "@/services/ToolService";
-import { agentStore } from "@/store/gameStore";
+import { agentStore, dimensionStore } from "@/store/gameStore";
 import { DeepPartial, Direction } from "@/types";
 import { CONTEXT } from "@/utils/constants";
 import { getRelativeGridCell } from "@/utils/grid";
@@ -11,7 +11,7 @@ import { applyAgentUpdates } from "@/utils/state";
 export const MOVE_GRID_CELL_TOOL = "MOVE_GRID_CELL_TOOL";
 export const MoveGridCellTool: LucaTool = {
   name: MOVE_GRID_CELL_TOOL,
-  description: "Move to an adjacent grid cell",
+  description: "Move to an adjacent grid cell and get data about its contents",
   input_schema: {
     type: "object",
     properties: {
@@ -36,15 +36,18 @@ export const MoveGridCellTool: LucaTool = {
 
     if (!newCell) {
       console.warn('No destination cell, exiting MoveGridCell tool early');
-      applyAgentUpdates({ [agentId]: agentUpdates } as Record<string, Partial<Agent>>, true);
+      applyAgentUpdates({ [agentId]: agentUpdates } as Record<string, Partial<Agent>>, MOVE_GRID_CELL_TOOL);
       return { status: 0, context: {} };
     }
 
+    const cellSize = dimensionStore.getState().cellSize;
+    // TODO fix this type nonsense
     agentUpdates.physics!.moving = true;
     agentUpdates.physics!.destinationCell = newCell;
+    agentUpdates.physics!.destinationPos = { x: cellSize * newCell.x + Math.random() * cellSize, y: cellSize * newCell.y + Math.random() * cellSize };
     agentUpdates.mental!.knownCells![newCell.y]![newCell.x] = 1;
 
-    applyAgentUpdates({ [agentId]: agentUpdates } as Record<string, Partial<Agent>>, true);
+    applyAgentUpdates({ [agentId]: agentUpdates } as Record<string, Partial<Agent>>, MOVE_GRID_CELL_TOOL);
 
     console.log('Move grid cell Tool complete', agentUpdates);
 

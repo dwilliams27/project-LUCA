@@ -10,7 +10,7 @@ import { applyAgentUpdates } from "@/utils/state";
 export const SENSE_ADJACENT_CELL_TOOL = "SENSE_ADJACENT_CELL_TOOL";
 export const SenseAdjacentCellTool: LucaTool = {
   name: SENSE_ADJACENT_CELL_TOOL,
-  description: "Get information about the contents of an adjacent cell. Has no effect if you already know the contents of the cell.",
+  description: "Get data about the contents of an adjacent cell. Has no effect if you already know the contents of the cell.",
   input_schema: {
     type: "object",
     properties: {
@@ -30,7 +30,7 @@ export const SenseAdjacentCellTool: LucaTool = {
     const newCell = getRelativeGridCell(agentRef.physics.currentCell, parseInt(params.direction));
     if (!newCell) {
       console.warn('No new cell found, exiting early for sense');
-      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } } as any, true);
+      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } } as any, SENSE_ADJACENT_CELL_TOOL);
       return { status: 0, context: {} };
     }
 
@@ -40,7 +40,7 @@ export const SenseAdjacentCellTool: LucaTool = {
     agentUpdates.mental.knownCells[newCell.y][newCell.x] = 1;
     agentUpdates.mental.readyToThink = true;
 
-    applyAgentUpdates({ [agentId]: agentUpdates }, true);
+    applyAgentUpdates({ [agentId]: agentUpdates }, SENSE_ADJACENT_CELL_TOOL);
 
     console.log('Sense resource Tool complete', agentUpdates);
 

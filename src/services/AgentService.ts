@@ -194,7 +194,6 @@ export class AgentService extends LocatableGameService {
       
       if (agentRef.physics.moving) {
         this.updateMovingAgent(delta, physicsUpdate, agentRef);
-        this.tickAgentPos(delta, physicsUpdate, agentRef);
       } else {
         if (!agentRef.mental.thinking && agentRef.mental.readyToThink && this.debugTotalDecisions < DEBUG_MAX_DECISIONS) {
           console.log("Making a decision...", agentRef);
@@ -215,8 +214,8 @@ export class AgentService extends LocatableGameService {
         this.tickAgentPos(delta, physicsUpdate, agentRef);
       }
 
+      console.log(physicsUpdate);
       this.agentVisualSync(pixiRef, physicsUpdate.position);
-      // console.log('Agent mental updates', updates[agentRef.id]?.mental, agentRef.mental);
       updates[agentRef.id].physics = physicsUpdate as Agent["physics"];
     });
 
@@ -253,23 +252,24 @@ export class AgentService extends LocatableGameService {
   }
 
   updateMovingAgent(deltaTime: number, physicsUpdate: AgentPhysicsUpdate, agentRef: Agent) {
-    if (!physicsUpdate.destinationPos || !physicsUpdate.destinationCell) {
+    if (!agentRef.physics.destinationPos || !agentRef.physics.destinationCell) {
       physicsUpdate.moving = false;
       return;
     }
 
-    const dx = physicsUpdate.destinationPos.x! - physicsUpdate.position.x;
-    const dy = physicsUpdate.destinationPos.y! - physicsUpdate.position.y;
+    const dx = agentRef.physics.destinationPos.x - physicsUpdate.position.x;
+    const dy = agentRef.physics.destinationPos.y - physicsUpdate.position.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist < 1) {
+      physicsUpdate.position = agentRef.physics.destinationPos as Position;
       physicsUpdate.moving = false;
-      physicsUpdate.currentCell = physicsUpdate.destinationCell;
+      physicsUpdate.currentCell = agentRef.physics.destinationCell!;
       physicsUpdate.destinationCell = null;
       physicsUpdate.destinationPos = null;
     } else {
-      physicsUpdate.position!.x! += (dx / dist) * BASE_AGENT_SPEED * deltaTime;
-      physicsUpdate.position!.y! += (dy / dist) * BASE_AGENT_SPEED * deltaTime;
+      physicsUpdate.position.x += (dx / dist) * BASE_AGENT_SPEED * deltaTime;
+      physicsUpdate.position.y += (dy / dist) * BASE_AGENT_SPEED * deltaTime;
     }
   }
 
@@ -340,6 +340,6 @@ export class AgentService extends LocatableGameService {
     mentalUpdate.thinking = false;
 
     this.debugTotalDecisions += 1;
-    applyAgentUpdates({ [agentRef.id]: { mental: mentalUpdate } } as any, true);
+    applyAgentUpdates({ [agentRef.id]: { mental: mentalUpdate } } as any, 'AgentService');
   }
 }
