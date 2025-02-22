@@ -2,7 +2,7 @@ import { GATHER_RESOURCE_TOOL, GatherResourceTool } from "@/ai/tools/GatherResou
 import { MOVE_GRID_CELL_TOOL, MoveGridCellTool } from "@/ai/tools/MoveGridCellTool";
 import { SENSE_ADJACENT_CELL_TOOL, SenseAdjacentCellTool } from "@/ai/tools/SenseAdjacentCellTool";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
-import { Tool } from "@anthropic-ai/sdk/resources";
+import { Tool } from "ai";
 
 export interface ToolCallResult {
   status: number;
@@ -11,18 +11,7 @@ export interface ToolCallResult {
 
 export interface LucaTool {
   name: string;
-  description: string;
-  input_schema: {
-    type: "object";
-    properties: Record<string, {
-      type: string;
-      description?: string;
-      enum?: string[];
-      required?: boolean;
-      [key: string]: any;
-    }>;
-    required?: string[];
-  };
+  tool: Tool;
   requiredContext: string[];
   implementation: (params: any, serviceLocator: GameServiceLocator, context: Record<string, any>) => ToolCallResult;
 }
@@ -41,22 +30,22 @@ export class ToolService extends LocatableGameService {
     }
   }
 
-  registerTool(tool: LucaTool) {
-    if (this.toolMap[tool.name]) {
-      console.warn(`Failed to register ${tool.name}; duplicate tool already exists`);
+  registerTool(ltool: LucaTool) {
+    if (this.toolMap[ltool.name]) {
+      console.warn(`Failed to register ${ltool.name}; duplicate tool already exists`);
       return;
     }
-    this.toolMap[tool.name] = tool;
+    this.toolMap[ltool.name] = ltool;
   }
 
   getTool(name: string) {
     return this.toolMap[name];
   }
 
-  getAnthropicRepresentation(tools: LucaTool[]): Tool[] {
-    return tools.map((tool) => ({
-      name: tool.name,
-      input_schema: tool.input_schema
-    }));
+  lucaToolsToAiTools(tools: LucaTool[]) {
+    return tools.reduce((acc, ltool) => {
+      acc[ltool.name] = ltool.tool;
+      return acc;
+    }, {});
   }
 }

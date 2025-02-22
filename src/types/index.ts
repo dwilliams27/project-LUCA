@@ -1,4 +1,4 @@
-import { Message, Tool } from "@anthropic-ai/sdk/resources";
+import { Tool } from "ai";
 
 export enum EvolutionaryStage {
   ABIOTIC = 'ABIOTIC',
@@ -120,17 +120,25 @@ export const IPC_CALLS = {
   LLM_CHAT: "LLM_CHAT",
   LLM_STATUS: "LLM_STATUS"
 }
-export interface LucaMessage {
-  role: "assistant" | "user";
-  content: string;
-}
+export const LLM_PROVIDERS = {
+  ANTHROPIC: "ANTHROPIC",
+  OPENAI: "OPENAI",
+  GOOGLE: "GOOGLE"
+} as const;
+export type LLMProvider = typeof LLM_PROVIDERS[keyof typeof LLM_PROVIDERS];
 export interface IpcLlmChatRequest {
-  messages: LucaMessage[],
-  tools: Tool[],
+  system: string,
+  prompt: string,
+  tools: Record<string, Tool>,
+  provider?: LLMProvider
 }
-export interface IpcLlmChatResponse {
-  message: Message
-}
+export type IpcLlmChatResponse = {
+  text: string;
+  toolCalls: {
+    toolName: string,
+    args: Record<string, any>,
+  }[];
+};
 
 export type DeepPartial<T> = T extends object ? {
   [P in keyof T]?: DeepPartial<T[P]>;

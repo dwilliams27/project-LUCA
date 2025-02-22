@@ -1,6 +1,6 @@
 import { Prompt, PromptService } from "@/services/PromptService";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
-import { DeepPartial, IpcLlmChatResponse, LucaMessage, Position, Resource, ResourceQuality, ResourceType } from "@/types";
+import { DeepPartial, IpcLlmChatResponse, LLM_PROVIDERS, Position, Resource, ResourceQuality, ResourceType } from "@/types";
 import { AGENT_ID, CAPABILITY_ID, genId } from "@/utils/id";
 import { agentStore, dimensionStore, GameState } from "@/store/gameStore";
 import { AGENT_DAMP, AGENT_RANDOM_MOTION, BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
@@ -15,7 +15,6 @@ import { CELL_AGENT_SYSTEM_PROMPT } from "@/ai/prompts/CellAgentSystemPrompt";
 import { GATHER_RESOURCE_TOOL } from "@/ai/tools/GatherResourceTool";
 import { TextService } from "@/services/TextService";
 import { CollisionService } from "@/services/CollisionService";
-import { TextBlock } from "@anthropic-ai/sdk/resources";
 import { generateEmptyResourceBucket } from "@/utils/resources";
 import { applyAgentUpdates } from "@/utils/state";
 
@@ -73,16 +72,13 @@ export interface Agent {
 
 export class AgentService extends LocatableGameService {
   static name = "AGENT_SERVICE";
-  private systemMessage: LucaMessage;
+  private systemMessage: string;
   private debugTotalDecisions = 0;
 
   constructor(serviceLocator: GameServiceLocator) {
     super(serviceLocator);
     const baseSystemPrompt = serviceLocator.getService(PromptService).getBasePrompt(CELL_AGENT_SYSTEM_PROMPT);
-    this.systemMessage = {
-      role: "assistant",
-      content: baseSystemPrompt.text
-    }
+    this.systemMessage = baseSystemPrompt.text;
   }
 
   private createKnownCellsGrid(position: Position, size: number): number[][] {
@@ -214,7 +210,6 @@ export class AgentService extends LocatableGameService {
         this.tickAgentPos(delta, physicsUpdate, agentRef);
       }
 
-      console.log(physicsUpdate);
       this.agentVisualSync(pixiRef, physicsUpdate.position);
       updates[agentRef.id].physics = physicsUpdate as Agent["physics"];
     });
@@ -293,15 +288,13 @@ export class AgentService extends LocatableGameService {
     };
 
     const agentPrompt = promptService.getBasePrompt(CELL_AGENT_PROMPT);
-    const userMessage: LucaMessage = {
-      role: "user",
-      content: promptService.constructPromptText(agentPrompt, context)
-    };
     
     try {
       const response = await ipcService.llmChat({
-        messages: [this.systemMessage, userMessage],
-        tools: toolService.getAnthropicRepresentation(tools)
+        provider: LLM_PROVIDERS.ANTHROPIC,
+        tools: toolService.lucaToolsToAiTools(tools),
+        system: this.systemMessage,
+        prompt: promptService.constructPromptText(agentPrompt, context),
       });
       this.handleLlmResponse(agentRef.id, tools, response, context);
     } catch (error) {
@@ -310,36 +303,30 @@ export class AgentService extends LocatableGameService {
   }
 
   handleLlmResponse(agentId: string, tools: LucaTool[], response: IpcLlmChatResponse, context: Record<string, any>) {
-    const thoughtContent = response.message.content.find((content) => 
-      content.type === "text" && 
-      content.text.length > 0
-    ) as TextBlock;
     const agentRef = agentStore.getState().agentMap[agentId];
-    const mentalUpdate: DeepPartial<Agent["mental"]> = {};
-
-    if (thoughtContent) {
-      mentalUpdate.recentThoughts = [...agentRef.mental.recentThoughts];
-      mentalUpdate.recentThoughts.push(thoughtContent.text);
-      if (mentalUpdate.recentThoughts.length > 5) {
-        mentalUpdate.recentThoughts.shift();
-      }
-      if (agentRef.pixi.thoughtEmoji) {
-        agentRef.pixi.thoughtEmoji.text = thoughtContent.text.charAt(0);
-      }
+    const mentalUpdate: DeepPartial<Agent["mental"]> = {
+      thinking: false,
+    };
+    mentalUpdate.recentThoughts = [...agentRef.mental.recentThoughts];
+    mentalUpdate.recentThoughts.push(response.text);
+    if (mentalUpdate.recentThoughts.length > 5) {
+      mentalUpdate.recentThoughts.shift();
     }
-    if (response.message.stop_reason === "tool_use") {
-      const firstCall = response.message.content.find((content) => content.type === "tool_use");
-      const invokedTool = tools.find((tool) => tool.name === firstCall?.name);
-
-      if (firstCall && invokedTool) {
-        console.log(`Invoking ${invokedTool.name} with:`, firstCall.input);
-        invokedTool.implementation(firstCall.input, this.serviceLocator, context);
-      }
+    if (agentRef.pixi.thoughtEmoji) {
+      agentRef.pixi.thoughtEmoji.text = response.text.charAt(0);
     }
 
-    mentalUpdate.thinking = false;
+    response.toolCalls.forEach((toolCall) => {
+      const invokedTool = tools.find((tool) => tool.name === toolCall.toolName);
+      if (invokedTool) {
+        console.log(`Invoking ${invokedTool.name} with:`, toolCall.args);
+        invokedTool.implementation(toolCall.args, this.serviceLocator, context);
+      }
+    });
 
     this.debugTotalDecisions += 1;
     applyAgentUpdates({ [agentRef.id]: { mental: mentalUpdate } } as any, 'AgentService');
+
+    return;
   }
 }

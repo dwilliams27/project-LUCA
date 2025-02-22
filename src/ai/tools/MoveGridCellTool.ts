@@ -11,17 +11,19 @@ import { applyAgentUpdates } from "@/utils/state";
 export const MOVE_GRID_CELL_TOOL = "MOVE_GRID_CELL_TOOL";
 export const MoveGridCellTool: LucaTool = {
   name: MOVE_GRID_CELL_TOOL,
-  description: "Move to an adjacent grid cell and get data about its contents",
-  input_schema: {
-    type: "object",
-    properties: {
-      direction: {
-        type: "string",
-        enum: [`${Direction.NORTH}`, `${Direction.EAST}`, `${Direction.SOUTH}`, `${Direction.WEST}`],
-        description: "The direction to move: north, east, south, west"
-      }
+  tool: {
+    description: "Move to an adjacent grid cell and get data about its contents",
+    parameters: {
+      type: "object",
+      properties: {
+        direction: {
+          type: "string",
+          enum: [`${Direction.NORTH}`, `${Direction.EAST}`, `${Direction.SOUTH}`, `${Direction.WEST}`],
+          description: "The direction to move: north, east, south, west"
+        }
+      },
+      required: ["direction"]
     },
-    required: ["direction"]
   },
   requiredContext: [CONTEXT.AGENT_ID],
   implementation: (params: { direction: string }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {

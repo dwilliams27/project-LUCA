@@ -10,25 +10,27 @@ import { applyAgentUpdates } from "@/utils/state";
 export const GATHER_RESOURCE_TOOL = "GATHER_RESOURCE_TOOL";
 export const GatherResourceTool: LucaTool = {
   name: GATHER_RESOURCE_TOOL,
-  description: "Collect a stack of resources from the current cell",
-  input_schema: {
-    type: "object",
-    properties: {
-      resourceType: {
-        type: "string",
-        enum: [`E`, `M`, `I`],
-        description: "The type of resource to gather"
+  tool: {
+    description: "Collect a stack of resources from the current cell",
+    parameters: {
+      type: "object",
+      properties: {
+        resourceType: {
+          type: "string",
+          enum: [`E`, `M`, `I`],
+          description: "The type of resource to gather"
+        },
+        resourceQuality: {
+          type: "number",
+          description: "The quality of resource to gather"
+        },
+        amount: {
+          type: "number",
+          description: "How much of the resource to gather"
+        }
       },
-      resourceQuality: {
-        type: "number",
-        description: "The quality of resource to gather"
-      },
-      amount: {
-        type: "number",
-        description: "How much of the resource to gather"
-      }
+      required: ["resourceType", "resourceQuality", "amount"]
     },
-    required: ["resource"]
   },
   requiredContext: [CONTEXT.AGENT_ID],
   implementation: (params: { resourceType: string, resourceQuality: number, amount: number }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {

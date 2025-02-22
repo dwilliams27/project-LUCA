@@ -1,8 +1,8 @@
 import { app, shell, BrowserWindow, ipcMain, contextBridge, ipcRenderer } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import { LLMService } from './LlmService';
 import { defineIpcCalls } from '@/main/ipcCalls';
+import { AiService } from '@/main/AiService';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -87,15 +87,9 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'));
 
-  let llmService: LLMService | null = null;
+  const aiService = new AiService();
 
-  if (process.env.ANTHROPIC_API_KEY) {
-    llmService = new LLMService(process.env.ANTHROPIC_API_KEY);
-  } else {
-    console.warn('No ANTHROPIC_API_KEY found!');
-  }
-
-  defineIpcCalls(llmService);
+  defineIpcCalls(aiService);
 
   createWindow()
 

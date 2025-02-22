@@ -22,12 +22,16 @@
     "generate:proto": "protoc --ts_out src/generated --proto_path src/proto src/proto/*.proto"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.33.1",
+    "@ai-sdk/anthropic": "^1.1.8",
+    "@ai-sdk/deepseek": "^0.1.10",
+    "@ai-sdk/google": "^1.1.14",
+    "@ai-sdk/openai": "^1.1.12",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "@pixi/unsafe-eval": "^7.4.2",
     "@protobuf-ts/runtime": "^2.9.4",
     "@types/pouchdb": "^6.4.2",
+    "ai": "^4.1.41",
     "lodash-es": "^4.17.21",
     "nanoid": "^5.0.9",
     "pouchdb": "^9.0.0"

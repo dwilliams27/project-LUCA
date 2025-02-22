@@ -10,17 +10,19 @@ import { applyAgentUpdates } from "@/utils/state";
 export const SENSE_ADJACENT_CELL_TOOL = "SENSE_ADJACENT_CELL_TOOL";
 export const SenseAdjacentCellTool: LucaTool = {
   name: SENSE_ADJACENT_CELL_TOOL,
-  description: "Get data about the contents of an adjacent cell. Has no effect if you already know the contents of the cell.",
-  input_schema: {
-    type: "object",
-    properties: {
-      direction: {
-        type: "string",
-        enum: [`${Direction.NORTH}`, `${Direction.EAST}`, `${Direction.SOUTH}`, `${Direction.WEST}`],
-        description: "The direction to sense: north, east, south, west"
-      }
+  tool: {
+    description: "Get data about the contents of an adjacent cell. Has no effect if you already know the contents of the cell.",
+    parameters: {
+      type: "object",
+      properties: {
+        direction: {
+          type: "string",
+          enum: [`${Direction.NORTH}`, `${Direction.EAST}`, `${Direction.SOUTH}`, `${Direction.WEST}`],
+          description: "The direction to sense: north, east, south, west"
+        }
+      },
+      required: ["direction"]
     },
-    required: ["direction"]
   },
   requiredContext: [CONTEXT.AGENT_ID],
   implementation: (params: { direction: string }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {

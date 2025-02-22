@@ -24,7 +24,7 @@ Each known grid cell will be in the format [RESOURCE|RESOURCE|RESOURCE|...]
 The grid cell you are currently in will have a !, such as [!|RESOURCE|...]
 
 <grid_state>
-    `;
+`;
     for (let y = 0; y < cellsRef.length; y++) {
       const row: string[] = [];
       for (let x = 0; x < cellsRef[y].length; x++) {
