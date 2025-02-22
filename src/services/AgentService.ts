@@ -256,7 +256,7 @@ export class AgentService extends LocatableGameService {
     const dy = agentRef.physics.destinationPos.y - physicsUpdate.position.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist < 1) {
+    if (dist < 5) {
       physicsUpdate.position = agentRef.physics.destinationPos as Position;
       physicsUpdate.moving = false;
       physicsUpdate.currentCell = agentRef.physics.destinationCell!;
@@ -291,7 +291,7 @@ export class AgentService extends LocatableGameService {
     
     try {
       const response = await ipcService.llmChat({
-        provider: LLM_PROVIDERS.ANTHROPIC,
+        provider: LLM_PROVIDERS.GOOGLE,
         tools: toolService.lucaToolsToAiTools(tools),
         system: this.systemMessage,
         prompt: promptService.constructPromptText(agentPrompt, context),

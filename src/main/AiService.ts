@@ -78,7 +78,7 @@ export class AiService {
         if (!this.google) {
           throw new Error("Openai provider missing! Did you set MAIN_VITE_GOOGLE_GENERATIVE_AI_API_KEY?");
         }
-        model = this.google("gemini-2.0-flash-thinking-exp-01-21");
+        model = this.google("gemini-2.0-flash");
         break;
       }
       default: {
@@ -106,7 +106,6 @@ export class AiService {
     console.log('ToolCalls: ', toolCalls);
     console.log(`Query Cost: $${queryCost.toFixed(4)} ${result.usage.promptTokens} in, ${result.usage.completionTokens} out`);
 
-    result.response.messages.forEach(message => console.log('Message: ', message));
     return {
       text,
       toolCalls,

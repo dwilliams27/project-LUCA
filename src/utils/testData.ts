@@ -36,7 +36,7 @@ export function genGridCells(): GridCell[][] {
           {
             id: genId(RESOURCE_ID),
             type: ResourceType.ENERGY,
-            quantity: 0,
+            quantity: 1,
             quality: ResourceQuality.LOW
           },
           {
