@@ -13,7 +13,7 @@ function generateProcesses(x: number, y: number): BasicProcess[] {
         {
           type: "TRANSFER",
           // @ts-ignore
-          direction: Direction.WEST,
+          direction: Direction.RIGHT,
           amount: 1,
           resource: {
             type: ResourceType.MATTER,

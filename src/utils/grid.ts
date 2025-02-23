@@ -5,25 +5,25 @@ export function getRelativeGridCell(position: Position, direction: Direction): P
   const gridSize = dimensionStore.getState().gridLength;
 
   switch (direction) {
-    case Direction.NORTH: {
+    case Direction.UP: {
       if (position.y > 0) {
         return { x: position.x, y: position.y - 1 };
       }
       break;
     }
-    case Direction.SOUTH: {
+    case Direction.DOWN: {
       if (position.y + 1 < gridSize) {
         return { x: position.x, y: position.y + 1 };
       }
       break;
     }
-    case Direction.EAST: {
+    case Direction.RIGHT: {
       if (position.x + 1 < gridSize) {
         return { x: position.x + 1, y: position.y };
       }
       break;
     }
-    case Direction.WEST: {
+    case Direction.LEFT: {
       if (position.x > 0) {
         return { x: position.x - 1, y: position.y };
       }

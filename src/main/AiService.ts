@@ -8,12 +8,13 @@ interface CostMetric {
   totalInputTokens: number;
   totalOutputTokens: number;
   totalCost: number;
+  tokenCostProfile: TokenCostProfile
 };
 
-const AnthropicCost = {
-  inputToken: 0.000003,
-  outputToken: 0.000015
-}
+interface TokenCostProfile {
+  inputToken: number,
+  outputToken: number
+};
 
 export class AiService {
   private openai?: OpenAIProvider;
@@ -24,16 +25,28 @@ export class AiService {
       totalInputTokens: 0,
       totalOutputTokens: 0,
       totalCost: 0,
+      tokenCostProfile: {
+        inputToken: 0.000003,
+        outputToken: 0.000015
+      }
     },
     [LLM_PROVIDERS.GOOGLE]: {
       totalInputTokens: 0,
       totalOutputTokens: 0,
       totalCost: 0,
+      tokenCostProfile: {
+        inputToken: 0.000001,
+        outputToken: 0.000004
+      }
     },
     [LLM_PROVIDERS.OPENAI]: {
       totalInputTokens: 0,
       totalOutputTokens: 0,
       totalCost: 0,
+      tokenCostProfile: {
+        inputToken: -1,
+        outputToken: -1
+      }
     },
   };
 
@@ -101,7 +114,7 @@ export class AiService {
 
     const text = result.steps[0].text;
     const toolCalls = result.steps[0].toolCalls;
-    const queryCost = this.trackCost(req.provider, result.usage.promptTokens, result.usage.completionTokens);
+    const queryCost = this.updateCostMetrics(req.provider, result.usage.promptTokens, result.usage.completionTokens);
     console.log('Text: ', text);
     console.log('ToolCalls: ', toolCalls);
     console.log(`Query Cost: $${queryCost.toFixed(4)} ${result.usage.promptTokens} in, ${result.usage.completionTokens} out`);
@@ -112,22 +125,18 @@ export class AiService {
     };
   }
 
-  private trackCost(provider: LLMProvider, inputTokens: number, outputTokens: number) {
-    switch (provider) {
-      case (LLM_PROVIDERS.ANTHROPIC): {
-        const newTotalIn = this.costMetrics[LLM_PROVIDERS.ANTHROPIC].totalInputTokens + inputTokens;
-        const newTotalOut = this.costMetrics[LLM_PROVIDERS.ANTHROPIC].totalOutputTokens + outputTokens;
-        const newTotal = this.costMetrics[LLM_PROVIDERS.ANTHROPIC].totalCost + newTotalIn * AnthropicCost.inputToken + newTotalOut * AnthropicCost.outputToken;
+  private updateCostMetrics(provider: LLMProvider, inputTokens: number, outputTokens: number) {
+    const newTotalIn = this.costMetrics[provider].totalInputTokens + inputTokens;
+    const newTotalOut = this.costMetrics[provider].totalOutputTokens + outputTokens;
+    const newTotal = this.costMetrics[provider].totalCost + newTotalIn * this.costMetrics[provider].tokenCostProfile.inputToken + newTotalOut * this.costMetrics[provider].tokenCostProfile.outputToken;
 
-        this.costMetrics[LLM_PROVIDERS.ANTHROPIC] = {
-          totalInputTokens: newTotalIn,
-          totalOutputTokens: newTotalOut,
-          totalCost: newTotal
-        }
-        
-        return inputTokens * AnthropicCost.inputToken + outputTokens * AnthropicCost.outputToken;
-      }
+    this.costMetrics[provider] = {
+      ...this.costMetrics[provider],
+      totalInputTokens: newTotalIn,
+      totalOutputTokens: newTotalOut,
+      totalCost: newTotal
     }
-    return -1;
+    
+    return inputTokens * this.costMetrics[provider].tokenCostProfile.inputToken + outputTokens * this.costMetrics[provider].tokenCostProfile.outputToken;
   }
 }

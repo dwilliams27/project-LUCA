@@ -17,19 +17,19 @@ export const SenseAdjacentCellTool: LucaTool = {
       properties: {
         direction: {
           type: "string",
-          enum: [`${Direction.NORTH}`, `${Direction.EAST}`, `${Direction.SOUTH}`, `${Direction.WEST}`],
-          description: "The direction to sense: north, east, south, west"
+          enum: [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT],
+          description: "The direction to sense"
         }
       },
       required: ["direction"]
     },
   },
   requiredContext: [CONTEXT.AGENT_ID],
-  implementation: (params: { direction: string }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {
+  implementation: (params: { direction: Direction }, serviceLocator: GameServiceLocator, context: Record<string, any>) => {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
     const agentState = agentStore.getState();
     const agentRef = agentState.agentMap[agentId];
-    const newCell = getRelativeGridCell(agentRef.physics.currentCell, parseInt(params.direction));
+    const newCell = getRelativeGridCell(agentRef.physics.currentCell, params.direction);
     if (!newCell) {
       console.warn('No new cell found, exiting early for sense');
       applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } } as any, SENSE_ADJACENT_CELL_TOOL);

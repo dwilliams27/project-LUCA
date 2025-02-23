@@ -18,7 +18,7 @@ import { CollisionService } from "@/services/CollisionService";
 import { generateEmptyResourceBucket } from "@/utils/resources";
 import { applyAgentUpdates } from "@/utils/state";
 
-const DEBUG_MAX_DECISIONS = 3;
+const DEBUG_MAX_DECISIONS = 10;
 
 export type AgentType = "Orchestrator";
 export type AgentPhysicsUpdate = DeepPartial<Agent["physics"]> & { position: Position };

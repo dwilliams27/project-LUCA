@@ -242,10 +242,10 @@ export class ParticleSystem extends LocatableGameService {
       particle.targetCell = toCell;
 
       const cellSize = dimensionStore.getState().cellSize;
-      particle.target.x = (transfer.direction === Direction.NORTH || transfer.direction === Direction.SOUTH)
+      particle.target.x = (transfer.direction === Direction.UP || transfer.direction === Direction.DOWN)
         ? particle.position.x
         : cellSize * toCell.position.x + (Math.random() * cellSize * 0.7 + particle.width / 2);
-      particle.target.y = (transfer.direction === Direction.EAST || transfer.direction === Direction.WEST)
+      particle.target.y = (transfer.direction === Direction.LEFT || transfer.direction === Direction.RIGHT)
         ? particle.position.y
         : cellSize * toCell.position.y + (Math.random() * cellSize * 0.7 + particle.height / 2);
 

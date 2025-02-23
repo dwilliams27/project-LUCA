@@ -155,25 +155,25 @@ export class ProcessSynthesisEngine extends LocatableGameService {
 
   getRelativeGridCell(cell: GridCell, direction: Direction): GridCell | null {
     switch (direction) {
-      case Direction.NORTH: {
+      case Direction.UP: {
         if (cell.position.y > 0) {
           return this.grid[cell.position.y - 1][cell.position.x];
         }
         break;
       }
-      case Direction.SOUTH: {
+      case Direction.DOWN: {
         if (cell.position.y + 1 < this.grid.length) { // Fixed condition
           return this.grid[cell.position.y + 1][cell.position.x];
         }
         break;
       }
-      case Direction.EAST: {
+      case Direction.LEFT: {
         if (this.grid[cell.position.y].length > cell.position.x + 1) {
           return this.grid[cell.position.y][cell.position.x + 1];
         }
         break;
       }
-      case Direction.WEST: {
+      case Direction.RIGHT: {
         if (cell.position.x > 0) {
           return this.grid[cell.position.y][cell.position.x - 1];
         }

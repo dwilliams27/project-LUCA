@@ -95,11 +95,11 @@ export enum ResourceQuality {
 }
 
 export enum Direction {
-  NONE = 0,
-  NORTH = 1,
-  EAST = 2,
-  SOUTH = 3,
-  WEST = 4
+  NONE = "NONE",
+  UP = "UP", 
+  RIGHT = "RIGHT",
+  DOWN = "DOWN",
+  LEFT = "LEFT"
 }
 
 export interface Resource {
