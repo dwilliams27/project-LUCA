@@ -1,6 +1,5 @@
 import { MenuButton } from '@/components/ui/MenuButton';
-import { useGameStore, useGridStore, useServiceStore } from '@/store/gameStore';
-import { ProcessSynthesisEngine } from '@/services/PSE/ProcessSynthesisEngine';
+import { useServiceStore } from '@/store/gameStore';
 import React from 'react';
 import { Agent, AgentService } from '@/services/AgentService';
 
@@ -12,8 +11,6 @@ const TOP_H = 10;
 const BOTTOM_H = 20;
 
 export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
-  const grid = useGridStore();
-  const game = useGameStore();
   const { gameServiceLocator } = useServiceStore();
   const [agent, setAgent] = React.useState<Agent | null>(null);
 
@@ -21,7 +18,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
     const agentService = gameServiceLocator.getService(AgentService);
 
     if (!agent) {
-      setAgent(agentService.createAgent({ x: 0, y: 0 }));
+      setAgent(agentService.createAgent({ x: 0, y: 2 }));
     }
   }
 

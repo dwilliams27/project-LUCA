@@ -18,7 +18,7 @@ import { CollisionService } from "@/services/CollisionService";
 import { generateEmptyResourceBucket } from "@/utils/resources";
 import { applyAgentUpdates } from "@/utils/state";
 
-const DEBUG_MAX_DECISIONS = 10;
+const DEBUG_MAX_DECISIONS = 20;
 
 export type AgentType = "Orchestrator";
 export type AgentPhysicsUpdate = DeepPartial<Agent["physics"]> & { position: Position };
@@ -270,7 +270,7 @@ export class AgentService extends LocatableGameService {
 
   async makeDecision(agentRef: Agent) {
     agentRef.pixi.thoughtBubble.visible = true;
-    agentRef.pixi.thoughtEmoji.text = "🤔";
+    // agentRef.pixi.thoughtEmoji.text = "🤔";
     agentRef.pixi.thoughtEmoji.visible = true;
 
     const promptService = this.serviceLocator.getService(PromptService);
@@ -313,7 +313,8 @@ export class AgentService extends LocatableGameService {
       mentalUpdate.recentThoughts.shift();
     }
     if (agentRef.pixi.thoughtEmoji) {
-      agentRef.pixi.thoughtEmoji.text = response.text.charAt(0);
+      agentRef.pixi.thoughtEmoji.visible = true;
+      agentRef.pixi.thoughtEmoji.text = [...response.text][0];
     }
 
     response.toolCalls.forEach((toolCall) => {

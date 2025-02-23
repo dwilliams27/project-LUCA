@@ -102,6 +102,9 @@ export class AiService {
     console.log(`Generating completion with ${model.modelId}`, req);
     
     Object.keys(req.tools).forEach((key) => {
+      console.log(key);
+      console.log(req.tools[key].parameters);
+      console.log(jsonSchema(req.tools[key].parameters));
       req.tools[key].parameters = jsonSchema(req.tools[key].parameters);
     });
     const result = await generateText({

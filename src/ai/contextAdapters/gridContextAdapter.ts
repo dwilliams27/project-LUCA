@@ -17,8 +17,9 @@ export const GridContextAdapter: ContextAdapter = {
     const cellsRef = gridStore.getState().cells;
     let text = `
 <grid_context>
-Known grid cells will have information about resources within them, and unknown grid cells will just be '[X]'
-You can gain information about what is in an unknown grid cell by moving there or sensing it
+Known grid cells will have information about resources within them, and unknown grid cells will just be '[X]'.
+Remember you are in a 2D environment; you can move UP and DOWN to different rows.
+You can gain information about what is in an unknown grid cell by moving there or sensing it.
 Each grid cell can have many different types of resources and qualities within it.
 Each known grid cell will be in the format [RESOURCE|RESOURCE|RESOURCE|...]
 The grid cell you are currently in will have a !, such as [!|RESOURCE|...]
@@ -40,7 +41,7 @@ The grid cell you are currently in will have a !, such as [!|RESOURCE|...]
           row.push(`[X]`);
         }
       }
-      text += `${row.join(' ')}\n`;
+      text += `<start_row>${row.join(' ')}<end_row>\n`;
     }
     text += "</grid_state>\n</grid_context>";
     return text;

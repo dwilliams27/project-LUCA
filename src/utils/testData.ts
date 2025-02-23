@@ -36,7 +36,7 @@ export function genGridCells(): GridCell[][] {
           {
             id: genId(RESOURCE_ID),
             type: ResourceType.ENERGY,
-            quantity: 5,
+            quantity: Math.round(Math.random() * 10),
             quality: ResourceQuality.LOW
           },
           {
@@ -62,7 +62,7 @@ export function genGridCells(): GridCell[][] {
           {
             id: genId(RESOURCE_ID),
             type: ResourceType.MATTER,
-            quantity: 4,
+            quantity: Math.round(Math.random() * 10),
             quality: ResourceQuality.MEDIUM
           },
           {
