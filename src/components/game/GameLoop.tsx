@@ -11,6 +11,7 @@ import { ToolService } from "@/services/ToolService";
 import { IpcService } from "@/services/IpcService";
 import { TextService } from "@/services/TextService";
 import { CollisionService } from "@/services/CollisionService";
+import { ParticleService } from "@/services/ParticleService";
 
 export function GameLoop() {
   const { gameServiceLocator } = useServiceStore();
@@ -25,13 +26,13 @@ export function GameLoop() {
     gameServiceLocator.initializeGame(app);
 
     // Init systems
-    const particleSystem = new ParticleSystem(gameServiceLocator);
-    gameServiceLocator.addService(particleSystem);
-    const pse = new ProcessSynthesisEngine(
-      gameServiceLocator,
-      grid.cells
-    );
-    gameServiceLocator.addService(pse);
+    // const particleSystem = new ParticleSystem(gameServiceLocator);
+    // gameServiceLocator.addService(particleSystem);
+    // const pse = new ProcessSynthesisEngine(
+    //   gameServiceLocator,
+    //   grid.cells
+    // );
+    // gameServiceLocator.addService(pse);
 
 
     // TODO: Streamline
@@ -48,6 +49,8 @@ export function GameLoop() {
     const collisionService = new CollisionService(gameServiceLocator);
     gameServiceLocator.addService(collisionService);
 
+    const particleService = new ParticleService(gameServiceLocator);
+    gameServiceLocator.addService(particleService);
     const spriteService = new SpriteService(gameServiceLocator);
     gameServiceLocator.addService(spriteService);
     const textureService = new TextureService(gameServiceLocator);

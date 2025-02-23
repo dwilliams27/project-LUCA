@@ -282,7 +282,7 @@ export class AgentService extends LocatableGameService {
       [CONTEXT.AGENT_ID]: agentRef.id,
       [CONTEXT.RESOURCE_STACK]: {
         type: ResourceType.ENERGY,
-        quantity: 10,
+        quantity: 100,
         quality: ResourceQuality.LOW,
       }
     };

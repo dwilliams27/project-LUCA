@@ -34,7 +34,8 @@ The grid cell you are currently in will have a !, such as [!|RESOURCE|...]
             ...cellsRef[y][x].resourceBuckets[ResourceType.MATTER].flat(),
             ...cellsRef[y][x].resourceBuckets[ResourceType.INFORMATION].flat(),
           ];
-          row.push(`[${agentRef.physics.currentCell.x === x && agentRef.physics.currentCell.y === y ? '!|' : ''}${resources.map((resource) => resourceToStr(resource)).filter((resourceStr) => !!resourceStr).join('|')}]`);
+          const resourceStr = `${agentRef.physics.currentCell.x === x && agentRef.physics.currentCell.y === y ? '!|' : ''}${resources.map((resource) => resourceToStr(resource)).filter((resourceStr) => !!resourceStr).join('|')}`;
+          row.push(`[${resourceStr.length > 0 ? resourceStr : "EMPTY"}]`);
         } else {
           row.push(`[X]`);
         }

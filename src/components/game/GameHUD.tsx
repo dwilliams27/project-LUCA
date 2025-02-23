@@ -18,9 +18,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
   const [agent, setAgent] = React.useState<Agent | null>(null);
 
   const step = () => {
-    const pse = gameServiceLocator.getService(ProcessSynthesisEngine);
     const agentService = gameServiceLocator.getService(AgentService);
-    pse.executeStep();
 
     if (!agent) {
       setAgent(agentService.createAgent({ x: 0, y: 0 }));

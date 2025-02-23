@@ -43,12 +43,10 @@ export const MoveGridCellTool: LucaTool = {
     }
 
     const cellSize = dimensionStore.getState().cellSize;
-    const adjustedCellSizeX = cellSize - agentRef.pixi.mainText.width;
-    const adjustedCellSizeY = cellSize - agentRef.pixi.mainText.height;
     // TODO fix this type nonsense
     agentUpdates.physics!.moving = true;
     agentUpdates.physics!.destinationCell = newCell;
-    agentUpdates.physics!.destinationPos = { x: cellSize * newCell.x + agentRef.pixi.mainText.width / 2 + Math.random() * adjustedCellSizeX, y: cellSize * newCell.y + agentRef.pixi.mainText.height / 2 + Math.random() * adjustedCellSizeY };
+    agentUpdates.physics!.destinationPos = { x: cellSize * newCell.x + 0.5 * cellSize, y: cellSize * newCell.y + 0.5 * cellSize };
     agentUpdates.mental!.knownCells![newCell.y]![newCell.x] = 1;
 
     applyAgentUpdates({ [agentId]: agentUpdates } as Record<string, Partial<Agent>>, MOVE_GRID_CELL_TOOL);

@@ -1,4 +1,5 @@
-import { Tool } from "ai";
+import type { Tool } from "ai";
+import type { Text } from "pixi.js";
 
 export enum EvolutionaryStage {
   ABIOTIC = 'ABIOTIC',
@@ -18,18 +19,24 @@ export const EvolutionaryStageDescriptions = {
 
 export interface Particle {
   id: string;
+  tags: string[];
+  display: Text;
   resource: Resource;
   position: Position;
-  target: Position;
+  currentCell: GridCell;
+  directedMovement?: DirectedMovement;
+  targetCell?: GridCell;
   vx: number;
   vy: number;
   scale: number;
-  transitioning: boolean;
-  sourceCell?: GridCell;
-  targetCell?: GridCell;
   width: number;
   height: number;
 };
+export interface DirectedMovement {
+  staticTarget?: Position;
+  dynamicTarget?: () => Position;
+  destroyOnFinish: boolean;
+}
 
 export interface Position {
   x: number;

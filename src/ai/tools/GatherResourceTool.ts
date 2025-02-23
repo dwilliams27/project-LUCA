@@ -1,3 +1,4 @@
+import { ParticleService } from "@/services/ParticleService";
 import { GameServiceLocator } from "@/services/ServiceLocator";
 import { LucaTool } from "@/services/ToolService";
 import { agentStore, gridStore } from "@/store/gameStore";
@@ -39,6 +40,7 @@ export const GatherResourceTool: LucaTool = {
     const gridState = gridStore.getState();
     const gridCellsUpdate = cloneWithMaxDepth(gridState.cells, 10);
     const agentRef = agentState.agentMap[agentId];
+    const particleService = serviceLocator.getService(ParticleService);
 
     const resourceType = resourceAbrToType(params.resourceType);
     if (!resourceType) {
@@ -58,10 +60,19 @@ export const GatherResourceTool: LucaTool = {
       quantity: params.amount,
       quality: params.resourceQuality
     };
-    const quantityTaken = Math.min(gridCellsUpdate[agentRef.physics.currentCell.y][agentRef.physics.currentCell.x].resourceBuckets[resourceStack.type][resourceStack.quality].quantity, resourceStack.quantity);
+    const currentAgentCell = gridCellsUpdate[agentRef.physics.currentCell.y][agentRef.physics.currentCell.x];
+    const quantityTaken = Math.min(currentAgentCell.resourceBuckets[resourceStack.type][resourceStack.quality].quantity, resourceStack.quantity);
+
+    particleService.getParticlesByIds(particleService.getParticleIdListForResource(currentAgentCell.id, { ...resourceStack, quantity: quantityTaken })).forEach((particle) => {
+      particle.directedMovement = {
+        dynamicTarget: () => {
+          return agentStore.getState().agentMap[agentId].physics.position;
+        },
+        destroyOnFinish: true
+      }
+    });
 
     gridCellsUpdate[agentRef.physics.currentCell.y][agentRef.physics.currentCell.x].resourceBuckets[resourceStack.type][resourceStack.quality].quantity -= quantityTaken;
-
     gridStore.setState({
       ...gridState,
       cells: gridCellsUpdate
