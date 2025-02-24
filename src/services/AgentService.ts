@@ -291,7 +291,7 @@ export class AgentService extends LocatableGameService {
     
     try {
       const response = await ipcService.llmChat({
-        provider: LLM_PROVIDERS.OPENAI,
+        provider: LLM_PROVIDERS.GOOGLE,
         tools: toolService.lucaToolsToAiTools(tools),
         system: this.systemMessage,
         prompt: promptService.constructPromptText(agentPrompt, context),
