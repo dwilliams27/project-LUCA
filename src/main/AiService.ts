@@ -83,8 +83,8 @@ export class AiService {
         if (!this.openai) {
           throw new Error("Openai provider missing! Did you set MAIN_VITE_OPENAI_AI_API_KEY?");
         }
-        model = this.openai("o3-mini");
-        providerOptions = { openai: { reasoningEffort: 'high' }};
+        model = this.openai("gpt-4o");
+        // providerOptions = { openai: { reasoningEffort: 'high' }};
         break;
       }
       case (LLM_PROVIDERS.GOOGLE): {

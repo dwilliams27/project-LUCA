@@ -12,14 +12,11 @@ const BOTTOM_H = 20;
 
 export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
   const { gameServiceLocator } = useServiceStore();
-  const [agent, setAgent] = React.useState<Agent | null>(null);
 
-  const step = () => {
+  const addAgent = () => {
     const agentService = gameServiceLocator.getService(AgentService);
 
-    if (!agent) {
-      setAgent(agentService.createAgent({ x: 0, y: 2 }));
-    }
+    agentService.createAgent({ x: Math.round(Math.random() * 5), y: Math.round(Math.random() * 5) });
   }
 
   return (
@@ -34,8 +31,8 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
 
       <div className="flex flex-grow overflow-hidden">
         <div className="w-1/3 bg-gray-900 border-r border-gray-800 p-4">
-          <MenuButton onClick={step}>
-            Step
+          <MenuButton onClick={addAgent}>
+            Add Agent
           </MenuButton>
         </div>
 
