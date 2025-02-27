@@ -1,6 +1,4 @@
-import { useGridStore, useServiceStore } from "@/store/gameStore";
-import { ParticleSystem } from "@/services/Particles/ParticleSystem";
-import { ProcessSynthesisEngine } from "@/services/PSE/ProcessSynthesisEngine";
+import { useServiceStore } from "@/store/gameStore";
 import { useApp, useTick } from "@pixi/react";
 import { useEffect } from "react";
 import { PromptService } from "@/services/PromptService";
@@ -16,7 +14,6 @@ import { ParticleService } from "@/services/ParticleService";
 export function GameLoop() {
   const { gameServiceLocator } = useServiceStore();
   const app = useApp();
-  const grid = useGridStore();
   
   useTick((delta) => {
     gameServiceLocator.tick(delta);
@@ -24,16 +21,6 @@ export function GameLoop() {
 
   useEffect(() => {
     gameServiceLocator.initializeGame(app);
-
-    // Init systems
-    // const particleSystem = new ParticleSystem(gameServiceLocator);
-    // gameServiceLocator.addService(particleSystem);
-    // const pse = new ProcessSynthesisEngine(
-    //   gameServiceLocator,
-    //   grid.cells
-    // );
-    // gameServiceLocator.addService(pse);
-
 
     // TODO: Streamline
     const promptService = new PromptService(gameServiceLocator);

@@ -1,3 +1,4 @@
+import { CONVERT_MATTER_TO_SIZE_TOOL, ConvertMatterToSizeTool } from "@/ai/tools/ConvertMatterToSizeTool";
 import { GATHER_RESOURCE_TOOL, GatherResourceTool } from "@/ai/tools/GatherResourceTool";
 import { MOVE_GRID_CELL_TOOL, MoveGridCellTool } from "@/ai/tools/MoveGridCellTool";
 import { SENSE_ADJACENT_CELL_TOOL, SenseAdjacentCellTool } from "@/ai/tools/SenseAdjacentCellTool";
@@ -27,6 +28,7 @@ export class ToolService extends LocatableGameService {
       [GATHER_RESOURCE_TOOL]: GatherResourceTool,
       [MOVE_GRID_CELL_TOOL]: MoveGridCellTool,
       [SENSE_ADJACENT_CELL_TOOL]: SenseAdjacentCellTool,
+      [CONVERT_MATTER_TO_SIZE_TOOL]: ConvertMatterToSizeTool,
     }
   }
 

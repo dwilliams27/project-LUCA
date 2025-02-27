@@ -1,6 +1,7 @@
 import { CellAgentPrompt } from "@/ai/prompts/CellAgentPrompt";
 import { CellAgentSystemPrompt } from "@/ai/prompts/CellAgentSystemPrompt";
 import { CollectResourceGoalPrompt } from "@/ai/prompts/CollectResourceGoalPrompt";
+import { GrowthGoalPrompt } from "@/ai/prompts/GrowthGoalPrompt";
 import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
 import { LucaTool } from "@/services/ToolService";
 import { GameState } from "@/store/gameStore";
@@ -30,7 +31,8 @@ export class PromptService extends LocatableGameService {
     this.promptCatalog = {
       CELL_AGENT_PROMPT: CellAgentPrompt,
       CELL_AGENT_SYSTEM_PROMPT: CellAgentSystemPrompt,
-      COLLECT_RESOURCE_GOAL_PROMPT: CollectResourceGoalPrompt
+      COLLECT_RESOURCE_GOAL_PROMPT: CollectResourceGoalPrompt,
+      GROWTH_GOAL_PROMPT: GrowthGoalPrompt
     };
   }
 

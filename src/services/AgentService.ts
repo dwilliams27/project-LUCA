@@ -13,10 +13,12 @@ import { COLLECT_RESOURCE_GOAL_PROMPT } from "@/ai/prompts/CollectResourceGoalPr
 import { IpcService } from "@/services/IpcService";
 import { CELL_AGENT_SYSTEM_PROMPT } from "@/ai/prompts/CellAgentSystemPrompt";
 import { GATHER_RESOURCE_TOOL } from "@/ai/tools/GatherResourceTool";
+import { CONVERT_MATTER_TO_SIZE_TOOL } from "@/ai/tools/ConvertMatterToSizeTool";
 import { TextService } from "@/services/TextService";
 import { CollisionService } from "@/services/CollisionService";
 import { generateEmptyResourceBucket } from "@/utils/resources";
 import { applyAgentUpdates } from "@/utils/state";
+import { GROWTH_GOAL_PROMPT } from "@/ai/prompts/GrowthGoalPrompt";
 
 const DEBUG_MAX_DECISIONS = 20;
 
@@ -96,10 +98,11 @@ export class AgentService extends LocatableGameService {
     const capabilities: Capability[] = [
       {
         id: genId(CAPABILITY_ID),
-        description: "Basic movement, sensing, and resource gathering.",
+        description: "Basic movement, resource gathering, and matter conversion for growth.",
         tools: [
           toolService.getTool(GATHER_RESOURCE_TOOL),
           toolService.getTool(MOVE_GRID_CELL_TOOL),
+          toolService.getTool(CONVERT_MATTER_TO_SIZE_TOOL),
           // toolService.getTool(SENSE_ADJACENT_CELL_TOOL),
         ]
       }
@@ -112,6 +115,12 @@ export class AgentService extends LocatableGameService {
         requiredContext: [
           CONTEXT.RESOURCE_STACK
         ],
+        getFocusRank: (gameState: GameState, context: Record<string, any>) => 1
+      },
+      {
+        basePrompt: promptService.getBasePrompt(GROWTH_GOAL_PROMPT),
+        basePriority: 1,
+        requiredContext: [],
         getFocusRank: (gameState: GameState, context: Record<string, any>) => 1
       }
     ];
@@ -270,7 +279,6 @@ export class AgentService extends LocatableGameService {
 
   async makeDecision(agentRef: Agent) {
     agentRef.pixi.thoughtBubble.visible = true;
-    // agentRef.pixi.thoughtEmoji.text = "🤔";
     agentRef.pixi.thoughtEmoji.visible = true;
 
     const promptService = this.serviceLocator.getService(PromptService);
@@ -308,7 +316,8 @@ export class AgentService extends LocatableGameService {
       thinking: false,
     };
     mentalUpdate.recentThoughts = [...agentRef.mental.recentThoughts];
-    mentalUpdate.recentThoughts.push(response.text);
+    const summaryMatch = response.text.match(/<summary>(.*?)<\/summary>/s);
+    mentalUpdate.recentThoughts.push(summaryMatch ? summaryMatch[1].trim() : response.text);
     if (mentalUpdate.recentThoughts.length > 5) {
       mentalUpdate.recentThoughts.shift();
     }
