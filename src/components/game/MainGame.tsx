@@ -3,11 +3,10 @@ import '@pixi/unsafe-eval';
 import React, { useEffect, useRef } from 'react';
 import { Stage, Container } from '@pixi/react';
 import { GameHUD } from '@/components/game/GameHUD';
-import { useTextStore } from '@/store/textStore';
+import { useTextStore } from '@/store/text-store';
 import { GameWorld } from '@/components/game/GameWorld';
-import { genGridCells } from '@/utils/testData';
 import { GameLoop } from '@/components/game/GameLoop';
-import { useDimensionStore, useGridStore, useResizeGame } from '@/store/gameStore';
+import { useDimensionStore, useGridStore, useResizeGame } from '@/store/game-store';
 
 export const MainGame: React.FC = () => {
   const { initText } = useTextStore();

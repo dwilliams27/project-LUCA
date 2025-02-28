@@ -1,7 +1,8 @@
 import { GridCellComponent } from "@/components/game/GridCell";
-import { GridCell } from "@/types";
 import { Container, Graphics } from '@pixi/react';
 import { useCallback } from "react";
+
+import type { GridCell } from "@/services/types/physics.service.types";
 
 export const Grid: React.FC<{
   zIndex: number;

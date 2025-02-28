@@ -1,8 +1,8 @@
-import { app, shell, BrowserWindow, ipcMain, contextBridge, ipcRenderer } from 'electron';
+import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import { defineIpcCalls } from '@/main/ipcCalls';
-import { AiService } from '@/main/AiService';
+import { defineIpcCalls } from '@/main/ipc-calls';
+import { AiService } from '@/main/ai.service';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({

@@ -1,6 +1,7 @@
-import { ParticleSystem } from "@/services/Particles/ParticleSystem";
-import { GameServiceLocator, LocatableGameService } from "@/services/ServiceLocator";
-import { BasicProcess, Direction, GridCell, Operation, ResourceQuality, ResourceType, TransferOperation, TransformOperation } from "@/types";
+import { GameServiceLocator, LocatableGameService } from "@/services/service-locator";
+import { ResourceQuality, ResourceType } from "@/services/types/item.service.types";
+
+import { Direction, type BasicProcess, type GridCell, type Operation, type TransferOperation, type TransformOperation } from "@/services/types/physics.service.types";
 
 export interface ExecutionContext {
   depth: number;
@@ -14,17 +15,12 @@ export class ProcessSynthesisEngine extends LocatableGameService {
 
   private grid: GridCell[][];
   private sortedCells: GridCell[];
-  private particleSystem: ParticleSystem;
 
   constructor(gameServiceLocator: GameServiceLocator, grid: GridCell[][]) {
     super(gameServiceLocator);
     this.grid = grid;
     this.sortedCells = grid.flat();
     this.sortCells();
-
-    console.log('Grid', this.grid);
-
-    this.particleSystem = gameServiceLocator.getService(ParticleSystem);
   }
 
   executeStep() {
@@ -95,9 +91,6 @@ export class ProcessSynthesisEngine extends LocatableGameService {
       quantity: toResource.quantity + (transform.output.quantity * clampedRate),
     };
 
-    // Update systems
-    this.particleSystem.transformParticles(gridCell, transform, clampedRate);
-
     return true;
   }
 
@@ -124,13 +117,6 @@ export class ProcessSynthesisEngine extends LocatableGameService {
       ...toCellResource,
       quantity: toCellResource.quantity + transfer.amount,
     };
-
-    // Update systems
-    this.particleSystem.transferParticles(
-      transfer,
-      gridCell,
-      toCell
-    );
 
     return true;
   }

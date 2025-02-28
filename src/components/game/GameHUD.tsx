@@ -1,7 +1,7 @@
 import { MenuButton } from '@/components/ui/MenuButton';
-import { useServiceStore, gameStore } from '@/store/gameStore';
+import { useServiceStore, gameStore } from '@/store/game-store';
 import React from 'react';
-import { AgentService } from '@/services/AgentService';
+import { AgentService } from '@/services/agent.service';
 
 interface GameHUDProps {
   children: React.ReactNode;

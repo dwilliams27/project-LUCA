@@ -1,15 +1,15 @@
-import { useServiceStore } from "@/store/gameStore";
+import { useServiceStore } from "@/store/game-store";
 import { useApp, useTick } from "@pixi/react";
 import { useEffect } from "react";
-import { PromptService } from "@/services/PromptService";
-import { SpriteService } from "@/services/SpriteService";
-import { TextureService } from "@/services/TextureService";
-import { AgentService } from "@/services/AgentService";
-import { ToolService } from "@/services/ToolService";
-import { IpcService } from "@/services/IpcService";
-import { TextService } from "@/services/TextService";
-import { CollisionService } from "@/services/CollisionService";
-import { ParticleService } from "@/services/ParticleService";
+import { PromptService } from "@/services/prompt.service";
+import { SpriteService } from "@/services/sprite.service";
+import { TextureService } from "@/services/texture.service";
+import { AgentService } from "@/services/agent.service";
+import { ToolService } from "@/services/tool.service";
+import { IpcService } from "@/services/ipc.service";
+import { TextService } from "@/services/text.service";
+import { CollisionService } from "@/services/physics.service";
+import { ParticleService } from "@/services/particle.service";
 
 export function GameLoop() {
   const { gameServiceLocator } = useServiceStore();

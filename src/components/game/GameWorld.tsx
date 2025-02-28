@@ -1,5 +1,5 @@
 import { Grid } from "@/components/game/Grid";
-import { useDimensionStore, useGridStore } from "@/store/gameStore";
+import { useDimensionStore, useGridStore } from "@/store/game-store";
 import { Container } from "@pixi/react";
 
 export const GameWorld: React.FC<{}> = () => {

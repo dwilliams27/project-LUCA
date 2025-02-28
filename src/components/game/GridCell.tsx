@@ -1,7 +1,8 @@
-import { useGridStore } from '@/store/gameStore';
-import { useTextStore } from '@/store/textStore';
-import { GridCell } from '@/types';
-import { Container, Graphics, Text } from '@pixi/react';
+import { useGridStore } from '@/store/game-store';
+import { useTextStore } from '@/store/text-store';
+import { Container } from '@pixi/react';
+
+import type { GridCell } from '@/services/types/physics.service.types';
 
 export const GridCellComponent: React.FC<{
   cell: GridCell;

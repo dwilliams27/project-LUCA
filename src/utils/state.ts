@@ -1,5 +1,6 @@
-import { Agent } from "@/services/AgentService";
-import { agentStore } from "@/store/gameStore";
+import { agentStore } from "@/store/game-store";
+
+import type { Agent } from "@/services/types/agent.service.types";
 
 // Agents
 export function applyAgentUpdates(updates: Record<string, Partial<Agent>>, logMessage = '') {
