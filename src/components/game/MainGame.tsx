@@ -6,7 +6,7 @@ import { GameHUD } from '@/components/game/GameHUD';
 import { useTextStore } from '@/store/text-store';
 import { GameWorld } from '@/components/game/GameWorld';
 import { GameLoop } from '@/components/game/GameLoop';
-import { useDimensionStore, useGridStore, useResizeGame } from '@/store/game-store';
+import { useDimensionStore, useResizeGame } from '@/store/game-store';
 
 export const MainGame: React.FC = () => {
   const { initText } = useTextStore();
@@ -38,21 +38,23 @@ export const MainGame: React.FC = () => {
   return (
     <GameHUD>
       <div className="w-full h-full inset-0 bg-black" id="game-container" ref={gameContainerRef}>
-        <Stage
-          width={dimensions.width} 
-          height={dimensions.height}
-          options={{ 
-            backgroundColor: 0x000000,
-            antialias: true,
-            autoDensity: true,
-            resolution: window.devicePixelRatio
-          }}
-        >
-          <Container position={[0, 0]}>
-            <GameLoop />
-            <GameWorld />
-          </Container>
-        </Stage>
+        <div className="mx-auto" style={{ width: dimensions.gridLength, height: dimensions.gridLength }}>
+          <Stage
+            width={dimensions.gridLength} 
+            height={dimensions.gridLength}
+            options={{ 
+              backgroundColor: 0x000000,
+              antialias: true,
+              autoDensity: true,
+              resolution: window.devicePixelRatio
+            }}
+          >
+            <Container position={[0, 0]}>
+              <GameLoop />
+              <GameWorld />
+            </Container>
+          </Stage>
+        </div>
       </div>
     </GameHUD>
   );

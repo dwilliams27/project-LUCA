@@ -3,19 +3,7 @@ import { createGoogleGenerativeAI, GoogleGenerativeAIProvider } from "@ai-sdk/go
 import { createOpenAI, OpenAIProvider } from "@ai-sdk/openai";
 import { generateText, jsonSchema, LanguageModelV1 } from "ai";
 
-import { IpcLlmChatRequest, IpcLlmChatResponse, LLM_PROVIDERS, LLMProvider } from "@/types";
-
-interface CostMetric {
-  totalInputTokens: number;
-  totalOutputTokens: number;
-  totalCost: number;
-  tokenCostProfile: TokenCostProfile
-};
-
-interface TokenCostProfile {
-  inputToken: number,
-  outputToken: number
-};
+import { CostMetric, IpcLlmChatRequest, IpcLlmChatResponse, LLM_PROVIDERS, LLMProvider } from "@/types";
 
 export class AiService {
   private openai?: OpenAIProvider;
@@ -72,19 +60,19 @@ export class AiService {
   async generateText(req: IpcLlmChatRequest): Promise<IpcLlmChatResponse> {
     let model: LanguageModelV1 | null = null;
     let providerOptions: any = null;
-    switch (req.provider) {
+    switch (req.modelConfig.provider) {
       case (LLM_PROVIDERS.ANTHROPIC): {
         if (!this.anthropic) {
           throw new Error("Anthropic provider missing! Did you set MAIN_VITE_ANTHROPIC_AI_API_KEY?");
         }
-        model = this.anthropic("claude-3-7-sonnet-20250219");
+        model = this.anthropic(req.modelConfig.modelName);
         break;
       }
       case (LLM_PROVIDERS.OPENAI): {
         if (!this.openai) {
           throw new Error("Openai provider missing! Did you set MAIN_VITE_OPENAI_AI_API_KEY?");
         }
-        model = this.openai("o3-mini");
+        model = this.openai(req.modelConfig.modelName);
         providerOptions = { openai: { reasoningEffort: 'high' }};
         break;
       }
@@ -92,7 +80,7 @@ export class AiService {
         if (!this.google) {
           throw new Error("Openai provider missing! Did you set MAIN_VITE_GOOGLE_GENERATIVE_AI_API_KEY?");
         }
-        model = this.google("gemini-2.0-flash");
+        model = this.google(req.modelConfig.modelName);
         break;
       }
       default: {
@@ -115,12 +103,13 @@ export class AiService {
 
     const text = result.steps[0].text;
     const toolCalls = result.steps[0].toolCalls;
-    const queryCost = this.updateCostMetrics(req.provider, result.usage.promptTokens, result.usage.completionTokens);
+    const queryCost = this.updateCostMetrics(req.modelConfig.provider, result.usage.promptTokens, result.usage.completionTokens);
     console.log('Text: ', text);
     console.log('ToolCalls: ', toolCalls);
     console.log(`Query Cost: $${queryCost.toFixed(4)} ${result.usage.promptTokens} in, ${result.usage.completionTokens} out`);
 
     return {
+      modelConfig: req.modelConfig,
       text,
       toolCalls,
     };
@@ -129,7 +118,7 @@ export class AiService {
   private updateCostMetrics(provider: LLMProvider, inputTokens: number, outputTokens: number) {
     const newTotalIn = this.costMetrics[provider].totalInputTokens + inputTokens;
     const newTotalOut = this.costMetrics[provider].totalOutputTokens + outputTokens;
-    const newTotal = this.costMetrics[provider].totalCost + newTotalIn * this.costMetrics[provider].tokenCostProfile.inputToken + newTotalOut * this.costMetrics[provider].tokenCostProfile.outputToken;
+    const newTotal = this.costMetrics[provider].totalCost + inputTokens * this.costMetrics[provider].tokenCostProfile.inputToken + outputTokens * this.costMetrics[provider].tokenCostProfile.outputToken;
 
     this.costMetrics[provider] = {
       ...this.costMetrics[provider],
@@ -139,5 +128,18 @@ export class AiService {
     }
     
     return inputTokens * this.costMetrics[provider].tokenCostProfile.inputToken + outputTokens * this.costMetrics[provider].tokenCostProfile.outputToken;
+  }
+
+  getCostMetrics() {
+    const totalCost = Object.values(this.costMetrics).reduce((sum, metric) => sum + metric.totalCost, 0);
+    const totalInputTokens = Object.values(this.costMetrics).reduce((sum, metric) => sum + metric.totalInputTokens, 0);
+    const totalOutputTokens = Object.values(this.costMetrics).reduce((sum, metric) => sum + metric.totalOutputTokens, 0);
+    
+    return {
+      totalCost,
+      totalInputTokens,
+      totalOutputTokens,
+      providerMetrics: this.costMetrics
+    };
   }
 }

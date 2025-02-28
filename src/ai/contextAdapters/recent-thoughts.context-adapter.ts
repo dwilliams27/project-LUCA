@@ -13,8 +13,6 @@ export const RecentThoughtsContextAdapter: ContextAdapter = {
   getText: (serviceLocator: GameServiceLocator, context: Record<string, any>) => {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
     const agentRef = agentStore.getState().agentMap[agentId];
-    // My guy seems to be getting distracted
-    // return `<thought>${agentRef.mental.recentThoughts.join("</thought><thought>")}</thought>`;
-    return 'none';
+    return `<thought>${agentRef.mental.recentThoughts.map((thought) => thought.text).join("</thought><thought>")}</thought>`;
   }
 }

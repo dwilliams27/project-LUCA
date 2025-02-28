@@ -19,11 +19,11 @@ import { GROWTH_GOAL_PROMPT } from "@/ai/prompts/growth-goal.prompt";
 
 import type { GameState } from "@/store/game-store";
 import type { Position } from "@/services/types/physics.service.types";
-import type { Agent, AgentPhysicsUpdate, Capability, Goal } from "@/services/types/agent.service.types";
+import { AGENT_MODEL, type Agent, type AgentModel, type AgentPhysicsUpdate, type Capability, type Goal } from "@/services/types/agent.service.types";
 import { ResourceQuality, ResourceType } from "@/services/types/item.service.types";
 import type { DeepPartial } from "@/types/utils";
 import type { LucaTool } from "@/services/types/tool.service.types";
-import { LLM_PROVIDERS, type IpcLlmChatResponse } from "@/types/ipc-shared";
+import type { IpcLlmChatResponse, ModelConfig } from "@/types/ipc-shared";
 
 const DEBUG_MAX_DECISIONS = 20;
 
@@ -44,7 +44,7 @@ export class AgentService extends LocatableGameService {
     return grid;
   }
 
-  createAgent(position: Position) {
+  createAgent(position: Position, modelConfigs: Record<AgentModel, ModelConfig>) {
     const promptService = this.serviceLocator.getService(PromptService);
     const toolService = this.serviceLocator.getService(ToolService);
     const textService = this.serviceLocator.getService(TextService);
@@ -58,7 +58,6 @@ export class AgentService extends LocatableGameService {
           toolService.getTool(GATHER_RESOURCE_TOOL),
           toolService.getTool(MOVE_GRID_CELL_TOOL),
           toolService.getTool(CONVERT_MATTER_TO_SIZE_TOOL),
-          // toolService.getTool(SENSE_ADJACENT_CELL_TOOL),
         ]
       }
     ];
@@ -116,6 +115,7 @@ export class AgentService extends LocatableGameService {
         moving: false,
       },
       mental: {
+        activeModelConfigs: modelConfigs,
         thinking: false,
         readyToThink: true,
         recentThoughts: [],
@@ -257,10 +257,9 @@ export class AgentService extends LocatableGameService {
     };
 
     const agentPrompt = promptService.getBasePrompt(CELL_AGENT_PROMPT);
-    
     try {
       const response = await ipcService.llmChat({
-        provider: LLM_PROVIDERS.ANTHROPIC,
+        modelConfig: agentRef.mental.activeModelConfigs[AGENT_MODEL.MAIN_THOUGHT],
         tools: toolService.lucaToolsToAiTools(tools),
         system: this.systemMessage,
         prompt: promptService.constructPromptText(agentPrompt, context),
@@ -278,7 +277,10 @@ export class AgentService extends LocatableGameService {
     };
     mentalUpdate.recentThoughts = [...agentRef.mental.recentThoughts];
     const summaryMatch = response.text.match(/<summary>(.*?)<\/summary>/s);
-    mentalUpdate.recentThoughts.push(summaryMatch ? summaryMatch[1].trim() : response.text);
+    const thoughtText = summaryMatch ? summaryMatch[1].trim() : response.text;
+    
+    mentalUpdate.recentThoughts.push({ text: thoughtText, modelConfig: response.modelConfig });
+    
     if (mentalUpdate.recentThoughts.length > 5) {
       mentalUpdate.recentThoughts.shift();
     }

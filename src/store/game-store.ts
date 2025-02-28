@@ -5,6 +5,7 @@ import { create } from 'zustand';
 
 import type { GridCell, Position } from '@/services/types/physics.service.types';
 import type { Agent } from '@/services/types/agent.service.types';
+import { AVAILABLE_MODELS, LLM_PROVIDERS, type LLMProvider } from '@/types/ipc-shared';
 
 export interface DimensionState {
   width: number;
@@ -30,6 +31,13 @@ export interface AgentState {
   agentMap: Record<string, Agent>;
 }
 
+export interface CostMetricsState {
+  totalCost: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  lastUpdated: number;
+}
+
 export interface ParticleState {}
 
 export interface CellBounds {
@@ -45,8 +53,10 @@ export interface GameState {
   grid: GridState;
   particles: ParticleState;
   services: ServiceState;
+  costMetrics: CostMetricsState;
 
   resizeGame: (width: number, height: number) => void;
+  updateCostMetrics: (metrics: Omit<CostMetricsState, 'lastUpdated'>) => void;
 }
 
 export const gameStore = create<GameState>((set, get) => ({
@@ -92,6 +102,12 @@ export const gameStore = create<GameState>((set, get) => ({
   services: {
     gameServiceLocator: new GameServiceLocator()
   },
+  costMetrics: {
+    totalCost: 0,
+    totalInputTokens: 0,
+    totalOutputTokens: 0,
+    lastUpdated: Date.now()
+  },
 
   resizeGame: (width: number, height: number) => {
     set(() => ({
@@ -100,6 +116,15 @@ export const gameStore = create<GameState>((set, get) => ({
         height,
         gridLength: Math.min(width, height),
         cellSize: Math.min(width, height) / GRID_SIZE
+      }
+    }));
+  },
+  
+  updateCostMetrics: (metrics) => {
+    set(() => ({
+      costMetrics: {
+        ...metrics,
+        lastUpdated: Date.now()
       }
     }));
   },
@@ -137,11 +162,21 @@ export const particleStore = {
     })),
 };
 
+export const costMetricsStore = {
+  getState: () => gameStore.getState().costMetrics,
+  setState: (metricsState: Partial<CostMetricsState>) => 
+    gameStore.setState(state => ({ 
+      costMetrics: { ...state.costMetrics, ...metricsState } 
+    })),
+};
+
 export const useResizeGame = () => gameStore(state => state.resizeGame);
 
 export const useGridStore = () => gameStore(state => state.grid);
 export const useParticleStore = () => gameStore(state => state.particles);
 export const useDimensionStore = () => gameStore(state => state.dimensions);
 export const useServiceStore = () => gameStore(state => state.services);
+export const useCostMetricsStore = () => gameStore(state => state.costMetrics);
+export const useUpdateCostMetrics = () => gameStore(state => state.updateCostMetrics);
 
 export const useGameStore = () => gameStore(state => state);

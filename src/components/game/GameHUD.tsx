@@ -1,7 +1,11 @@
 import { MenuButton } from '@/components/ui/MenuButton';
-import { useServiceStore, gameStore } from '@/store/game-store';
+import { useServiceStore } from '@/store/game-store';
 import React from 'react';
 import { AgentService } from '@/services/agent.service';
+import { LlmInfo } from '@/components/game/LlmInfo';
+import { ChatLog } from '@/components/game/ChatLog';
+import { AVAILABLE_MODELS, LLM_PROVIDERS, type LLMProvider } from '@/types/ipc-shared';
+import { AGENT_MODEL } from '@/services/types/agent.service.types';
 
 interface GameHUDProps {
   children: React.ReactNode;
@@ -10,47 +14,23 @@ interface GameHUDProps {
 const TOP_H = 10;
 const BOTTOM_H = 20;
 
-const useAgentStore = () => gameStore(state => state.agents);
-
-const ChatLog: React.FC = () => {
-  const { agentMap } = useAgentStore();
-  
-  return (
-    <div className="h-full flex flex-col">
-      <h3 className="text-lg font-medium mb-2">Agent Thoughts</h3>
-      <div className="flex-grow overflow-y-auto">
-        {Object.values(agentMap).length === 0 ? (
-          <div className="text-gray-500 italic">No agents present</div>
-        ) : (
-          <div className="space-y-4">
-            {Object.values(agentMap).map(agent => (
-              <div key={agent.id} className="border border-gray-700 rounded-md p-2">
-                <div className="font-medium text-blue-400 mb-1">Agent {agent.id}</div>
-                <ul className="space-y-1">
-                  {agent.mental.recentThoughts.length > 0 ? (
-                    agent.mental.recentThoughts.map((thought, idx) => (
-                      <li key={idx} className="text-sm border-l-2 border-gray-600 pl-2">{thought}</li>
-                    ))
-                  ) : (
-                    <li className="text-sm text-gray-500 italic">No thoughts yet</li>
-                  )}
-                </ul>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
 export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
   const { gameServiceLocator } = useServiceStore();
+  const [provider, setProvider] = React.useState<LLMProvider>(LLM_PROVIDERS.ANTHROPIC);
+  const [model, setModel] = React.useState<string>(AVAILABLE_MODELS[LLM_PROVIDERS.ANTHROPIC][0]);
 
   const addAgent = () => {
     const agentService = gameServiceLocator.getService(AgentService);
 
-    agentService.createAgent({ x: Math.round(Math.random() * 5), y: Math.round(Math.random() * 5) });
+    agentService.createAgent(
+      { x: Math.round(Math.random() * 5), y: Math.round(Math.random() * 5) },
+      {
+        [AGENT_MODEL.MAIN_THOUGHT]: {
+          provider,
+          modelName: model,
+        }
+      }
+    );
   }
 
   return (
@@ -58,23 +38,31 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
       <div className="w-full px-6 py-2 bg-gray-900 border-b border-gray-800" style={{ height: `${TOP_H}%` }}>
         <div className="flex justify-between items-center h-full">
           <div className="font-medium">
-            Top stuff
+            Project LUCA
+          </div>
+          <div className="flex items-center">
+            <LlmInfo 
+              provider={provider} 
+              setProvider={setProvider} 
+              model={model}
+              setModel={setModel} 
+            />
           </div>
         </div>
       </div>
 
       <div className="flex flex-grow overflow-hidden">
-        <div className="w-1/3 bg-gray-900 border-r border-gray-800 p-4">
+        <div className="w-1/4 bg-gray-900 border-r border-gray-800 p-4">
           <MenuButton onClick={addAgent}>
             Add Agent
           </MenuButton>
         </div>
 
-        <div className="w-1/3 items-center overflow-hidden justify-center aspect-square p-4">
+        <div className="w-2/4 items-center overflow-hidden justify-center aspect-square p-4">
           {children}
         </div>
 
-        <div className="w-1/3 flex-grow bg-gray-900 border-l border-gray-800 p-4">
+        <div className="w-1/4 flex-grow bg-gray-900 border-l border-gray-800 p-4">
           <ChatLog />
         </div>
       </div>

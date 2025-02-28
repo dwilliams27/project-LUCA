@@ -6,6 +6,7 @@ import type { Position } from "@/services/types/physics.service.types";
 import type { DeepPartial } from "@/types/utils";
 import type { Prompt } from "@/services/types/prompt.service.types";
 import type { LucaTool } from "@/services/types/tool.service.types";
+import type { ModelConfig } from "@/types";
 
 export type AgentType = "Orchestrator";
 export type AgentPhysicsUpdate = DeepPartial<Agent["physics"]> & { position: Position };
@@ -37,6 +38,16 @@ export interface Capability {
   tools: LucaTool[];
 };
 
+export interface Thought {
+  text: string;
+  modelConfig: ModelConfig;
+}
+
+export const AGENT_MODEL = {
+  MAIN_THOUGHT: "MAIN_THOUGHT"
+} as const;
+export type AgentModel = typeof AGENT_MODEL[keyof typeof AGENT_MODEL];
+
 export interface Agent {
   id: string;
   type: AgentType;
@@ -59,9 +70,10 @@ export interface Agent {
     destinationPos: Position | null;
   },
   mental: {
+    activeModelConfigs: Record<AgentModel, ModelConfig>;
     thinking: boolean;
     readyToThink: boolean;
-    recentThoughts: string[];
+    recentThoughts: Thought[];
     knownCells: number[][];
   },
   inventory: {

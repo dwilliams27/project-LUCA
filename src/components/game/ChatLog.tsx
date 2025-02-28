@@ -1,0 +1,41 @@
+import { gameStore } from '@/store/game-store';
+import React from 'react';
+
+const useAgentStore = () => gameStore(state => state.agents);
+
+export const ChatLog: React.FC = () => {
+  const { agentMap } = useAgentStore();
+  
+  return (
+    <div className="h-full flex flex-col">
+      <h3 className="text-lg font-medium mb-2">Agent Thoughts</h3>
+      <div
+        className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 pr-2"
+      >
+        {Object.values(agentMap).length === 0 ? (
+          <div className="text-gray-500 italic">No agents present</div>
+        ) : (
+          <div className="space-y-4">
+            {Object.values(agentMap).map(agent => (
+              <div key={agent.id} className="border border-gray-700 rounded-md p-2">
+                <div className="font-medium text-blue-400 mb-1">Agent {agent.id}</div>
+                <ul className="space-y-1">
+                  {agent.mental.recentThoughts.length > 0 ? (
+                    agent.mental.recentThoughts.map((thought, idx) => (
+                      <li key={idx} className="text-sm border-l-2 border-gray-600 pl-2">
+                        <span className="text-xs font-medium text-blue-300">{thought.modelConfig.modelName}: </span>
+                        <span>{thought.text}</span>
+                      </li>
+                    )
+                  )) : (
+                    <li className="text-sm text-gray-500 italic">No thoughts yet</li>
+                  )}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

@@ -24,4 +24,12 @@ export function defineIpcCalls(aiService: AiService | null) {
       initialized: !!aiService,
     };
   });
+  
+  ipcMain.handle(IPC_CALLS.LLM_COST_METRICS, (_event) => {
+    if (!aiService) {
+      throw new Error('AI service not initialized');
+    }
+    
+    return aiService.getCostMetrics();
+  });
 }
