@@ -6,6 +6,7 @@ import { LlmInfo } from '@/components/game/LlmInfo';
 import { ChatLog } from '@/components/game/ChatLog';
 import { AVAILABLE_MODELS, LLM_PROVIDERS, type LLMProvider } from '@/types/ipc-shared';
 import { AGENT_MODEL } from '@/services/types/agent.service.types';
+import { LucaButton } from '@/components/ui/LucaButton';
 
 interface GameHUDProps {
   children: React.ReactNode;
@@ -53,9 +54,9 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
 
       <div className="flex flex-grow overflow-hidden">
         <div className="w-1/4 bg-gray-900 border-r border-gray-800 p-4">
-          <MenuButton onClick={addAgent}>
+          <LucaButton onClick={addAgent}>
             Add Agent
-          </MenuButton>
+          </LucaButton>
         </div>
 
         <div className="w-2/4 items-center overflow-hidden justify-center aspect-square p-4">

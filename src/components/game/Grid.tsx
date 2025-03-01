@@ -1,4 +1,3 @@
-import { GridCellComponent } from "@/components/game/GridCell";
 import { Container, Graphics } from '@pixi/react';
 import { useCallback } from "react";
 
@@ -30,18 +29,6 @@ export const Grid: React.FC<{
   return (
     <Container zIndex={zIndex} >
       <Graphics draw={drawGrid} zIndex={1} />
-      <Container>
-        {
-          cells.map((row, yIndex) =>
-            row.map((cell, xIndex) => (
-              <GridCellComponent
-                key={`${xIndex}-${yIndex}`}
-                cell={cell}
-              />
-            ))
-          )
-        }
-      </Container>
     </Container>
   );
 };

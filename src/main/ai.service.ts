@@ -93,13 +93,14 @@ export class AiService {
     Object.keys(req.tools).forEach((key) => {
       req.tools[key].parameters = jsonSchema(req.tools[key].parameters);
     });
-    const result = await generateText({
-      model,
-      system: req.system,
-      prompt: req.prompt,
-      tools: req.tools,
-      ...(providerOptions ? providerOptions : {})
-    });
+    // const result = await generateText({
+    //   model,
+    //   system: req.system,
+    //   prompt: req.prompt,
+    //   tools: req.tools,
+    //   ...(providerOptions ? providerOptions : {})
+    // });
+    const result = {} as any;
 
     const text = result.steps[0].text;
     const toolCalls = result.steps[0].toolCalls;

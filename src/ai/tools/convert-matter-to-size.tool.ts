@@ -21,7 +21,6 @@ export const ConvertMatterToSizeTool: LucaTool = {
         },
         quality: {
           type: "number",
-          enum: [0, 1, 2],
           description: "The quality of matter to use (0=LOW, 1=MEDIUM, 2=HIGH)"
         }
       },

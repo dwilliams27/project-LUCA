@@ -47,12 +47,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleGenerateText = async () => {
-    // @ts-ignore
-    // const result = await window.electronApi.generateText(PromptCatalog.getPopulatedPrompt(GEN_PROCESS, { PROCESS_DESCRIPTION: 'Generate a basic metabolic process for early-stage cells that consumes matter and produces energy.' }));
-    // console.log(result);
-  };
-
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center bg-gray-900 bg-evolution">
       <div className="absolute inset-0 overflow-hidden opacity-20">
@@ -74,14 +68,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart }) => {
       </div>
 
       <div className="flex flex-col items-center z-10">
-        <MenuButton
+        <MenuButton className="w-64 mb-4"
           onClick={() => {
             onStart();
           }
         }>
           Start Evolution
         </MenuButton>
-        <MenuButton onClick={handleQuit}>
+        <MenuButton onClick={handleQuit} className="w-64">
           Exit
         </MenuButton>
       </div>

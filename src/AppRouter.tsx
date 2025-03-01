@@ -19,6 +19,11 @@ export const AppRouter: React.FC = () => {
       {currentView === 'GAME' && (
         <MainGame />
       )}
+
+      {/* UI Demo buttons */}
+      <div className="fixed bottom-4 right-4 flex flex-col space-y-2 z-10">
+        
+      </div>
     </div>
   );
 };

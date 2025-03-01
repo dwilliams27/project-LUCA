@@ -1,3 +1,6 @@
+import { AgentConfigModal } from '@/components/ui/AgentConfigModal';
+import { LucaButton } from '@/components/ui/LucaButton';
+import { useModal } from '@/contexts/modal-context';
 import { gameStore } from '@/store/game-store';
 import React from 'react';
 
@@ -5,10 +8,18 @@ const useAgentStore = () => gameStore(state => state.agents);
 
 export const ChatLog: React.FC = () => {
   const { agentMap } = useAgentStore();
+  const { openModal } = useModal();
+
+  const openAgentConfigModal = (agentId: string) => {
+    const agent = agentMap[agentId];
+    openModal(
+      <AgentConfigModal agent={agent} />
+    );
+  }
   
   return (
     <div className="h-full flex flex-col">
-      <h3 className="text-lg font-medium mb-2">Agent Thoughts</h3>
+      <h3 className="text-lg font-medium mb-2">Agents</h3>
       <div
         className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 pr-2"
       >
@@ -18,7 +29,12 @@ export const ChatLog: React.FC = () => {
           <div className="space-y-4">
             {Object.values(agentMap).map(agent => (
               <div key={agent.id} className="border border-gray-700 rounded-md p-2">
-                <div className="font-medium text-blue-400 mb-1">Agent {agent.id}</div>
+                <div className="font-medium text-blue-400 mb-1 flex justify-between items-center">
+                  <span>Agent {agent.id}</span>
+                  <LucaButton onClick={() => openAgentConfigModal(agent.id)} className="ml-2">
+                    Config
+                  </LucaButton>
+                </div>
                 <ul className="space-y-1">
                   {agent.mental.recentThoughts.length > 0 ? (
                     agent.mental.recentThoughts.map((thought, idx) => (
