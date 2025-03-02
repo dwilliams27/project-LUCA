@@ -67,18 +67,18 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
     
     if (!draggedItem) return;
 
-    const newGrid = [...grid.map(row => [...row])];
+    const newGrid = [...grid.map(row => [...row.map((i) => i?.id === draggedItem.item.id ? null : i)])];
     
     // If there's already an item in this cell, don't allow the drop
     if (newGrid[rowIndex][colIndex] !== null) return;
-
-    newGrid[rowIndex][colIndex] = draggedItem.item;    
-    setGrid(newGrid);
     
     if (draggedItem.fromTray) {
       const newAvailableItems = availableItems.filter(item => item.id !== draggedItem.item.id);
       setAvailableItems(newAvailableItems);
     }
+  
+    newGrid[rowIndex][colIndex] = draggedItem.item;
+    setGrid(newGrid);
 
     setDraggedItem(null);
     if (onGridChange) {
