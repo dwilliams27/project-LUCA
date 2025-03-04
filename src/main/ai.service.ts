@@ -91,16 +91,18 @@ export class AiService {
     console.log(`Generating completion with ${model.modelId}`, req);
     
     Object.keys(req.tools).forEach((key) => {
-      req.tools[key].parameters = jsonSchema(req.tools[key].parameters);
+      const params = jsonSchema(req.tools[key].parameters);
+      // OpenAI demanded this
+      params.jsonSchema.additionalProperties = false;
+      req.tools[key].parameters = params;
     });
-    // const result = await generateText({
-    //   model,
-    //   system: req.system,
-    //   prompt: req.prompt,
-    //   tools: req.tools,
-    //   ...(providerOptions ? providerOptions : {})
-    // });
-    const result = {} as any;
+    const result = await generateText({
+      model,
+      system: req.system,
+      prompt: req.prompt,
+      tools: req.tools,
+      ...(providerOptions ? providerOptions : {})
+    });
 
     const text = result.steps[0].text;
     const toolCalls = result.steps[0].toolCalls;

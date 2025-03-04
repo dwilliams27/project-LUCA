@@ -16,7 +16,7 @@ export type LLMProvider = typeof LLM_PROVIDERS[keyof typeof LLM_PROVIDERS];
 export const AVAILABLE_MODELS = {
   [LLM_PROVIDERS.ANTHROPIC]: ["claude-3-7-sonnet-20250219"],
   [LLM_PROVIDERS.GOOGLE]: ["gemini-2.0-flash"],
-  [LLM_PROVIDERS.OPENAI]: ["gpt-4o"]
+  [LLM_PROVIDERS.OPENAI]: ["o3-mini"]
 };
 
 export interface ModelConfig {
