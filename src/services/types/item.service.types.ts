@@ -1,3 +1,5 @@
+import type { AgentStats, Capability } from "@/services/types/agent.service.types";
+
 export enum ResourceType {
   ENERGY = 1,
   MATTER = 2,
@@ -21,4 +23,16 @@ export interface ResourceStack {
   type: ResourceType;
   quantity: number;
   quality: ResourceQuality;
+}
+
+export interface LucaItem {
+  id: string;
+  name: string;
+  description: string;
+  boundAgentId: string;
+  capabilities: Capability[];
+  inputStatPaths: string[];
+  statModifiers: Partial<AgentStats>;
+  calculateModifiers: Function;
+  dirty: boolean;
 }

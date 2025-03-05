@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { DraggableGrid, type GridItem } from './DraggableGrid';
+import React from 'react';
+import { DraggableGrid } from './DraggableGrid';
 import { useModal } from '@/contexts/modal-context';
 
 import type { Agent } from '@/services/types/agent.service.types';
+import type { GridItem } from '@/components/ui/DraggableGridItem';
+import { genId, ITEM_ID } from '@/utils/id';
 
 export interface AgentConfigModalProps {
   agent: Agent;
@@ -10,23 +12,24 @@ export interface AgentConfigModalProps {
 
 export const AgentConfigModal: React.FC<AgentConfigModalProps> = ({ agent }) => {
   const { closeModal } = useModal();
-  
-  // Generate sample items for the tray
+
   const generateSampleItems = (): GridItem[] => {
-    const types: ('energy' | 'matter' | 'information')[] = ['energy', 'matter', 'information'];
-    const qualities: ('low' | 'medium' | 'high')[] = ['low', 'medium', 'high'];
-    
     const items: GridItem[] = [];
-    
-    // Create one of each type and quality combination
-    for (let i = 0; i < types.length; i++) {
-      for (let j = 0; j < qualities.length; j++) {
-        items.push({
-          id: `item-${i}-${j}`,
-          type: types[i],
-          quality: qualities[j]
-        });
-      }
+
+    for (let i = 0; i < 5; i++) {
+      items.push({
+        item: {
+          id: genId(ITEM_ID),
+          name: 'Testing',
+          description: '',
+          boundAgentId: '',
+          capabilities: [],
+          inputStatPaths: [],
+          statModifiers: {},
+          calculateModifiers: () => {},
+          dirty: false
+        }
+      });
     }
     
     return items;

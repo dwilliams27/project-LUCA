@@ -1,20 +1,10 @@
+import { DraggableGridItem, type GridItem } from '@/components/ui/DraggableGridItem';
 import React, { useState, useRef } from 'react';
-
-export interface GridItem {
-  id: string;
-  type: 'energy' | 'matter' | 'information';
-  quality: 'low' | 'medium' | 'high';
-}
 
 interface DraggableGridProps {
   gridSize: number; // N for an NxN grid
   trayItems: GridItem[];
   onGridChange?: (grid: (GridItem | null)[][]) => void;
-}
-
-interface DraggableItem {
-  item: GridItem;
-  fromTray: boolean;
 }
 
 export const DraggableGrid: React.FC<DraggableGridProps> = ({ 
@@ -26,38 +16,21 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
     Array(gridSize).fill(null).map(() => Array(gridSize).fill(null))
   );
 
-  const [draggedItem, setDraggedItem] = useState<DraggableItem | null>(null);
+  const [draggedItem, setDraggedItem] = useState<GridItem | null>(null);
   const [availableItems, setAvailableItems] = useState<GridItem[]>(trayItems);
   
   // Reference to the original state before drag starts (for cancelation)
   const originalGridRef = useRef<(GridItem | null)[][]>([]);
   const originalAvailableItemsRef = useRef<GridItem[]>([]);
 
-  // Get color based on item type and quality
-  const getItemColor = (item: GridItem) => {
-    const baseColors = {
-      energy: 'bg-emerald-500',
-      matter: 'bg-abiotic',
-      information: 'bg-complex-cell'
-    };
-    
-    const qualityModifiers = {
-      low: 'opacity-50',
-      medium: 'opacity-75',
-      high: 'opacity-100'
-    };
-    
-    return `${baseColors[item.type]} ${qualityModifiers[item.quality]}`;
-  };
-
-  const handleDragStart = (e: React.DragEvent, item: GridItem, fromTray: boolean = true) => {    
-    setDraggedItem({ item, fromTray });
+  const handleDragStart = (e: React.DragEvent, gridItem: GridItem, fromTray: boolean = true) => {    
+    setDraggedItem({ ...gridItem, fromTray });
     originalGridRef.current = [...grid.map(row => [...row])];
     originalAvailableItemsRef.current = [...availableItems];
     
     // Set the drag image
     if (e.dataTransfer) {
-      e.dataTransfer.setData('text/plain', item.id);
+      e.dataTransfer.setData('text/plain', gridItem.item.id);
       e.dataTransfer.effectAllowed = 'move';
     }
   };
@@ -67,17 +40,17 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
     
     if (!draggedItem) return;
 
-    const newGrid = [...grid.map(row => [...row.map((i) => i?.id === draggedItem.item.id ? null : i)])];
+    const newGrid = [...grid.map(row => [...row.map((i) => i?.item.id === draggedItem.item.id ? null : i)])];
     
     // If there's already an item in this cell, don't allow the drop
     if (newGrid[rowIndex][colIndex] !== null) return;
     
     if (draggedItem.fromTray) {
-      const newAvailableItems = availableItems.filter(item => item.id !== draggedItem.item.id);
+      const newAvailableItems = availableItems.filter(gridItem => gridItem.item.id !== draggedItem.item.id);
       setAvailableItems(newAvailableItems);
     }
   
-    newGrid[rowIndex][colIndex] = draggedItem.item;
+    newGrid[rowIndex][colIndex] = draggedItem;
     setGrid(newGrid);
 
     setDraggedItem(null);
@@ -110,11 +83,11 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
     if (!draggedItem.fromTray) {
       // Insert the item at the calculated index
       const newAvailableItems = [...availableItems];
-      newAvailableItems.splice(dropIndex, 0, draggedItem.item);
+      newAvailableItems.splice(dropIndex, 0, draggedItem);
       setAvailableItems(newAvailableItems);
 
       const newGrid = grid.map(row => 
-        row.map(cell => cell?.id === draggedItem.item.id ? null : cell)
+        row.map(gridItem => gridItem?.item.id === draggedItem.item.id ? null : gridItem)
       );
       setGrid(newGrid);
       if (onGridChange) {
@@ -124,7 +97,7 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
     // Handle reordering within the tray
     else {
       // Find current index of the dragged item
-      const currentIndex = availableItems.findIndex(item => item.id === draggedItem.item.id);
+      const currentIndex = availableItems.findIndex(gridItem => gridItem.item.id === draggedItem.item.id);
       
       // Only proceed if the item is actually moving to a different position
       if (currentIndex !== -1 && currentIndex !== dropIndex) {
@@ -177,34 +150,23 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
           }}
         >
           {grid.map((row, rowIndex) => (
-            row.map((cell, colIndex) => (
+            row.map((gridItem, colIndex) => (
               <div 
                 key={`${rowIndex}-${colIndex}`}
                 className={`
                   border border-emerald-700/50 p-1 flex items-center justify-center
                   transition-all duration-200 
-                  ${!cell ? 'hover:bg-emerald-900/20' : ''}
+                  ${!gridItem ? 'hover:bg-emerald-900/20' : ''}
                 `}
                 style={{ width: '100%', height: '100%' }}
                 onDragOver={allowDrop}
                 onDrop={(e) => handleDrop(e, rowIndex, colIndex)}
               >
-                {cell ? (
-                  <div
-                    className={`
-                      w-full h-full rounded-md ${getItemColor(cell)}
-                      flex items-center justify-center border-2 border-gray-700
-                      shadow-md cursor-grab transition-transform duration-150
-                      hover:scale-105
-                    `}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, cell, false)}
+                {gridItem ? (
+                  <DraggableGridItem
+                    onDragStart={(e) => handleDragStart(e, gridItem, false)}
                     onDragEnd={handleDragEnd}
-                  >
-                    <span className="text-white font-bold text-xs">
-                      {cell.type.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                    gridItem={gridItem} />
                 ) : null}
               </div>
             ))
@@ -220,22 +182,10 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
       >
         <div className="flex space-x-2 h-full items-center px-2">
           {availableItems.map((item) => (
-            <div
-              key={item.id}
-              className={`
-                flex-shrink-0 w-16 h-16 ${getItemColor(item)}
-                rounded-md shadow-md border-2 border-gray-700
-                flex items-center justify-center cursor-grab
-                hover:scale-105 transition-transform duration-150
-              `}
-              draggable
-              onDragStart={(e) => handleDragStart(e, item)}
+            <DraggableGridItem
+              onDragStart={(e) => handleDragStart(e, item, true)}
               onDragEnd={handleDragEnd}
-            >
-              <span className="text-white font-bold">
-                {item.type.charAt(0).toUpperCase()}
-              </span>
-            </div>
+              gridItem={item} />
           ))}
         </div>
       </div>

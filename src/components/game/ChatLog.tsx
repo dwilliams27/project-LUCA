@@ -1,10 +1,8 @@
 import { AgentConfigModal } from '@/components/ui/AgentConfigModal';
 import { LucaButton } from '@/components/ui/LucaButton';
 import { useModal } from '@/contexts/modal-context';
-import { gameStore } from '@/store/game-store';
+import { useAgentStore } from '@/store/game-store';
 import React from 'react';
-
-const useAgentStore = () => gameStore(state => state.agents);
 
 export const ChatLog: React.FC = () => {
   const { agentMap } = useAgentStore();

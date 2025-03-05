@@ -10,6 +10,7 @@ import { IpcService } from "@/services/ipc.service";
 import { TextService } from "@/services/text.service";
 import { CollisionService } from "@/services/physics.service";
 import { ParticleService } from "@/services/particle.service";
+import { SubscriptionService } from "@/services/subscription.service";
 
 export function GameLoop() {
   const { gameServiceLocator } = useServiceStore();
@@ -35,6 +36,8 @@ export function GameLoop() {
     gameServiceLocator.addService(textService);
     const collisionService = new CollisionService(gameServiceLocator);
     gameServiceLocator.addService(collisionService);
+    const subscriptionService = new SubscriptionService(gameServiceLocator);
+    gameServiceLocator.addService(subscriptionService);
 
     const particleService = new ParticleService(gameServiceLocator);
     gameServiceLocator.addService(particleService);

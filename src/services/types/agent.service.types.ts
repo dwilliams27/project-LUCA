@@ -16,15 +16,6 @@ export interface AgentStats {
   speed: number;
 };
 
-export const ItemType = {
-  
-} as const;
-export interface Item {
-  id: string;
-  requiredContext: string[];
-  getStatChanges: (agent: Agent, context: Record<string, any>) => AgentStats;
-}
-
 export interface Goal {
   basePrompt: Prompt | null;
   basePriority: number;

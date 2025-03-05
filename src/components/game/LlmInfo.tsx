@@ -1,6 +1,6 @@
 import { AVAILABLE_MODELS, LLM_PROVIDERS, type LLMProvider } from '@/types/ipc-shared';
 import { IpcService } from '@/services/ipc.service';
-import { gameStore, useCostMetricsStore, useServiceStore } from '@/store/game-store';
+import { useGameStore, useCostMetricsStore, useServiceStore } from '@/store/game-store';
 import React, { useEffect, useState } from 'react';
 
 const REFRESH_INTERVAL = 5000; // 5 seconds
@@ -21,6 +21,7 @@ export const LlmInfo: React.FC<LlmInfoProps> = ({
   const costMetrics = useCostMetricsStore();
   const { gameServiceLocator } = useServiceStore();
   const [isLoading, setIsLoading] = useState(false);
+  const { updateCostMetrics } = useGameStore();
 
   // Handler for provider changes
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -44,7 +45,7 @@ export const LlmInfo: React.FC<LlmInfoProps> = ({
         const metrics = await ipcService.getLlmCostMetrics();
         
         // Update the store with the fetched metrics
-        gameStore.getState().updateCostMetrics({
+        updateCostMetrics({
           totalCost: metrics.totalCost,
           totalInputTokens: metrics.totalInputTokens,
           totalOutputTokens: metrics.totalOutputTokens

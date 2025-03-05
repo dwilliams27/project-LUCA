@@ -2,10 +2,10 @@ import { GameServiceLocator } from '@/services/service-locator';
 import { GRID_SIZE, INIT_CANVAS_HEIGHT, INIT_CANVAS_WIDTH } from '@/utils/constants';
 import { genGridCells } from '@/utils/test-data';
 import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 
 import type { GridCell, Position } from '@/services/types/physics.service.types';
 import type { Agent } from '@/services/types/agent.service.types';
-import { AVAILABLE_MODELS, LLM_PROVIDERS, type LLMProvider } from '@/types/ipc-shared';
 
 export interface DimensionState {
   width: number;
@@ -59,7 +59,12 @@ export interface GameState {
   updateCostMetrics: (metrics: Omit<CostMetricsState, 'lastUpdated'>) => void;
 }
 
-export const gameStore = create<GameState>((set, get) => ({
+export type SubscribableGameStateData = keyof Omit<GameState, 'resizeGame' | 'updateCostMetrics'>;
+
+export const useGameStore = create<
+  GameState,
+  [["zustand/subscribeWithSelector", never]]
+>(subscribeWithSelector((set, get) => ({
   agents: {
     agentMap: {},
   },
@@ -128,55 +133,54 @@ export const gameStore = create<GameState>((set, get) => ({
       }
     }));
   },
-}));
+})));
 
 export const agentStore = {
-  getState: () => gameStore.getState().agents,
+  getState: () => useGameStore.getState().agents,
   setState: (agentState: Partial<AgentState>) => 
-    gameStore.setState(state => ({ 
+    useGameStore.setState(state => ({ 
       agents: { ...state.agents, ...agentState } 
     })),
 };
 
 export const dimensionStore = {
-  getState: () => gameStore.getState().dimensions,
+  getState: () => useGameStore.getState().dimensions,
   setState: (dims: Partial<DimensionState>) => 
-    gameStore.setState(state => ({ 
+    useGameStore.setState(state => ({ 
       dimensions: { ...state.dimensions, ...dims } 
     })),
 };
 
 export const gridStore = {
-  getState: () => gameStore.getState().grid,
+  getState: () => useGameStore.getState().grid,
   setState: (gridState: Partial<GridState>) => 
-    gameStore.setState(state => ({ 
+    useGameStore.setState(state => ({ 
       grid: { ...state.grid, ...gridState } 
     })),
 };
 
 export const particleStore = {
-  getState: () => gameStore.getState().particles,
+  getState: () => useGameStore.getState().particles,
   setState: (particles: Partial<ParticleState>) => 
-    gameStore.setState(state => ({ 
+    useGameStore.setState(state => ({ 
       particles: { ...state.particles, ...particles } 
     })),
 };
 
 export const costMetricsStore = {
-  getState: () => gameStore.getState().costMetrics,
+  getState: () => useGameStore.getState().costMetrics,
   setState: (metricsState: Partial<CostMetricsState>) => 
-    gameStore.setState(state => ({ 
+    useGameStore.setState(state => ({ 
       costMetrics: { ...state.costMetrics, ...metricsState } 
     })),
 };
 
-export const useResizeGame = () => gameStore(state => state.resizeGame);
+export const useResizeGame = () => useGameStore(state => state.resizeGame);
 
-export const useGridStore = () => gameStore(state => state.grid);
-export const useParticleStore = () => gameStore(state => state.particles);
-export const useDimensionStore = () => gameStore(state => state.dimensions);
-export const useServiceStore = () => gameStore(state => state.services);
-export const useCostMetricsStore = () => gameStore(state => state.costMetrics);
-export const useUpdateCostMetrics = () => gameStore(state => state.updateCostMetrics);
-
-export const useGameStore = () => gameStore(state => state);
+export const useAgentStore = () => useGameStore(state => state.agents);
+export const useGridStore = () => useGameStore(state => state.grid);
+export const useParticleStore = () => useGameStore(state => state.particles);
+export const useDimensionStore = () => useGameStore(state => state.dimensions);
+export const useServiceStore = () => useGameStore(state => state.services);
+export const useCostMetricsStore = () => useGameStore(state => state.costMetrics);
+export const useUpdateCostMetrics = () => useGameStore(state => state.updateCostMetrics);
