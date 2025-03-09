@@ -7,7 +7,7 @@ import { genId, PARTICLE_ID } from "@/utils/id";
 import { Text } from "pixi.js";
 
 import type { Particle } from "@/services/types/particle.service.types";
-import { type ResourceStack, ResourceType } from "@/services/types/item.service.types";
+import { type ResourceStack, ResourceType } from "@/services/types/inventory.service.types";
 
 // Thx claude
 class ParticleSystem {

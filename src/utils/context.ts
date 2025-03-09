@@ -1,4 +1,4 @@
-import { ResourceType, type Resource, type ResourceStack } from "@/services/types/item.service.types";
+import { ResourceType, type Resource, type ResourceStack } from "@/services/types/inventory.service.types";
 import type { Position } from "@/services/types/physics.service.types";
 
 export function resourceToStr(resource: Resource | ResourceStack, includeZero = false): string | null {

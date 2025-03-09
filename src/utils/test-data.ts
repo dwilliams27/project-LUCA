@@ -2,7 +2,7 @@ import { GRID_SIZE } from "@/utils/constants";
 import { genId, GRID_CELL_ID, PROCESS_ID, RESOURCE_ID } from "@/utils/id";
 
 import { Direction, type BasicProcess, type GridCell } from "@/services/types/physics.service.types";
-import { ResourceQuality, ResourceType } from "@/services/types/item.service.types";
+import { ResourceQuality, ResourceType } from "@/services/types/inventory.service.types";
 
 function generateProcesses(x: number, y: number): BasicProcess[] {
   return y === 0 ? [

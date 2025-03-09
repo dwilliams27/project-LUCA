@@ -1,4 +1,4 @@
-import type { LucaItem } from '@/services/types/item.service.types';
+import type { LucaItem } from '@/services/types/inventory.service.types';
 import React, { type DragEventHandler } from 'react';
 
 export interface GridItem {

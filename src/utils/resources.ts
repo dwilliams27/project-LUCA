@@ -1,6 +1,6 @@
 import { genId, RESOURCE_ID } from "@/utils/id";
 
-import { ResourceQuality, type ResourceType } from "@/services/types/item.service.types";
+import { ResourceQuality, type ResourceType } from "@/services/types/inventory.service.types";
 
 export function generateEmptyResourceBucket(resourceType: ResourceType) {
   return [{

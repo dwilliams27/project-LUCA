@@ -4,7 +4,7 @@ import { CONTEXT } from "@/utils/constants";
 import { resourceToStr } from "@/utils/context";
 
 import type { ContextAdapter } from "@/services/types/prompt.service.types";
-import { ResourceType } from "@/services/types/item.service.types";
+import { ResourceType } from "@/services/types/inventory.service.types";
 
 export const GridContextAdapter: ContextAdapter = {
   name: "GRID_CONTEXT_ADAPTER",

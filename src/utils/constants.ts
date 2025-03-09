@@ -22,6 +22,8 @@ export const SNAP_DISTANCE = 5;
 export const AGENT_RANDOM_MOTION = 0.05;
 export const AGENT_DAMP = 0.95;
 export const BASE_AGENT_SPEED = 10;
+export const BASE_AGENT_INVENTORY_WIDTH = 5;
+export const BASE_AGENT_INVENTORY_HEIGHT = 5;
 export const CONTEXT = {
   RESOURCE_STACK: "RESOURCE_STACK",
   AGENT_ID: "AGENT_ID",

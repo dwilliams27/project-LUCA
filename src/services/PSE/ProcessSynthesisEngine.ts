@@ -1,5 +1,5 @@
 import { GameServiceLocator, LocatableGameService } from "@/services/service-locator";
-import { ResourceQuality, ResourceType } from "@/services/types/item.service.types";
+import { ResourceQuality, ResourceType } from "@/services/types/inventory.service.types";
 
 import { Direction, type BasicProcess, type GridCell, type Operation, type TransferOperation, type TransformOperation } from "@/services/types/physics.service.types";
 

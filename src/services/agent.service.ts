@@ -2,7 +2,7 @@ import { PromptService } from "@/services/prompt.service";
 import { GameServiceLocator, LocatableGameService } from "@/services/service-locator";
 import { AGENT_ID, CAPABILITY_ID, genId } from "@/utils/id";
 import { agentStore, dimensionStore } from "@/store/game-store";
-import { AGENT_DAMP, AGENT_RANDOM_MOTION, BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
+import { AGENT_DAMP, AGENT_RANDOM_MOTION, BASE_AGENT_INVENTORY_HEIGHT, BASE_AGENT_INVENTORY_WIDTH, BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
 import { ToolService } from "@/services/tool.service";
 import { MOVE_GRID_CELL_TOOL } from "@/ai/tools/move-grid-cell.tool";
 import { CELL_AGENT_PROMPT } from "@/ai/prompts/cell-agent.prompt";
@@ -20,7 +20,7 @@ import { GROWTH_GOAL_PROMPT } from "@/ai/prompts/growth-goal.prompt";
 import type { GameState } from "@/store/game-store";
 import type { Position } from "@/services/types/physics.service.types";
 import { AGENT_MODEL, type Agent, type AgentModel, type AgentPhysicsUpdate, type Capability, type Goal } from "@/services/types/agent.service.types";
-import { ResourceQuality, ResourceType } from "@/services/types/item.service.types";
+import { ResourceQuality, ResourceType } from "@/services/types/inventory.service.types";
 import type { DeepPartial } from "@/types/utils";
 import type { LucaTool } from "@/services/types/tool.service.types";
 import type { IpcLlmChatResponse, ModelConfig } from "@/types/ipc-shared";
@@ -127,11 +127,13 @@ export class AgentService extends LocatableGameService {
           [ResourceType.MATTER]: generateEmptyResourceBucket(ResourceType.MATTER),
           [ResourceType.INFORMATION]: generateEmptyResourceBucket(ResourceType.INFORMATION),
         },
+        items: Array(BASE_AGENT_INVENTORY_HEIGHT).fill(null).map(() => Array(BASE_AGENT_INVENTORY_WIDTH).fill(null)),
       },
       stats: {
         baseStats: {
-          health: 100,
-          speed: BASE_AGENT_SPEED
+          MAX_HEALTH: 100,
+          CUR_HEALTH: 100,
+          SPEED: BASE_AGENT_SPEED
         }
       }
     };

@@ -5,6 +5,7 @@ import { useModal } from '@/contexts/modal-context';
 import type { Agent } from '@/services/types/agent.service.types';
 import type { GridItem } from '@/components/ui/DraggableGridItem';
 import { genId, ITEM_ID } from '@/utils/id';
+import { ItemPriorityCategories } from '@/services/types/inventory.service.types';
 
 export interface AgentConfigModalProps {
   agent: Agent;
@@ -22,12 +23,10 @@ export const AgentConfigModal: React.FC<AgentConfigModalProps> = ({ agent }) => 
           id: genId(ITEM_ID),
           name: 'Testing',
           description: '',
-          boundAgentId: '',
           capabilities: [],
-          inputStatPaths: [],
           statModifiers: {},
-          calculateModifiers: () => {},
-          dirty: false
+          calculateModifiers: () => ({}),
+          priorityCategory: ItemPriorityCategories.NONE
         }
       });
     }

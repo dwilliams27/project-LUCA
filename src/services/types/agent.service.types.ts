@@ -1,6 +1,6 @@
 import { Sprite, Text as PixiText } from "pixi.js";
 
-import { type Resource, ResourceType } from "@/services/types/item.service.types";
+import { type LucaItem, type Resource, ResourceType } from "@/services/types/inventory.service.types";
 import type { GameState } from "@/store/game-store";
 import type { Position } from "@/services/types/physics.service.types";
 import type { DeepPartial } from "@/types/utils";
@@ -11,10 +11,16 @@ import type { ModelConfig } from "@/types";
 export type AgentType = "Orchestrator";
 export type AgentPhysicsUpdate = DeepPartial<Agent["physics"]> & { position: Position };
 
+export enum AgentStatNames {
+  MAX_HEALTH = "MAX_HEALTH",
+  CUR_HEALTH = "CUR_HEALTH",
+  SPEED = "SPEED"
+}
 export interface AgentStats {
-  health: number;
-  speed: number;
-};
+  [AgentStatNames.MAX_HEALTH]: number;
+  [AgentStatNames.CUR_HEALTH]: number;
+  [AgentStatNames.SPEED]: number;
+}
 
 export interface Goal {
   basePrompt: Prompt | null;
@@ -71,6 +77,7 @@ export interface Agent {
     resourceBuckets: {
       [key in ResourceType]: Resource[];
     },
+    items: LucaItem[][];
   },
   stats: {
     baseStats: AgentStats;

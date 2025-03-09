@@ -7,7 +7,7 @@ import { cloneWithMaxDepth } from "@/utils/helpers";
 import { applyAgentUpdates } from "@/utils/state";
 
 import type { LucaTool } from "@/services/types/tool.service.types";
-import { ResourceQuality, type ResourceStack } from "@/services/types/item.service.types";
+import { ResourceQuality, type ResourceStack } from "@/services/types/inventory.service.types";
 
 export const GATHER_RESOURCE_TOOL = "GATHER_RESOURCE_TOOL";
 export const GatherResourceTool: LucaTool = {

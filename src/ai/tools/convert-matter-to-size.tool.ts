@@ -5,7 +5,7 @@ import { cloneWithMaxDepth } from "@/utils/helpers";
 import { applyAgentUpdates } from "@/utils/state";
 
 import type { LucaTool } from "@/services/types/tool.service.types";
-import { ResourceQuality, ResourceType } from "@/services/types/item.service.types";
+import { ResourceQuality, ResourceType } from "@/services/types/inventory.service.types";
 
 export const CONVERT_MATTER_TO_SIZE_TOOL = "CONVERT_MATTER_TO_SIZE_TOOL";
 export const ConvertMatterToSizeTool: LucaTool = {

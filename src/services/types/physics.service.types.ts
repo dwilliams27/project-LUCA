@@ -1,4 +1,4 @@
-import type { Resource, ResourceStack, ResourceType } from "@/services/types/item.service.types";
+import type { Resource, ResourceStack, ResourceType } from "@/services/types/inventory.service.types";
 
 export interface Position {
   x: number;

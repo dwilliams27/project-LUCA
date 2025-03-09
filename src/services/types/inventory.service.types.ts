@@ -25,14 +25,23 @@ export interface ResourceStack {
   quality: ResourceQuality;
 }
 
+export interface Inventory {
+  id: string;
+  boundAgentId: string;
+  items: LucaItem[][];
+}
+
+export enum ItemPriorityCategories {
+  NONE = 0
+}
 export interface LucaItem {
   id: string;
   name: string;
   description: string;
-  boundAgentId: string;
+  priorityCategory: number;
   capabilities: Capability[];
-  inputStatPaths: string[];
+  // TODO: Item state subscriptions
+  // inputStatPaths: string[];
   statModifiers: Partial<AgentStats>;
-  calculateModifiers: Function;
-  dirty: boolean;
+  calculateModifiers: () => Partial<AgentStats>;
 }

@@ -1,4 +1,4 @@
-import type { Resource } from "@/services/types/item.service.types";
+import type { Resource } from "@/services/types/inventory.service.types";
 import type { GridCell, Position } from "@/services/types/physics.service.types";
 import { Text as PixiText } from "pixi.js";
 
