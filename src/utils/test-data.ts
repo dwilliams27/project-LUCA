@@ -1,8 +1,10 @@
 import { GRID_SIZE } from "@/utils/constants";
-import { genId, GRID_CELL_ID, PROCESS_ID, RESOURCE_ID } from "@/utils/id";
+import { genId, GRID_CELL_ID, ITEM_ID, PROCESS_ID, RESOURCE_ID } from "@/utils/id";
 
 import { Direction, type BasicProcess, type GridCell } from "@/services/types/physics.service.types";
-import { ResourceQuality, ResourceType } from "@/services/types/inventory.service.types";
+import { ItemPriorityCategories, ResourceQuality, ResourceType, type LucaItem } from "@/services/types/inventory.service.types";
+import { AgentStatNames } from "@/services/types/agent.service.types";
+import { GLOBAL_IMAGES } from "@/services/image.service";
 
 function generateProcesses(x: number, y: number): BasicProcess[] {
   return y === 0 ? [
@@ -98,4 +100,41 @@ export function genGridCells(): GridCell[][] {
       processes: generateProcesses(x, y),
     }))
   );
+}
+
+const BasicWeapon: LucaItem = {
+  id: genId(ITEM_ID),
+  name: 'Basic Weapon',
+  description: 'Does a bit of damage',
+  capabilities: [],
+  calculateModifiers: () => ({
+    [AgentStatNames.DAMAGE_TICK]: 0.01
+  }),
+  priorityCategory: ItemPriorityCategories.NONE,
+  ui: {
+    displayText: "BasicWeapon",
+    displayImageName: GLOBAL_IMAGES.BASIC_WEAPON
+  }
+};
+
+const BasicArmor: LucaItem = {
+  id: genId(ITEM_ID),
+  name: 'Basic Armor',
+  description: 'Defends a bit',
+  capabilities: [],
+  calculateModifiers: () => ({
+    [AgentStatNames.DEFENCE]: 0.005
+  }),
+  priorityCategory: ItemPriorityCategories.NONE,
+  ui: {
+    displayText: "BasicArmor",
+    displayImageName: GLOBAL_IMAGES.BASIC_ARMOR
+  }
+};
+
+export function generateTestingInventory(): LucaItem[] {
+  return [
+    BasicWeapon,
+    BasicArmor
+  ];
 }

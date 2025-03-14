@@ -1,4 +1,6 @@
+import { ImageService } from '@/services/image.service';
 import type { LucaItem } from '@/services/types/inventory.service.types';
+import { useServiceStore } from '@/store/game-store';
 import React, { type DragEventHandler } from 'react';
 
 export interface GridItem {
@@ -16,7 +18,10 @@ export const DraggableGridItem: React.FC<DraggableGridItemProps> = ({
   gridItem,
   onDragStart,
   onDragEnd
-}) => {  
+}) => {
+  const { gameServiceLocator } = useServiceStore();
+  const imageService = gameServiceLocator.getService(ImageService);
+
   return (
     <div
       className={`
@@ -30,7 +35,17 @@ export const DraggableGridItem: React.FC<DraggableGridItemProps> = ({
       onDragEnd={onDragEnd}
     >
       <span className="text-white font-bold text-xs">
-        {gridItem.item.name}
+        {imageService.getImage(gridItem.item.ui.displayImageName) ? (
+          <img 
+            src={`data:image/png;base64,${imageService.getImage(gridItem.item.ui.displayImageName)}`} 
+            alt={gridItem.item.ui.displayText || 'Item image'} 
+            className="max-w-full max-h-full object-contain"
+          />
+        ) : (
+          <span className="text-white font-bold text-xs">
+            {gridItem.item.ui.displayText}
+          </span>
+        )}
       </span>
     </div>
   );

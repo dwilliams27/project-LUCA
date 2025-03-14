@@ -24,6 +24,8 @@ export class InventoryService extends LocatableGameService {
       switch (stat) {
         case (AgentStatNames.MAX_HEALTH):
         case (AgentStatNames.CUR_HEALTH):
+        case (AgentStatNames.DAMAGE_TICK):
+        case (AgentStatNames.DEFENCE):
         case (AgentStatNames.SPEED): {
           statMods[stat] = (a[stat] || 0) + (b[stat] || 0);
           break;

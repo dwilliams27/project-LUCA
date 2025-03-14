@@ -2,13 +2,23 @@ import { AnthropicProvider, createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI, GoogleGenerativeAIProvider } from "@ai-sdk/google";
 import { createOpenAI, OpenAIProvider } from "@ai-sdk/openai";
 import { generateText, jsonSchema, LanguageModelV1 } from "ai";
+import OpenAI from "openai";
 
-import { CostMetric, IpcLlmChatRequest, IpcLlmChatResponse, LLM_PROVIDERS, LLMProvider } from "@/types";
+import { 
+  CostMetric, 
+  IpcLlmChatRequest, 
+  IpcLlmChatResponse, 
+  LLM_PROVIDERS, 
+  LLMProvider,
+  ImageGenerationRequest,
+  ImageGenerationResponse
+} from "@/types";
 
 export class AiService {
   private openai?: OpenAIProvider;
   private google?: GoogleGenerativeAIProvider;
   private anthropic?: AnthropicProvider;
+  private openaiImageClient?: OpenAI; // Separate client just for image generation
   private costMetrics: Record<string, CostMetric> = {
     [LLM_PROVIDERS.ANTHROPIC]: {
       totalInputTokens: 0,
@@ -42,6 +52,11 @@ export class AiService {
   constructor() {
     if (import.meta.env.MAIN_VITE_OPENAI_API_KEY) {
       this.openai = createOpenAI({
+        apiKey: import.meta.env.MAIN_VITE_OPENAI_API_KEY
+      });
+      
+      // Initialize the OpenAI client for image generation
+      this.openaiImageClient = new OpenAI({
         apiKey: import.meta.env.MAIN_VITE_OPENAI_API_KEY
       });
     }
@@ -144,5 +159,39 @@ export class AiService {
       totalOutputTokens,
       providerMetrics: this.costMetrics
     };
+  }
+
+  async generateImage(req: ImageGenerationRequest): Promise<ImageGenerationResponse> {
+    if (!this.openaiImageClient) {
+      throw new Error("OpenAI image client not initialized! Did you set MAIN_VITE_OPENAI_API_KEY?");
+    }
+
+    console.log(`Generating image with prompt: "${req.prompt}"`);
+    
+    try {
+      const response = await this.openaiImageClient.images.generate({
+        model: req.model || "dall-e-3",
+        prompt: req.prompt,
+        n: req.n || 1,
+        size: "1024x1024",
+        quality: "standard",
+        response_format: "b64_json",
+        style: "vivid"
+      });
+
+      // The response contains an array of images, we'll return the first one
+      const generatedImage = response.data[0];
+
+      console.log(`Successfully generated image for prompt "${req.prompt}"`);
+      
+      // Return both URL and base64 data to give client flexibility in rendering
+      return {
+        url: generatedImage.url || "",
+        b64_json: generatedImage.b64_json || ""
+      };
+    } catch (error) {
+      console.error('Error generating image:', error);
+      throw error;
+    }
   }
 }

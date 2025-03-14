@@ -1,4 +1,5 @@
 import type { AgentStats, Capability } from "@/services/types/agent.service.types";
+import type { Text } from "pixi.js";
 
 export enum ResourceType {
   ENERGY = 1,
@@ -40,8 +41,16 @@ export interface LucaItem {
   description: string;
   priorityCategory: number;
   capabilities: Capability[];
+  pixi?: {
+    mainText: Text;
+    xOffset: number;
+    yOffset: number;
+  }
+  ui: {
+    displayText: string;
+    displayImageName: string;
+  }
   // TODO: Item state subscriptions
   // inputStatPaths: string[];
-  statModifiers: Partial<AgentStats>;
   calculateModifiers: () => Partial<AgentStats>;
 }

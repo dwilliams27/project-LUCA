@@ -6,6 +6,7 @@ import type { Agent } from '@/services/types/agent.service.types';
 import type { GridItem } from '@/components/ui/DraggableGridItem';
 import { genId, ITEM_ID } from '@/utils/id';
 import { ItemPriorityCategories } from '@/services/types/inventory.service.types';
+import { generateTestingInventory } from '@/utils/test-data';
 
 export interface AgentConfigModalProps {
   agent: Agent;
@@ -15,23 +16,7 @@ export const AgentConfigModal: React.FC<AgentConfigModalProps> = ({ agent }) => 
   const { closeModal } = useModal();
 
   const generateSampleItems = (): GridItem[] => {
-    const items: GridItem[] = [];
-
-    for (let i = 0; i < 5; i++) {
-      items.push({
-        item: {
-          id: genId(ITEM_ID),
-          name: 'Testing',
-          description: '',
-          capabilities: [],
-          statModifiers: {},
-          calculateModifiers: () => ({}),
-          priorityCategory: ItemPriorityCategories.NONE
-        }
-      });
-    }
-    
-    return items;
+    return generateTestingInventory().map((item) => ({ item }));
   };
   
   const handleGridChange = (newGrid: (GridItem | null)[][]) => {

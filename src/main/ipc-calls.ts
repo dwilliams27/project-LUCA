@@ -1,7 +1,7 @@
 import { AiService } from "@/main/ai.service";
 import { ipcMain } from "electron";
 
-import { IPC_CALLS, IpcLlmChatRequest } from "@/types";
+import { IPC_CALLS, IpcLlmChatRequest, ImageGenerationRequest } from "@/types";
 
 export function defineIpcCalls(aiService: AiService | null) {
   ipcMain.handle(IPC_CALLS.LLM_CHAT, async (_event, serializedChatRequest: string) => {
@@ -31,5 +31,20 @@ export function defineIpcCalls(aiService: AiService | null) {
     }
     
     return aiService.getCostMetrics();
+  });
+
+  ipcMain.handle(IPC_CALLS.GENERATE_IMAGE, async (_event, serializedImageRequest: string) => {
+    if (!aiService) {
+      throw new Error('AI service not initialized');
+    }
+
+    const request: ImageGenerationRequest = JSON.parse(serializedImageRequest);
+    try {
+      const response = await aiService.generateImage(request);
+      return response;
+    } catch (error) {
+      console.error('Error in generate-image handler:', error);
+      throw error;
+    }
   });
 }

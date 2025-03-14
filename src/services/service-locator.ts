@@ -19,6 +19,7 @@ export abstract class LocatableGameService extends LocatableService {
   constructor(serviceLocator: GameServiceLocator) {
     super(serviceLocator);
     this.serviceLocator = serviceLocator;
+    this.serviceLocator.addService(this);
     const app = serviceLocator.getApplication()
     if (!app) {
       throw new Error('Must initialize application before adding services!');

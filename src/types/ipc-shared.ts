@@ -3,7 +3,8 @@ import type { Tool } from "ai";
 export const IPC_CALLS = {
   LLM_CHAT: "LLM_CHAT",
   LLM_STATUS: "LLM_STATUS",
-  LLM_COST_METRICS: "LLM_COST_METRICS"
+  LLM_COST_METRICS: "LLM_COST_METRICS",
+  GENERATE_IMAGE: "GENERATE_IMAGE"
 }
 
 export const LLM_PROVIDERS = {
@@ -56,4 +57,18 @@ export interface CostMetricsResponse {
   totalInputTokens: number;
   totalOutputTokens: number;
   providerMetrics: Record<string, CostMetric>;
+}
+
+export interface ImageGenerationRequest {
+  prompt: string;
+  model?: string;
+  size?: string;
+  quality?: string;
+  style?: string;
+  n?: number;
+}
+
+export interface ImageGenerationResponse {
+  url: string;
+  b64_json: string;
 }

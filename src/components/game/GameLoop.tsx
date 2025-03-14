@@ -11,6 +11,7 @@ import { TextService } from "@/services/text.service";
 import { CollisionService } from "@/services/physics.service";
 import { ParticleService } from "@/services/particle.service";
 import { SubscriptionService } from "@/services/subscription.service";
+import { ImageService } from "@/services/image.service";
 
 export function GameLoop() {
   const { gameServiceLocator } = useServiceStore();
@@ -23,28 +24,18 @@ export function GameLoop() {
   useEffect(() => {
     gameServiceLocator.initializeGame(app);
 
-    // TODO: Streamline
-    const promptService = new PromptService(gameServiceLocator);
-    gameServiceLocator.addService(promptService);
-    const agentService = new AgentService(gameServiceLocator);
-    gameServiceLocator.addService(agentService);
-    const toolService = new ToolService(gameServiceLocator);
-    gameServiceLocator.addService(toolService);
-    const ipcService = new IpcService(gameServiceLocator);
-    gameServiceLocator.addService(ipcService);
-    const textService = new TextService(gameServiceLocator);
-    gameServiceLocator.addService(textService);
-    const collisionService = new CollisionService(gameServiceLocator);
-    gameServiceLocator.addService(collisionService);
-    const subscriptionService = new SubscriptionService(gameServiceLocator);
-    gameServiceLocator.addService(subscriptionService);
+    new PromptService(gameServiceLocator);
+    new AgentService(gameServiceLocator);
+    new ToolService(gameServiceLocator);
+    new IpcService(gameServiceLocator);
+    new TextService(gameServiceLocator);
+    new CollisionService(gameServiceLocator);
+    new SubscriptionService(gameServiceLocator);
 
-    const particleService = new ParticleService(gameServiceLocator);
-    gameServiceLocator.addService(particleService);
-    const spriteService = new SpriteService(gameServiceLocator);
-    gameServiceLocator.addService(spriteService);
-    const textureService = new TextureService(gameServiceLocator);
-    gameServiceLocator.addService(textureService);
+    new ParticleService(gameServiceLocator);
+    new SpriteService(gameServiceLocator);
+    new TextureService(gameServiceLocator);
+    new ImageService(gameServiceLocator);
   }, []);
 
   return null;

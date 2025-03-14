@@ -47,6 +47,10 @@ export interface CellBounds {
   bottom: number;
 }
 
+export interface DebugState {
+  disableLlm: boolean;
+}
+
 export interface GameState {
   agents: AgentState;
   dimensions: DimensionState;
@@ -54,9 +58,11 @@ export interface GameState {
   particles: ParticleState;
   services: ServiceState;
   costMetrics: CostMetricsState;
+  debug: DebugState;
 
   resizeGame: (width: number, height: number) => void;
   updateCostMetrics: (metrics: Omit<CostMetricsState, 'lastUpdated'>) => void;
+  setDisableLlm: (disable: boolean) => void;
 }
 
 export type SubscribableGameStateData = keyof Omit<GameState, 'resizeGame' | 'updateCostMetrics'>;
@@ -113,6 +119,9 @@ export const useGameStore = create<
     totalOutputTokens: 0,
     lastUpdated: Date.now()
   },
+  debug: {
+    disableLlm: false
+  },
 
   resizeGame: (width: number, height: number) => {
     set(() => ({
@@ -130,6 +139,14 @@ export const useGameStore = create<
       costMetrics: {
         ...metrics,
         lastUpdated: Date.now()
+      }
+    }));
+  },
+  
+  setDisableLlm: (disable: boolean) => {
+    set(() => ({
+      debug: {
+        disableLlm: disable
       }
     }));
   },
@@ -175,6 +192,14 @@ export const costMetricsStore = {
     })),
 };
 
+export const debugStore = {
+  getState: () => useGameStore.getState().debug,
+  setState: (debugState: Partial<DebugState>) => 
+    useGameStore.setState(state => ({ 
+      debug: { ...state.debug, ...debugState } 
+    })),
+};
+
 export const useResizeGame = () => useGameStore(state => state.resizeGame);
 
 export const useAgentStore = () => useGameStore(state => state.agents);
@@ -184,3 +209,5 @@ export const useDimensionStore = () => useGameStore(state => state.dimensions);
 export const useServiceStore = () => useGameStore(state => state.services);
 export const useCostMetricsStore = () => useGameStore(state => state.costMetrics);
 export const useUpdateCostMetrics = () => useGameStore(state => state.updateCostMetrics);
+export const useDebugStore = () => useGameStore(state => state.debug);
+export const useSetDisableLlm = () => useGameStore(state => state.setDisableLlm);

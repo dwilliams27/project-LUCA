@@ -1,7 +1,7 @@
 import { PromptService } from "@/services/prompt.service";
 import { GameServiceLocator, LocatableGameService } from "@/services/service-locator";
 import { AGENT_ID, CAPABILITY_ID, genId } from "@/utils/id";
-import { agentStore, dimensionStore } from "@/store/game-store";
+import { agentStore, dimensionStore, useGameStore } from "@/store/game-store";
 import { AGENT_DAMP, AGENT_RANDOM_MOTION, BASE_AGENT_INVENTORY_HEIGHT, BASE_AGENT_INVENTORY_WIDTH, BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
 import { ToolService } from "@/services/tool.service";
 import { MOVE_GRID_CELL_TOOL } from "@/ai/tools/move-grid-cell.tool";
@@ -133,6 +133,8 @@ export class AgentService extends LocatableGameService {
         baseStats: {
           MAX_HEALTH: 100,
           CUR_HEALTH: 100,
+          DAMAGE_TICK: 0,
+          DEFENCE: 0,
           SPEED: BASE_AGENT_SPEED
         }
       }
@@ -180,6 +182,7 @@ export class AgentService extends LocatableGameService {
         physicsUpdate.vx *= AGENT_DAMP;
         physicsUpdate.vy *= AGENT_DAMP;
         this.tickAgentPos(delta, physicsUpdate, agentRef);
+        this.tickItems(physicsUpdate, agentRef);
       }
 
       this.agentVisualSync(pixiRef, physicsUpdate.position);
@@ -187,6 +190,15 @@ export class AgentService extends LocatableGameService {
     });
 
     applyAgentUpdates(updates);
+  }
+
+  tickItems(physicsUpdate: AgentPhysicsUpdate, agentRef: Agent) {
+    agentRef.inventory.items.flat().filter((item) => item).forEach((item) => {
+      if (item.pixi) {
+        item.pixi.mainText.x = physicsUpdate.position.x + item.pixi.xOffset;
+        item.pixi.mainText.y = physicsUpdate.position.y + item.pixi.yOffset;
+      }
+    });
   }
 
   tickAgentPos(deltaTime: number, physicsUpdate: AgentPhysicsUpdate, agentRef: Agent) {
@@ -247,6 +259,20 @@ export class AgentService extends LocatableGameService {
     const promptService = this.serviceLocator.getService(PromptService);
     const toolService = this.serviceLocator.getService(ToolService);
     const ipcService = this.serviceLocator.getService(IpcService);
+    
+    // Check if LLM is disabled via debug settings
+    const { disableLlm } = useGameStore.getState().debug;
+    
+    if (disableLlm) {
+      console.log('LLM is disabled in debug settings, skipping LLM call');
+      const mockResponse: IpcLlmChatResponse = {
+        text: "<summary>Debug mode - LLM disabled</summary>",
+        toolCalls: [],
+        modelConfig: agentRef.mental.activeModelConfigs[AGENT_MODEL.MAIN_THOUGHT]
+      };
+      this.handleLlmResponse(agentRef.id, [], mockResponse, {});
+      return;
+    }
 
     const tools = agentRef.capabilities.map((capability) => capability.tools).flat();
     const context = {

@@ -1,5 +1,4 @@
 import { MenuButton } from '@/components/ui/MenuButton';
-import '@/services/PSE/TestRendererDeepseek';
 import React, { useEffect, useState } from 'react';
 
 export interface MainMenuProps {

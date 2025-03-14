@@ -1,5 +1,5 @@
 import { MenuButton } from '@/components/ui/MenuButton';
-import { useServiceStore } from '@/store/game-store';
+import { useServiceStore, useDebugStore, useSetDisableLlm } from '@/store/game-store';
 import React from 'react';
 import { AgentService } from '@/services/agent.service';
 import { LlmInfo } from '@/components/game/LlmInfo';
@@ -17,6 +17,8 @@ const BOTTOM_H = 20;
 
 export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
   const { gameServiceLocator } = useServiceStore();
+  const { disableLlm } = useDebugStore();
+  const setDisableLlm = useSetDisableLlm();
   const [provider, setProvider] = React.useState<LLMProvider>(LLM_PROVIDERS.ANTHROPIC);
   const [model, setModel] = React.useState<string>(AVAILABLE_MODELS[LLM_PROVIDERS.ANTHROPIC][0]);
 
@@ -42,6 +44,16 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
             Project LUCA
           </div>
           <div className="flex items-center">
+            <div className="flex items-center mr-4">
+              <input 
+                type="checkbox" 
+                id="disable-llm" 
+                checked={disableLlm} 
+                onChange={(e) => setDisableLlm(e.target.checked)} 
+                className="mr-2"
+              />
+              <label htmlFor="disable-llm" className="text-sm">Disable LLM</label>
+            </div>
             <LlmInfo 
               provider={provider} 
               setProvider={setProvider} 

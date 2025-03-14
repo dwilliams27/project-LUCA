@@ -14,11 +14,15 @@ export type AgentPhysicsUpdate = DeepPartial<Agent["physics"]> & { position: Pos
 export enum AgentStatNames {
   MAX_HEALTH = "MAX_HEALTH",
   CUR_HEALTH = "CUR_HEALTH",
+  DAMAGE_TICK = "DAMAGE_TICK",
+  DEFENCE = "DEFENCE",
   SPEED = "SPEED"
 }
 export interface AgentStats {
   [AgentStatNames.MAX_HEALTH]: number;
   [AgentStatNames.CUR_HEALTH]: number;
+  [AgentStatNames.DAMAGE_TICK]: number;
+  [AgentStatNames.DEFENCE]: number;
   [AgentStatNames.SPEED]: number;
 }
 

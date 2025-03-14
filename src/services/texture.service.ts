@@ -2,7 +2,7 @@ import { GameServiceLocator, LocatableGameService } from "@/services/service-loc
 import { Graphics, Texture } from "pixi.js";
 
 export const GLOBAL_TEXTURES = {
-  DEBUG_AGENT: "DEBUG_AGENT"
+  DEBUG_AGENT: "DEBUG_AGENT",
 }
 
 export class TextureService extends LocatableGameService {
@@ -23,6 +23,14 @@ export class TextureService extends LocatableGameService {
     gfx.endFill();
     return this.application.renderer.generateTexture(gfx);
   };
+
+  createTextureFromImage(base64: string) {
+    return Texture.from(base64);
+  }
+
+  registerGlobalTexture(name: string, texture: Texture) {
+    this.textureCatalog[name] = texture;
+  }
 
   getTexture(name: string): Texture {
     return this.textureCatalog[name];

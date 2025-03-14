@@ -145,8 +145,8 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
           style={{ 
             gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
             gridTemplateRows: `repeat(${gridSize}, 1fr)`, 
-            width: `${gridSize * 5}rem`,
-            height: `${gridSize * 5}rem`
+            width: `${gridSize * 81}px`,
+            height: `${gridSize * 81}px`
           }}
         >
           {grid.map((row, rowIndex) => (
@@ -155,7 +155,7 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
                 key={`${rowIndex}-${colIndex}`}
                 className={`
                   border border-emerald-700/50 p-1 flex items-center justify-center
-                  transition-all duration-200 
+                  transition-all duration-200 w-20 h-20
                   ${!gridItem ? 'hover:bg-emerald-900/20' : ''}
                 `}
                 style={{ width: '100%', height: '100%' }}
@@ -182,10 +182,12 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
       >
         <div className="flex space-x-2 h-full items-center px-2">
           {availableItems.map((item) => (
-            <DraggableGridItem
-              onDragStart={(e) => handleDragStart(e, item, true)}
-              onDragEnd={handleDragEnd}
-              gridItem={item} />
+            <div className="w-20 h-20">
+              <DraggableGridItem
+                onDragStart={(e) => handleDragStart(e, item, true)}
+                onDragEnd={handleDragEnd}
+                gridItem={item} />
+            </div>
           ))}
         </div>
       </div>

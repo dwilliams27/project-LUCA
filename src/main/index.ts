@@ -28,6 +28,7 @@ function createWindow(): void {
         'Content-Security-Policy': [
           "default-src 'self';" +
           "style-src 'self' 'unsafe-inline';" +
+          "img-src 'self' data:;" +
           "worker-src blob: ;" +
           "script-src 'self' 'unsafe-inline' 'unsafe-eval"
         ]
