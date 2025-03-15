@@ -15,10 +15,10 @@ export class ImageService extends LocatableGameService {
     super(serviceLocator);
 
     const ipcService = serviceLocator.getService(IpcService);
-    ipcService.generateImage({ prompt: "Pixel art of a simple sword" }).then((res) => {
+    ipcService.generateImage({ prompt: "Pixel art of a single simple sword" }).then((res) => {
       this.registerGlobalImage(GLOBAL_IMAGES.BASIC_WEAPON, res.b64_json)
     });
-    ipcService.generateImage({ prompt: "Pixel art of simple armor" }).then((res) => {
+    ipcService.generateImage({ prompt: "Pixel art of single piece of simple armor" }).then((res) => {
       this.registerGlobalImage(GLOBAL_IMAGES.BASIC_ARMOR, res.b64_json);
     });
   }
