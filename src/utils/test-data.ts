@@ -102,37 +102,37 @@ export function genGridCells(): GridCell[][] {
   );
 }
 
-const BasicWeapon: LucaItem = {
-  id: genId(ITEM_ID),
-  name: 'Basic Weapon',
-  description: 'Does a bit of damage',
-  capabilities: [],
-  calculateModifiers: () => ({
-    [AgentStatNames.DAMAGE_TICK]: 0.01
-  }),
-  priorityCategory: ItemPriorityCategories.NONE,
-  ui: {
-    displayText: "BasicWeapon",
-    displayImageName: GLOBAL_IMAGES.BASIC_WEAPON
-  }
-};
-
-const BasicArmor: LucaItem = {
-  id: genId(ITEM_ID),
-  name: 'Basic Armor',
-  description: 'Defends a bit',
-  capabilities: [],
-  calculateModifiers: () => ({
-    [AgentStatNames.DEFENCE]: 0.005
-  }),
-  priorityCategory: ItemPriorityCategories.NONE,
-  ui: {
-    displayText: "BasicArmor",
-    displayImageName: GLOBAL_IMAGES.BASIC_ARMOR
-  }
-};
-
 export function generateTestingInventory(): LucaItem[] {
+  const BasicWeapon: LucaItem = {
+    id: genId(ITEM_ID),
+    name: 'Basic Weapon',
+    description: 'Does a bit of damage',
+    capabilities: [],
+    calculateModifiers: () => ({
+      [AgentStatNames.DAMAGE_TICK]: 0.01
+    }),
+    priorityCategory: ItemPriorityCategories.NONE,
+    ui: {
+      displayText: "BasicWeapon",
+      displayImageName: GLOBAL_IMAGES.BASIC_WEAPON
+    }
+  };
+  
+  const BasicArmor: LucaItem = {
+    id: genId(ITEM_ID),
+    name: 'Basic Armor',
+    description: 'Defends a bit',
+    capabilities: [],
+    calculateModifiers: () => ({
+      [AgentStatNames.DEFENCE]: 0.005
+    }),
+    priorityCategory: ItemPriorityCategories.NONE,
+    ui: {
+      displayText: "BasicArmor",
+      displayImageName: GLOBAL_IMAGES.BASIC_ARMOR
+    }
+  };
+
   return [
     BasicWeapon,
     BasicArmor

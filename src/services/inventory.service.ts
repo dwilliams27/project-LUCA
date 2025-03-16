@@ -41,7 +41,6 @@ export class InventoryService extends LocatableGameService {
         case (AgentStatNames.DEFENCE):
         case (AgentStatNames.SPEED): {
           if (overwrite) {
-            console.log('$$$ OV:', stat, a[stat], b[stat])
             statMods[stat] = (b[stat] ?? a[stat]);
           } else {
             statMods[stat] = (a[stat] ?? 0) + (b[stat] ?? 0);

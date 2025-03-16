@@ -60,6 +60,11 @@ export interface Agent {
     mainText: PixiText;
     thoughtBubble: PixiText;
     thoughtEmoji: PixiText;
+    healthBar?: {
+      container: Container;
+      background: Graphics;
+      bar: Graphics;
+    };
   },
   physics: {
     position: Position;

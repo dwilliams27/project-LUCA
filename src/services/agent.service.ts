@@ -16,6 +16,7 @@ import { CollisionService } from "@/services/physics.service";
 import { generateEmptyResourceBucket } from "@/utils/resources";
 import { applyAgentUpdates } from "@/utils/state";
 import { GROWTH_GOAL_PROMPT } from "@/ai/prompts/growth-goal.prompt";
+import { Graphics, Container } from "pixi.js";
 
 import type { GameState } from "@/store/game-store";
 import type { Position } from "@/services/types/physics.service.types";
@@ -93,7 +94,32 @@ export class AgentService extends LocatableGameService {
     mainText.y = agentPosition.y;
     thoughtBubble.x = agentPosition.x;
     thoughtBubble.y = agentPosition.y;
-
+    
+    // Health bar
+    const healthBarContainer = new Container();
+    this.application.stage.addChild(healthBarContainer);
+    const healthBarBackground = new Graphics();
+    const healthBar = new Graphics();
+    
+    healthBarContainer.addChild(healthBarBackground);
+    healthBarContainer.addChild(healthBar);
+    
+    healthBarContainer.x = agentPosition.x;
+    healthBarContainer.y = agentPosition.y;
+    
+    const healthBarWidth = 32;
+    const healthBarHeight = 4;
+    healthBarBackground.beginFill(0x333333);
+    healthBarBackground.drawRect(0, 0, healthBarWidth, healthBarHeight);
+    healthBarBackground.endFill();
+    
+    healthBar.beginFill(0x00FF00);
+    healthBar.drawRect(0, 0, healthBarWidth, healthBarHeight);
+    healthBar.endFill();
+    
+    healthBarBackground.x = -healthBarWidth / 2;
+    healthBar.x = -healthBarWidth / 2;
+    
     const agent: Agent = {
       id,
       type: "Orchestrator",
@@ -104,6 +130,11 @@ export class AgentService extends LocatableGameService {
         mainText,
         thoughtBubble,
         thoughtEmoji,
+        healthBar: {
+          container: healthBarContainer,
+          background: healthBarBackground,
+          bar: healthBar
+        }
       },
       physics: {
         position: agentPosition,
@@ -161,7 +192,6 @@ export class AgentService extends LocatableGameService {
       const physicsUpdate: AgentPhysicsUpdate = {
         position: { x: agentRef.physics.position.x, y: agentRef.physics.position.y }
       };
-      const pixiRef = agentRef.pixi;
       
       if (agentRef.physics.moving) {
         this.updateMovingAgent(delta, physicsUpdate, agentRef);
@@ -186,7 +216,7 @@ export class AgentService extends LocatableGameService {
         this.tickItems(physicsUpdate, agentRef);
       }
 
-      this.agentVisualSync(pixiRef, physicsUpdate.position);
+      this.agentVisualSync(agentRef, physicsUpdate.position);
       updates[agentRef.id].physics = physicsUpdate as Agent["physics"];
     });
 
@@ -218,16 +248,40 @@ export class AgentService extends LocatableGameService {
     physicsUpdate.vy *= v.y;
   }
 
-  agentVisualSync(pixiRef: Agent["pixi"], position: Position) {
-    pixiRef.mainText.x = position.x;
-    pixiRef.mainText.y = position.y;
-    pixiRef.thoughtBubble.x = position.x;
-    pixiRef.thoughtBubble.y = position.y;
-    pixiRef.thoughtEmoji.x = position.x;
-    pixiRef.thoughtEmoji.y = position.y;
-    if (pixiRef.sprite) {
-      pixiRef.sprite.x = position.x;
-      pixiRef.sprite.y = position.y;
+  agentVisualSync(agentRef: Agent, position: Position) {
+    agentRef.pixi.mainText.x = position.x;
+    agentRef.pixi.mainText.y = position.y;
+    agentRef.pixi.thoughtBubble.x = position.x;
+    agentRef.pixi.thoughtBubble.y = position.y;
+    agentRef.pixi.thoughtEmoji.x = position.x;
+    agentRef.pixi.thoughtEmoji.y = position.y;
+    
+    // Update health bar
+    if (agentRef.pixi.healthBar) {
+      agentRef.pixi.healthBar.container.x = position.x;
+      agentRef.pixi.healthBar.container.y = position.y + agentRef.pixi.mainText.height * 0.6;
+      
+      const healthPercentage = agentRef.stats.currentStats.CUR_HEALTH / agentRef.stats.currentStats.MAX_HEALTH;
+      const healthBarWidth = 32;
+      
+      const healthBar = agentRef.pixi.healthBar.bar;
+      healthBar.clear();
+      
+      let color = 0x00FF00; // Green
+      if (healthPercentage < 0.3) {
+        color = 0xFF0000; // Red
+      } else if (healthPercentage < 0.7) {
+        color = 0xFFAA00; // Orange/Yellow
+      }
+      
+      healthBar.beginFill(color);
+      healthBar.drawRect(0, 0, healthBarWidth * healthPercentage, 4);
+      healthBar.endFill();
+    }
+    
+    if (agentRef.pixi.sprite) {
+      agentRef.pixi.sprite.x = position.x;
+      agentRef.pixi.sprite.y = position.y;
     }
   }
 
