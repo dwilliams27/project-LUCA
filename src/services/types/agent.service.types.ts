@@ -81,7 +81,7 @@ export interface Agent {
     resourceBuckets: {
       [key in ResourceType]: Resource[];
     },
-    items: LucaItem[][];
+    items: (LucaItem | null)[][];
   },
   stats: {
     baseStats: AgentStats;

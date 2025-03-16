@@ -73,6 +73,14 @@ export class AiService {
   }
 
   async generateText(req: IpcLlmChatRequest): Promise<IpcLlmChatResponse> {
+    if (import.meta.env.MAIN_VITE_DEBUG_ENABLE_APIS === "false") {
+      return {
+        modelConfig: req.modelConfig,
+        text: "Debug: Not making API call",
+        toolCalls: [],
+      }
+    }
+
     let model: LanguageModelV1 | null = null;
     let providerOptions: any = null;
     switch (req.modelConfig.provider) {
@@ -162,6 +170,13 @@ export class AiService {
   }
 
   async generateImage(req: ImageGenerationRequest): Promise<ImageGenerationResponse> {
+    if (import.meta.env.MAIN_VITE_DEBUG_ENABLE_APIS === "false") {
+      return {
+        url: "",
+        b64_json: ""
+      };
+    }
+
     if (!this.openaiImageClient) {
       throw new Error("OpenAI image client not initialized! Did you set MAIN_VITE_OPENAI_API_KEY?");
     }

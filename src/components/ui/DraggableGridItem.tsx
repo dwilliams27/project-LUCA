@@ -25,7 +25,7 @@ export const DraggableGridItem: React.FC<DraggableGridItemProps> = ({
   return (
     <div
       className={`
-        w-full h-full rounded-md
+        w-full h-full rounded-md text-wrap
         flex items-center justify-center border-2 border-gray-700
         shadow-md cursor-grab transition-transform duration-150
         hover:scale-105
@@ -35,7 +35,7 @@ export const DraggableGridItem: React.FC<DraggableGridItemProps> = ({
       onDragEnd={onDragEnd}
     >
       <span className="text-white font-bold text-xs">
-        {imageService.getImage(gridItem.item.ui.displayImageName) ? (
+        {imageService.getImage(gridItem.item.ui.displayImageName) !== "" ? (
           <img 
             src={`data:image/png;base64,${imageService.getImage(gridItem.item.ui.displayImageName)}`} 
             alt={gridItem.item.ui.displayText || 'Item image'} 

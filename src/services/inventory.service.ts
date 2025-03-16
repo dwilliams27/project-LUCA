@@ -2,19 +2,29 @@ import { LocatableGameService } from "@/services/service-locator";
 import { AgentStatNames } from "@/services/types/agent.service.types";
 import type { Agent, AgentStats } from "@/services/types/agent.service.types";
 import type { LucaItem } from "@/services/types/inventory.service.types";
+import { applyAgentUpdates } from "@/utils/state";
 
 export class InventoryService extends LocatableGameService {
   static name = "INVENTORY_SERVICE";
 
-  refreshAgentFromItems(agent: Agent) {
+  refreshAgentFromItems(agent: Agent, inventory?: Agent["inventory"]) {
     let statDelta: Partial<AgentStats> = {};
-    agent.inventory.items.flat().sort((a, b) => {
+    const newInventory = inventory || agent.inventory;
+    newInventory.items.flat(2).filter((item) => !!item).sort((a, b) => {
       return b.priorityCategory - a.priorityCategory;
     }).forEach((item: LucaItem) => {
       statDelta = this.mergeStatMods(statDelta, item.calculateModifiers());
     });
 
-    agent.stats.baseStats = this.mergeStatMods(agent.stats.baseStats, statDelta) as AgentStats;
+    const update = {
+      [agent.id]: {
+        inventory: newInventory,
+        stats: {
+          baseStats: this.mergeStatMods(agent.stats.baseStats, statDelta) as AgentStats
+        }
+      }
+    };
+    applyAgentUpdates(update, "InventoryService");
   }
 
   mergeStatMods(a: Partial<AgentStats>, b: Partial<AgentStats>) {

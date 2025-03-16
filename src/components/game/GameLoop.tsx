@@ -12,6 +12,7 @@ import { CollisionService } from "@/services/physics.service";
 import { ParticleService } from "@/services/particle.service";
 import { SubscriptionService } from "@/services/subscription.service";
 import { ImageService } from "@/services/image.service";
+import { InventoryService } from "@/services/inventory.service";
 
 export function GameLoop() {
   const { gameServiceLocator } = useServiceStore();
@@ -29,7 +30,10 @@ export function GameLoop() {
     new ToolService(gameServiceLocator);
     new IpcService(gameServiceLocator);
     new TextService(gameServiceLocator);
+
     new CollisionService(gameServiceLocator);
+
+    new InventoryService(gameServiceLocator);
     new SubscriptionService(gameServiceLocator);
 
     new ParticleService(gameServiceLocator);

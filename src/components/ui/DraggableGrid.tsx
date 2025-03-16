@@ -2,18 +2,20 @@ import { DraggableGridItem, type GridItem } from '@/components/ui/DraggableGridI
 import React, { useState, useRef } from 'react';
 
 interface DraggableGridProps {
-  gridSize: number; // N for an NxN grid
+  gridWidth: number;
+  gridHeight: number;
   trayItems: GridItem[];
   onGridChange?: (grid: (GridItem | null)[][]) => void;
 }
 
 export const DraggableGrid: React.FC<DraggableGridProps> = ({ 
-  gridSize = 3, 
+  gridWidth = 3,
+  gridHeight = 3,
   trayItems = [],
   onGridChange
 }) => {
   const [grid, setGrid] = useState<(GridItem | null)[][]>(
-    Array(gridSize).fill(null).map(() => Array(gridSize).fill(null))
+    Array(gridHeight).fill(null).map(() => Array(gridWidth).fill(null))
   );
 
   const [draggedItem, setDraggedItem] = useState<GridItem | null>(null);
@@ -143,10 +145,10 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
         <div 
           className="grid border border-emerald-700 rounded-lg bg-gray-900 shadow-lg"
           style={{ 
-            gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-            gridTemplateRows: `repeat(${gridSize}, 1fr)`, 
-            width: `${gridSize * 81}px`,
-            height: `${gridSize * 81}px`
+            gridTemplateColumns: `repeat(${gridWidth}, 1fr)`,
+            gridTemplateRows: `repeat(${gridHeight}, 1fr)`, 
+            width: `${gridWidth * 81}px`,
+            height: `${gridWidth * 81}px`
           }}
         >
           {grid.map((row, rowIndex) => (
@@ -155,7 +157,7 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
                 key={`${rowIndex}-${colIndex}`}
                 className={`
                   border border-emerald-700/50 p-1 flex items-center justify-center
-                  transition-all duration-200 w-20 h-20
+                  transition-all duration-200 w-20 h-20 max-w-20 max-h-20
                   ${!gridItem ? 'hover:bg-emerald-900/20' : ''}
                 `}
                 style={{ width: '100%', height: '100%' }}
@@ -182,7 +184,7 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
       >
         <div className="flex space-x-2 h-full items-center px-2">
           {availableItems.map((item) => (
-            <div className="w-20 h-20">
+            <div className="w-20 h-20 max-w-20 max-h-20">
               <DraggableGridItem
                 onDragStart={(e) => handleDragStart(e, item, true)}
                 onDragEnd={handleDragEnd}
