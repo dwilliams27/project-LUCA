@@ -130,7 +130,8 @@ export class AgentService extends LocatableGameService {
         items: Array(BASE_AGENT_INVENTORY_HEIGHT).fill(null).map(() => Array(BASE_AGENT_INVENTORY_WIDTH).fill(null)),
       },
       stats: {
-        baseStats: {
+        inventoryDerivedStats: {},
+        currentStats: {
           MAX_HEALTH: 100,
           CUR_HEALTH: 100,
           DAMAGE_TICK: 0,
@@ -193,7 +194,7 @@ export class AgentService extends LocatableGameService {
   }
 
   tickItems(physicsUpdate: AgentPhysicsUpdate, agentRef: Agent) {
-    agentRef.inventory.items.flat(2).filter((item) => item).forEach((item) => {
+    agentRef.inventory.items.flat(2).filter((item) => !!item).forEach((item) => {
       if (item.pixi) {
         item.pixi.mainText.x = physicsUpdate.position.x + item.pixi.xOffset;
         item.pixi.mainText.y = physicsUpdate.position.y + item.pixi.yOffset;

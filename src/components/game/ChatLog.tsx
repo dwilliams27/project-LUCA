@@ -9,9 +9,8 @@ export const ChatLog: React.FC = () => {
   const { openModal } = useModal();
 
   const openAgentConfigModal = (agentId: string) => {
-    const agent = agentMap[agentId];
     openModal(
-      <AgentConfigModal agent={agent} />
+      <AgentConfigModal agentId={agentId} />
     );
   }
   

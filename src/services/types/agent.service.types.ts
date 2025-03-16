@@ -84,6 +84,7 @@ export interface Agent {
     items: (LucaItem | null)[][];
   },
   stats: {
-    baseStats: AgentStats;
+    inventoryDerivedStats: Partial<AgentStats>;
+    currentStats: AgentStats;
   }
 };

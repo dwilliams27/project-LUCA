@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DraggableGrid } from './DraggableGrid';
 import { useModal } from '@/contexts/modal-context';
 import { AgentStatPanel } from './AgentStatPanel';
@@ -6,17 +6,19 @@ import { AgentStatPanel } from './AgentStatPanel';
 import type { Agent } from '@/services/types/agent.service.types';
 import type { GridItem } from '@/components/ui/DraggableGridItem';
 import { generateTestingInventory } from '@/utils/test-data';
-import { useServiceStore } from '@/store/game-store';
+import { useAgentStore, useServiceStore } from '@/store/game-store';
 import { InventoryService } from '@/services/inventory.service';
 import { BASE_AGENT_INVENTORY_HEIGHT, BASE_AGENT_INVENTORY_WIDTH } from '@/utils/constants';
 
 export interface AgentConfigModalProps {
-  agent: Agent;
+  agentId: string;
 }
 
-export const AgentConfigModal: React.FC<AgentConfigModalProps> = ({ agent }) => {
+export const AgentConfigModal: React.FC<AgentConfigModalProps> = ({ agentId }) => {
   const { closeModal } = useModal();
   const { gameServiceLocator } = useServiceStore();
+  const { agentMap } = useAgentStore();
+  const agent = agentMap[agentId];
 
   const generateSampleItems = (): GridItem[] => {
     return generateTestingInventory().map((item) => ({ item }));
@@ -42,12 +44,13 @@ export const AgentConfigModal: React.FC<AgentConfigModalProps> = ({ agent }) => 
               gridWidth={BASE_AGENT_INVENTORY_WIDTH}
               gridHeight={BASE_AGENT_INVENTORY_HEIGHT}
               trayItems={generateSampleItems()}
+              gridItems={agent.inventory.items.map((row) => row.map((item) => item ? { item, fromTray: false } : null))}
               onGridChange={handleGridChange}
             />
           </div>
           
           <div className="w-full md:w-64 lg:w-80">
-            <AgentStatPanel stats={agent.stats.baseStats} />
+            <AgentStatPanel stats={agent.stats.currentStats} />
           </div>
         </div>
         

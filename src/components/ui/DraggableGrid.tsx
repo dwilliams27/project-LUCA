@@ -5,6 +5,7 @@ interface DraggableGridProps {
   gridWidth: number;
   gridHeight: number;
   trayItems: GridItem[];
+  gridItems: (GridItem | null)[][];
   onGridChange?: (grid: (GridItem | null)[][]) => void;
 }
 
@@ -12,11 +13,10 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
   gridWidth = 3,
   gridHeight = 3,
   trayItems = [],
+  gridItems = [],
   onGridChange
 }) => {
-  const [grid, setGrid] = useState<(GridItem | null)[][]>(
-    Array(gridHeight).fill(null).map(() => Array(gridWidth).fill(null))
-  );
+  const [grid, setGrid] = useState<(GridItem | null)[][]>(gridItems);
 
   const [draggedItem, setDraggedItem] = useState<GridItem | null>(null);
   const [availableItems, setAvailableItems] = useState<GridItem[]>(trayItems);

@@ -16,18 +16,21 @@ export class InventoryService extends LocatableGameService {
       statDelta = this.mergeStatMods(statDelta, item.calculateModifiers());
     });
 
+    const currentStats = this.mergeStatMods(agent.stats.currentStats, statDelta, true) as AgentStats;
+
     const update = {
       [agent.id]: {
         inventory: newInventory,
         stats: {
-          baseStats: this.mergeStatMods(agent.stats.baseStats, statDelta) as AgentStats
+          inventoryDerivedStats: statDelta,
+          currentStats,
         }
       }
     };
     applyAgentUpdates(update, "InventoryService");
   }
 
-  mergeStatMods(a: Partial<AgentStats>, b: Partial<AgentStats>) {
+  mergeStatMods(a: Partial<AgentStats>, b: Partial<AgentStats>, overwrite = false) {
     const statKeys = new Set([...Object.keys(a), ...Object.keys(b)]);
     const statMods: Partial<AgentStats> = {};
     statKeys.forEach((stat) => {
@@ -37,7 +40,12 @@ export class InventoryService extends LocatableGameService {
         case (AgentStatNames.DAMAGE_TICK):
         case (AgentStatNames.DEFENCE):
         case (AgentStatNames.SPEED): {
-          statMods[stat] = (a[stat] || 0) + (b[stat] || 0);
+          if (overwrite) {
+            console.log('$$$ OV:', stat, a[stat], b[stat])
+            statMods[stat] = (b[stat] ?? a[stat]);
+          } else {
+            statMods[stat] = (a[stat] ?? 0) + (b[stat] ?? 0);
+          }
           break;
         }
       }
