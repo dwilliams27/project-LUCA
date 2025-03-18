@@ -1,4 +1,3 @@
-import { MenuButton } from '@/components/ui/MenuButton';
 import { useServiceStore, useDebugStore, useSetDisableLlm } from '@/store/game-store';
 import React from 'react';
 import { AgentService } from '@/services/agent.service';
@@ -47,7 +46,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
             <div className="flex items-center mr-4">
               <input 
                 type="checkbox" 
-                id="disable-llm" 
+                id="disable-llm"
                 checked={disableLlm} 
                 onChange={(e) => setDisableLlm(e.target.checked)} 
                 className="mr-2"
