@@ -20,12 +20,13 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
   const setDisableLlm = useSetDisableLlm();
   const [provider, setProvider] = React.useState<LLMProvider>(LLM_PROVIDERS.ANTHROPIC);
   const [model, setModel] = React.useState<string>(AVAILABLE_MODELS[LLM_PROVIDERS.ANTHROPIC][0]);
+  const [randomPlacement, setRandomPlacement] = React.useState(false);
 
   const addAgent = () => {
     const agentService = gameServiceLocator.getService(AgentService);
 
     agentService.createAgent(
-      { x: Math.round(Math.random() * 5), y: Math.round(Math.random() * 5) },
+      { x: randomPlacement ? Math.round(Math.random() * 5) : 0, y: randomPlacement ? Math.round(Math.random() * 5) : 0 },
       {
         [AGENT_MODEL.MAIN_THOUGHT]: {
           provider,
@@ -51,7 +52,15 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
                 onChange={(e) => setDisableLlm(e.target.checked)} 
                 className="mr-2"
               />
-              <label htmlFor="disable-llm" className="text-sm">Disable LLM</label>
+              <label htmlFor="disable-llm" className="text-sm mr-2">Disable LLM</label>
+              <input 
+                type="checkbox" 
+                id="random-placement"
+                checked={randomPlacement} 
+                onChange={() => setRandomPlacement(!randomPlacement)} 
+                className="mr-2"
+              />
+              <label htmlFor="random-placement" className="text-sm">Random Placement</label>
             </div>
             <LlmInfo 
               provider={provider} 

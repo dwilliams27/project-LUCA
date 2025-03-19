@@ -262,8 +262,8 @@ export class AgentService extends LocatableGameService {
 
     const statUpdates = {
       [agentRef.id]: {
-        currentStats: {
-          ...agentRef.stats.currentStats
+        stats: {
+          ...agentRef.stats
         }
       }
     };
@@ -277,19 +277,19 @@ export class AgentService extends LocatableGameService {
     }).map((id) => agentMap[id]);
 
     if (agentsInCell.length > 0) {
-      statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] += agentRef.stats.currentStats[AgentStatNames.DAMAGE_CHARGE_TICK] * deltaTime;
-      if (statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] > statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE_CHARGE_MAX]) {
+      statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] += agentRef.stats.currentStats[AgentStatNames.DAMAGE_CHARGE_TICK] * deltaTime;
+      if (statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] > statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE_CHARGE_MAX]) {
         // ATTACK
-        statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] -= statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE_CHARGE_MAX];
+        statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] -= statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE_CHARGE_MAX];
         agentsInCell.forEach((agent) => {
           // Add to state update
           statUpdates[agent.id] = {
-            currentStats: {
-              ...agent.stats.currentStats
+            stats: {
+              ...agent.stats
             }
           };
           // deal damage
-          statUpdates[agent.id].currentStats[AgentStatNames.CUR_HEALTH] -= statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE];
+          statUpdates[agent.id].stats.currentStats[AgentStatNames.CUR_HEALTH] -= statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE];
         });
       }
     } else {
