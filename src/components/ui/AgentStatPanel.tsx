@@ -9,7 +9,8 @@ export const AgentStatPanel: React.FC<AgentStatPanelProps> = ({ stats }) => {
   const statLabels = {
     [AgentStatNames.MAX_HEALTH]: 'Max Health',
     [AgentStatNames.CUR_HEALTH]: 'Current Health',
-    [AgentStatNames.DAMAGE_TICK]: 'Damage',
+    [AgentStatNames.DAMAGE_CHARGE_TICK]: 'Attack Speed',
+    [AgentStatNames.DAMAGE]: 'Damage',
     [AgentStatNames.DEFENCE]: 'Defence',
     [AgentStatNames.SPEED]: 'Speed',
   };
@@ -25,7 +26,7 @@ export const AgentStatPanel: React.FC<AgentStatPanelProps> = ({ stats }) => {
         if (healthRatio < 0.3) return 'text-red-500';
         if (healthRatio < 0.7) return 'text-yellow-400';
         return 'text-green-500';
-      case AgentStatNames.DAMAGE_TICK:
+      case AgentStatNames.DAMAGE:
         return value > 0.05 ? 'text-red-400' : 'text-emerald-400';
       case AgentStatNames.DEFENCE:
         return value > 0.01 ? 'text-blue-400' : 'text-emerald-400';

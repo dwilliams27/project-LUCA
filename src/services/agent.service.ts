@@ -20,11 +20,12 @@ import { Graphics, Container } from "pixi.js";
 
 import type { GameState } from "@/store/game-store";
 import type { Position } from "@/services/types/physics.service.types";
-import { AGENT_MODEL, type Agent, type AgentModel, type AgentPhysicsUpdate, type Capability, type Goal } from "@/services/types/agent.service.types";
+import { AGENT_MODEL, AgentStatNames, type Agent, type AgentModel, type AgentPhysicsUpdate, type Capability, type Goal } from "@/services/types/agent.service.types";
 import { ResourceQuality, ResourceType } from "@/services/types/inventory.service.types";
 import type { DeepPartial } from "@/types/utils";
 import type { LucaTool } from "@/services/types/tool.service.types";
 import type { IpcLlmChatResponse, ModelConfig } from "@/types/ipc-shared";
+import _ from "lodash";
 
 const DEBUG_MAX_DECISIONS = 20;
 
@@ -165,7 +166,10 @@ export class AgentService extends LocatableGameService {
         currentStats: {
           MAX_HEALTH: 100,
           CUR_HEALTH: 100,
-          DAMAGE_TICK: 0,
+          DAMAGE: 0,
+          DAMAGE_CHARGE_MAX: 100,
+          DAMAGE_CHARGE_CURRENT: 0,
+          DAMAGE_CHARGE_TICK: 0,
           DEFENCE: 0,
           SPEED: BASE_AGENT_SPEED
         }
@@ -185,10 +189,12 @@ export class AgentService extends LocatableGameService {
   tick(delta: number) {
     const currentState = agentStore.getState();
     const agentMap = currentState.agentMap;
-    const updates: Record<string, Partial<Agent>> = {};
 
     Object.values(agentMap).forEach((agentRef) => {
-      updates[agentRef.id] = {};
+      let updates: Record<string, Partial<Agent>> = {
+        [agentRef.id]: {}
+      };
+
       const physicsUpdate: AgentPhysicsUpdate = {
         position: { x: agentRef.physics.position.x, y: agentRef.physics.position.y }
       };
@@ -214,13 +220,14 @@ export class AgentService extends LocatableGameService {
         physicsUpdate.vy *= AGENT_DAMP;
         this.tickAgentPos(delta, physicsUpdate, agentRef);
         this.tickItems(physicsUpdate, agentRef);
+        updates = _.merge(updates, this.tickAgentStats(agentRef, delta) || {});
       }
 
       this.agentVisualSync(agentRef, physicsUpdate.position);
       updates[agentRef.id].physics = physicsUpdate as Agent["physics"];
-    });
 
-    applyAgentUpdates(updates);
+      applyAgentUpdates(updates);
+    });
   }
 
   tickItems(physicsUpdate: AgentPhysicsUpdate, agentRef: Agent) {
@@ -246,6 +253,50 @@ export class AgentService extends LocatableGameService {
     }
     physicsUpdate.vx *= v.x;
     physicsUpdate.vy *= v.y;
+  }
+
+  tickAgentStats(agentRef: Agent, deltaTime: number) {
+    if (!agentRef.stats.currentStats[AgentStatNames.DAMAGE_CHARGE_TICK]) {
+      return null;
+    }
+
+    const statUpdates = {
+      [agentRef.id]: {
+        currentStats: {
+          ...agentRef.stats.currentStats
+        }
+      }
+    };
+
+    const agentMap = agentStore.getState().agentMap;
+    const agentsInCell = Object.keys(agentMap).filter((id) => {
+      if (id !== agentRef.id) {
+        return agentMap[id].physics.currentCell.x === agentRef.physics.currentCell.x && agentMap[id].physics.currentCell.y === agentRef.physics.currentCell.y;
+      }
+      return false;
+    }).map((id) => agentMap[id]);
+
+    if (agentsInCell.length > 0) {
+      statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] += agentRef.stats.currentStats[AgentStatNames.DAMAGE_CHARGE_TICK] * deltaTime;
+      if (statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] > statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE_CHARGE_MAX]) {
+        // ATTACK
+        statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] -= statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE_CHARGE_MAX];
+        agentsInCell.forEach((agent) => {
+          // Add to state update
+          statUpdates[agent.id] = {
+            currentStats: {
+              ...agent.stats.currentStats
+            }
+          };
+          // deal damage
+          statUpdates[agent.id].currentStats[AgentStatNames.CUR_HEALTH] -= statUpdates[agentRef.id].currentStats[AgentStatNames.DAMAGE];
+        });
+      }
+    } else {
+      return null;
+    }
+
+    return statUpdates;
   }
 
   agentVisualSync(agentRef: Agent, position: Position) {

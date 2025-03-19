@@ -1,4 +1,4 @@
-import { Sprite, Text as PixiText } from "pixi.js";
+import { Sprite, Text as PixiText, Container, Graphics } from "pixi.js";
 
 import { type LucaItem, type Resource, ResourceType } from "@/services/types/inventory.service.types";
 import type { GameState } from "@/store/game-store";
@@ -14,14 +14,20 @@ export type AgentPhysicsUpdate = DeepPartial<Agent["physics"]> & { position: Pos
 export enum AgentStatNames {
   MAX_HEALTH = "MAX_HEALTH",
   CUR_HEALTH = "CUR_HEALTH",
-  DAMAGE_TICK = "DAMAGE_TICK",
+  DAMAGE = "DAMAGE",
+  DAMAGE_CHARGE_MAX = "DAMAGE_CHARGE_MAX",
+  DAMAGE_CHARGE_CURRENT = "DAMAGE_CHARGE_CURRENT",
+  DAMAGE_CHARGE_TICK = "DAMAGE_CHARGE_TICK",
   DEFENCE = "DEFENCE",
   SPEED = "SPEED"
 }
 export interface AgentStats {
   [AgentStatNames.MAX_HEALTH]: number;
   [AgentStatNames.CUR_HEALTH]: number;
-  [AgentStatNames.DAMAGE_TICK]: number;
+  [AgentStatNames.DAMAGE]: number;
+  [AgentStatNames.DAMAGE_CHARGE_MAX]: number;
+  [AgentStatNames.DAMAGE_CHARGE_CURRENT]: number;
+  [AgentStatNames.DAMAGE_CHARGE_TICK]: number;
   [AgentStatNames.DEFENCE]: number;
   [AgentStatNames.SPEED]: number;
 }
