@@ -120,6 +120,17 @@ export class AgentService extends LocatableGameService {
     
     healthBarBackground.x = -healthBarWidth / 2;
     healthBar.x = -healthBarWidth / 2;
+
+    const baseStats = {
+      MAX_HEALTH: 100,
+      CUR_HEALTH: 100,
+      DAMAGE: 0,
+      DAMAGE_CHARGE_MAX: 100,
+      DAMAGE_CHARGE_CURRENT: 0,
+      DAMAGE_CHARGE_TICK: 0,
+      DEFENSE: 0,
+      SPEED: BASE_AGENT_SPEED
+    }
     
     const agent: Agent = {
       id,
@@ -163,16 +174,8 @@ export class AgentService extends LocatableGameService {
       },
       stats: {
         inventoryDerivedStats: {},
-        currentStats: {
-          MAX_HEALTH: 100,
-          CUR_HEALTH: 100,
-          DAMAGE: 0,
-          DAMAGE_CHARGE_MAX: 100,
-          DAMAGE_CHARGE_CURRENT: 0,
-          DAMAGE_CHARGE_TICK: 0,
-          DEFENCE: 0,
-          SPEED: BASE_AGENT_SPEED
-        }
+        baseStats,
+        currentStats: { ...baseStats }
       }
     };
     
@@ -277,19 +280,25 @@ export class AgentService extends LocatableGameService {
     }).map((id) => agentMap[id]);
 
     if (agentsInCell.length > 0) {
-      statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] += agentRef.stats.currentStats[AgentStatNames.DAMAGE_CHARGE_TICK] * deltaTime;
-      if (statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] > statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE_CHARGE_MAX]) {
+      const curAgentStats = statUpdates[agentRef.id].stats.currentStats;
+      curAgentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] += curAgentStats[AgentStatNames.DAMAGE_CHARGE_TICK] * deltaTime;
+      if (curAgentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] > curAgentStats[AgentStatNames.DAMAGE_CHARGE_MAX]) {
         // ATTACK
-        statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] -= statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE_CHARGE_MAX];
+        curAgentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] -= curAgentStats[AgentStatNames.DAMAGE_CHARGE_MAX];
         agentsInCell.forEach((agent) => {
+          if (agent.stats.currentStats[AgentStatNames.DEFENSE] > curAgentStats[AgentStatNames.DAMAGE]) {
+            return;
+          }
+
           // Add to state update
           statUpdates[agent.id] = {
             stats: {
               ...agent.stats
             }
           };
+          const otherAgentStats = statUpdates[agent.id].stats.currentStats;
           // deal damage
-          statUpdates[agent.id].stats.currentStats[AgentStatNames.CUR_HEALTH] -= statUpdates[agentRef.id].stats.currentStats[AgentStatNames.DAMAGE];
+          otherAgentStats[AgentStatNames.CUR_HEALTH] -= (curAgentStats[AgentStatNames.DAMAGE] - otherAgentStats[AgentStatNames.DEFENSE]);
         });
       }
     } else {

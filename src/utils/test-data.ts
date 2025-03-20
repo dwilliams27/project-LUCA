@@ -126,7 +126,7 @@ export function generateTestingInventory(): LucaItem[] {
     description: 'Defends a bit',
     capabilities: [],
     calculateModifiers: () => ({
-      [AgentStatNames.DEFENCE]: 0.005
+      [AgentStatNames.DEFENSE]: 2.5
     }),
     priorityCategory: ItemPriorityCategories.NONE,
     ui: {

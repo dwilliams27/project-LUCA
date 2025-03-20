@@ -8,7 +8,7 @@ export class InventoryService extends LocatableGameService {
   static name = "INVENTORY_SERVICE";
 
   refreshAgentFromItems(agent: Agent, inventory?: Agent["inventory"]) {
-    let statDelta: Partial<AgentStats> = {};
+    let statDelta: Partial<AgentStats> = agent.stats.baseStats;
     const newInventory = inventory || agent.inventory;
     newInventory.items.flat(2).filter((item) => !!item).sort((a, b) => {
       return b.priorityCategory - a.priorityCategory;
@@ -23,6 +23,7 @@ export class InventoryService extends LocatableGameService {
         inventory: newInventory,
         stats: {
           inventoryDerivedStats: statDelta,
+          baseStats: agent.stats.baseStats,
           currentStats,
         }
       }
@@ -41,7 +42,7 @@ export class InventoryService extends LocatableGameService {
         case (AgentStatNames.DAMAGE_CHARGE_CURRENT):
         case (AgentStatNames.DAMAGE_CHARGE_MAX):
         case (AgentStatNames.DAMAGE_CHARGE_TICK):
-        case (AgentStatNames.DEFENCE):
+        case (AgentStatNames.DEFENSE):
         case (AgentStatNames.SPEED): {
           if (overwrite) {
             statMods[stat] = (b[stat] ?? a[stat]);

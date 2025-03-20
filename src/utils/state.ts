@@ -1,6 +1,7 @@
 import { agentStore } from "@/store/game-store";
 
 import type { Agent } from "@/services/types/agent.service.types";
+import _ from "lodash";
 
 // Agents
 export function applyAgentUpdates(updates: Record<string, Partial<Agent>>, logMessage = '') {
@@ -12,15 +13,7 @@ export function applyAgentUpdates(updates: Record<string, Partial<Agent>>, logMe
   Object.entries(updates).forEach(([agentId, update]) => {
     if (updatedAgentMap[agentId]) {
       if (logMessage) console.log('Pre update', updatedAgentMap[agentId]);
-      Object.keys(update).forEach(key => {
-        updatedAgentMap[agentId] = {
-          ...updatedAgentMap[agentId],
-          [key]: {
-            ...updatedAgentMap[agentId][key],
-            ...update[key],
-          }
-        };
-      });
+      _.merge(updatedAgentMap[agentId], update);
       if (logMessage) console.log('Post update', updatedAgentMap[agentId]);
     }
   });

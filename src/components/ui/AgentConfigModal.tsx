@@ -25,7 +25,7 @@ export const AgentConfigModal: React.FC<AgentConfigModalProps> = ({ agentId }) =
   };
   
   const handleGridChange = (newGrid: (GridItem | null)[][]) => {
-    const inventoryUpdate = { ...agent.inventory, items: newGrid.map((row) => row.map((gridItem) => gridItem?.item || null)) };
+    const inventoryUpdate = { resourceBuckets: agent.inventory.resourceBuckets, items: newGrid.map((row) => row.map((gridItem) => gridItem?.item || null)) };
     const inventoryService = gameServiceLocator.getService(InventoryService);
     inventoryService.refreshAgentFromItems(agent, inventoryUpdate);
   };

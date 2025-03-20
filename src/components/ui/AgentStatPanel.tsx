@@ -6,12 +6,12 @@ interface AgentStatPanelProps {
 }
 
 export const AgentStatPanel: React.FC<AgentStatPanelProps> = ({ stats }) => {
-  const statLabels = {
+  const displayedStatLabels = {
     [AgentStatNames.MAX_HEALTH]: 'Max Health',
     [AgentStatNames.CUR_HEALTH]: 'Current Health',
     [AgentStatNames.DAMAGE_CHARGE_TICK]: 'Attack Speed',
     [AgentStatNames.DAMAGE]: 'Damage',
-    [AgentStatNames.DEFENCE]: 'Defence',
+    [AgentStatNames.DEFENSE]: 'Defense',
     [AgentStatNames.SPEED]: 'Speed',
   };
 
@@ -28,7 +28,7 @@ export const AgentStatPanel: React.FC<AgentStatPanelProps> = ({ stats }) => {
         return 'text-green-500';
       case AgentStatNames.DAMAGE:
         return value > 0.05 ? 'text-red-400' : 'text-emerald-400';
-      case AgentStatNames.DEFENCE:
+      case AgentStatNames.DEFENSE:
         return value > 0.01 ? 'text-blue-400' : 'text-emerald-400';
       case AgentStatNames.SPEED:
         return value > 1 ? 'text-purple-400' : 'text-emerald-400';
@@ -44,12 +44,12 @@ export const AgentStatPanel: React.FC<AgentStatPanelProps> = ({ stats }) => {
       </h3>
       
       <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
-        {Object.entries(stats).map(([statName, value]) => (
+        {Object.entries(stats).filter(([statName, value]) => statName in displayedStatLabels).map(([statName, value]) => (
           <div 
             key={statName} 
             className="flex flex-col bg-gray-900/50 rounded-md p-3 transition-all duration-200 hover:bg-emerald-900/20"
           >
-            <span className="text-gray-300 text-sm">{statLabels[statName as AgentStatNames] || statName}</span>
+            <span className="text-gray-300 text-sm">{displayedStatLabels[statName as AgentStatNames] || statName}</span>
             <span className={`text-lg font-bold ${getStatColor(statName as AgentStatNames, value)}`}>
               {value.toFixed(3)}
             </span>

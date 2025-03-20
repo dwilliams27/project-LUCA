@@ -18,7 +18,7 @@ export enum AgentStatNames {
   DAMAGE_CHARGE_MAX = "DAMAGE_CHARGE_MAX",
   DAMAGE_CHARGE_CURRENT = "DAMAGE_CHARGE_CURRENT",
   DAMAGE_CHARGE_TICK = "DAMAGE_CHARGE_TICK",
-  DEFENCE = "DEFENCE",
+  DEFENSE = "DEFENSE",
   SPEED = "SPEED"
 }
 export interface AgentStats {
@@ -28,7 +28,7 @@ export interface AgentStats {
   [AgentStatNames.DAMAGE_CHARGE_MAX]: number;
   [AgentStatNames.DAMAGE_CHARGE_CURRENT]: number;
   [AgentStatNames.DAMAGE_CHARGE_TICK]: number;
-  [AgentStatNames.DEFENCE]: number;
+  [AgentStatNames.DEFENSE]: number;
   [AgentStatNames.SPEED]: number;
 }
 
@@ -96,6 +96,7 @@ export interface Agent {
   },
   stats: {
     inventoryDerivedStats: Partial<AgentStats>;
+    baseStats: AgentStats;
     currentStats: AgentStats;
   }
 };
