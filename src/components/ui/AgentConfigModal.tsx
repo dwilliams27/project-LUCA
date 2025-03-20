@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { DraggableGrid } from './DraggableGrid';
 import { useModal } from '@/contexts/modal-context';
 import { AgentStatPanel } from './AgentStatPanel';
 
-import type { Agent } from '@/services/types/agent.service.types';
 import type { GridItem } from '@/components/ui/DraggableGridItem';
 import { generateTestingInventory } from '@/utils/test-data';
 import { useAgentStore, useServiceStore } from '@/store/game-store';

@@ -44,7 +44,7 @@ export const AgentStatPanel: React.FC<AgentStatPanelProps> = ({ stats }) => {
       </h3>
       
       <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
-        {Object.entries(stats).filter(([statName, value]) => statName in displayedStatLabels).map(([statName, value]) => (
+        {Object.entries(stats).map(([statName, value]) => (
           <div 
             key={statName} 
             className="flex flex-col bg-gray-900/50 rounded-md p-3 transition-all duration-200 hover:bg-emerald-900/20"

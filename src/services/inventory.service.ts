@@ -40,7 +40,6 @@ export class InventoryService extends LocatableGameService {
         case (AgentStatNames.CUR_HEALTH):
         case (AgentStatNames.DAMAGE):
         case (AgentStatNames.DAMAGE_CHARGE_CURRENT):
-        case (AgentStatNames.DAMAGE_CHARGE_MAX):
         case (AgentStatNames.DAMAGE_CHARGE_TICK):
         case (AgentStatNames.DEFENSE):
         case (AgentStatNames.SPEED): {
@@ -50,6 +49,10 @@ export class InventoryService extends LocatableGameService {
             statMods[stat] = (a[stat] ?? 0) + (b[stat] ?? 0);
           }
           break;
+        }
+        // TODO: Rethink
+        case (AgentStatNames.DAMAGE_CHARGE_MAX): {
+          statMods[stat] = (b[stat] ?? a[stat]);
         }
       }
     });

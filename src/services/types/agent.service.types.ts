@@ -55,6 +55,15 @@ export const AGENT_MODEL = {
 } as const;
 export type AgentModel = typeof AGENT_MODEL[keyof typeof AGENT_MODEL];
 
+export interface DisplayBar {
+  container: Container;
+  background: Graphics;
+  bar: Graphics;
+  baseWidth: number;
+  baseHeight: number;
+  offset: Position;
+}
+
 export interface Agent {
   id: string;
   type: AgentType;
@@ -66,11 +75,8 @@ export interface Agent {
     mainText: PixiText;
     thoughtBubble: PixiText;
     thoughtEmoji: PixiText;
-    healthBar?: {
-      container: Container;
-      background: Graphics;
-      bar: Graphics;
-    };
+    healthBar: DisplayBar;
+    attackBar: DisplayBar;
   },
   physics: {
     position: Position;
@@ -96,7 +102,7 @@ export interface Agent {
   },
   stats: {
     inventoryDerivedStats: Partial<AgentStats>;
-    baseStats: AgentStats;
+    baseStats: Partial<AgentStats>;
     currentStats: AgentStats;
   }
 };

@@ -20,7 +20,7 @@ import { Graphics, Container } from "pixi.js";
 
 import type { GameState } from "@/store/game-store";
 import type { Position } from "@/services/types/physics.service.types";
-import { AGENT_MODEL, AgentStatNames, type Agent, type AgentModel, type AgentPhysicsUpdate, type Capability, type Goal } from "@/services/types/agent.service.types";
+import { AGENT_MODEL, AgentStatNames, type Agent, type AgentModel, type AgentPhysicsUpdate, type Capability, type DisplayBar, type Goal } from "@/services/types/agent.service.types";
 import { ResourceQuality, ResourceType } from "@/services/types/inventory.service.types";
 import type { DeepPartial } from "@/types/utils";
 import type { LucaTool } from "@/services/types/tool.service.types";
@@ -44,6 +44,39 @@ export class AgentService extends LocatableGameService {
     const grid = Array(size).fill(0).map(() => Array(size).fill(0));
     grid[position.y][position.x] = 1;
     return grid;
+  }
+
+  private createDisplayBar(position: Position, offset: Position, width: number, height: number) {
+    const container = new Container();
+    this.application.stage.addChild(container);
+    const background = new Graphics();
+    const bar = new Graphics();
+    
+    container.addChild(background);
+    container.addChild(bar);
+    
+    container.x = position.x;
+    container.y = position.y;
+    
+    background.beginFill(0x333333);
+    background.drawRect(0, 0, width, height);
+    background.endFill();
+    
+    bar.beginFill(0x00FF00);
+    bar.drawRect(0, 0, width, height);
+    bar.endFill();
+    
+    background.x = -width / 2;
+    bar.x = -width / 2;
+
+    return {
+      container,
+      background,
+      bar,
+      baseWidth: width,
+      baseHeight: height,
+      offset,
+    };
   }
 
   createAgent(position: Position, modelConfigs: Record<AgentModel, ModelConfig>) {
@@ -95,35 +128,9 @@ export class AgentService extends LocatableGameService {
     mainText.y = agentPosition.y;
     thoughtBubble.x = agentPosition.x;
     thoughtBubble.y = agentPosition.y;
-    
-    // Health bar
-    const healthBarContainer = new Container();
-    this.application.stage.addChild(healthBarContainer);
-    const healthBarBackground = new Graphics();
-    const healthBar = new Graphics();
-    
-    healthBarContainer.addChild(healthBarBackground);
-    healthBarContainer.addChild(healthBar);
-    
-    healthBarContainer.x = agentPosition.x;
-    healthBarContainer.y = agentPosition.y;
-    
-    const healthBarWidth = 32;
-    const healthBarHeight = 4;
-    healthBarBackground.beginFill(0x333333);
-    healthBarBackground.drawRect(0, 0, healthBarWidth, healthBarHeight);
-    healthBarBackground.endFill();
-    
-    healthBar.beginFill(0x00FF00);
-    healthBar.drawRect(0, 0, healthBarWidth, healthBarHeight);
-    healthBar.endFill();
-    
-    healthBarBackground.x = -healthBarWidth / 2;
-    healthBar.x = -healthBarWidth / 2;
 
     const baseStats = {
       MAX_HEALTH: 100,
-      CUR_HEALTH: 100,
       DAMAGE: 0,
       DAMAGE_CHARGE_MAX: 100,
       DAMAGE_CHARGE_CURRENT: 0,
@@ -142,11 +149,8 @@ export class AgentService extends LocatableGameService {
         mainText,
         thoughtBubble,
         thoughtEmoji,
-        healthBar: {
-          container: healthBarContainer,
-          background: healthBarBackground,
-          bar: healthBar
-        }
+        healthBar: this.createDisplayBar(agentPosition, { x: 0, y: 15 }, 32, 4),
+        attackBar: this.createDisplayBar(agentPosition, { x: 0, y: 20 }, 32, 4),
       },
       physics: {
         position: agentPosition,
@@ -175,7 +179,10 @@ export class AgentService extends LocatableGameService {
       stats: {
         inventoryDerivedStats: {},
         baseStats,
-        currentStats: { ...baseStats }
+        currentStats: {
+          ...baseStats,
+          CUR_HEALTH: 100,
+        }
       }
     };
     
@@ -316,32 +323,37 @@ export class AgentService extends LocatableGameService {
     agentRef.pixi.thoughtEmoji.x = position.x;
     agentRef.pixi.thoughtEmoji.y = position.y;
     
-    // Update health bar
-    if (agentRef.pixi.healthBar) {
-      agentRef.pixi.healthBar.container.x = position.x;
-      agentRef.pixi.healthBar.container.y = position.y + agentRef.pixi.mainText.height * 0.6;
-      
-      const healthPercentage = agentRef.stats.currentStats.CUR_HEALTH / agentRef.stats.currentStats.MAX_HEALTH;
-      const healthBarWidth = 32;
-      
-      const healthBar = agentRef.pixi.healthBar.bar;
-      healthBar.clear();
-      
-      let color = 0x00FF00; // Green
-      if (healthPercentage < 0.3) {
-        color = 0xFF0000; // Red
-      } else if (healthPercentage < 0.7) {
-        color = 0xFFAA00; // Orange/Yellow
-      }
-      
-      healthBar.beginFill(color);
-      healthBar.drawRect(0, 0, healthBarWidth * healthPercentage, 4);
-      healthBar.endFill();
-    }
+    // Update display bars
+    this.updateDisplayBar(agentRef.pixi.healthBar, position, agentRef.stats.currentStats[AgentStatNames.CUR_HEALTH] / agentRef.stats.currentStats[AgentStatNames.MAX_HEALTH]);
+    this.updateDisplayBar(agentRef.pixi.attackBar, position, agentRef.stats.currentStats[AgentStatNames.DAMAGE_CHARGE_CURRENT] / agentRef.stats.currentStats[AgentStatNames.DAMAGE_CHARGE_MAX], 0xFF0000);
     
     if (agentRef.pixi.sprite) {
       agentRef.pixi.sprite.x = position.x;
       agentRef.pixi.sprite.y = position.y;
+    }
+  }
+
+  updateDisplayBar(ref: DisplayBar, position: Position, percentage: number, fillColor?: number) {
+    if (ref) {
+      ref.container.x = position.x + ref.offset.x;
+      ref.container.y = position.y + ref.offset.y;
+      
+      ref.bar.clear();
+      
+      let color = 0x00FF00; // Green
+      if (fillColor) {
+        color = fillColor;
+      } else {
+        if (percentage < 0.3) {
+          color = 0xFF0000; // Red
+        } else if (percentage < 0.7) {
+          color = 0xFFAA00; // Orange/Yellow
+        }
+      }
+      
+      ref.bar.beginFill(color);
+      ref.bar.drawRect(0, 0, ref.baseWidth * percentage, ref.baseHeight);
+      ref.bar.endFill();
     }
   }
 

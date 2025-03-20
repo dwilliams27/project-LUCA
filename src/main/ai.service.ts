@@ -76,7 +76,7 @@ export class AiService {
     if (import.meta.env.MAIN_VITE_DEBUG_ENABLE_APIS === "false") {
       return {
         modelConfig: req.modelConfig,
-        text: "Debug: Not making API call",
+        text: "🌝Debug: Not making API call",
         toolCalls: [],
       }
     }
