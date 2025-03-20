@@ -18,6 +18,7 @@ Cells that you have knowledge about will always be up to date; visiting them aga
 
 <competition>
 You are competing against other agents for resources and dominance.
+If you occupy the same cell as another agent, you will attack each other.
 </competition>
 
 <item_instructions>

@@ -14,9 +14,15 @@ export const InventoryContextAdapter: ContextAdapter = {
   getText: (serviceLocator: GameServiceLocator, context: Record<string, any>) => {
     const agentId = context[CONTEXT.AGENT_ID] as unknown as string;
     const agentRef = agentStore.getState().agentMap[agentId];
+
     const resources = Object.values(agentRef.inventory.resourceBuckets).map((bucket) => {
       return bucket.map((resource) => resourceToStr(resource))
     }).flat().filter((item) => item).join(',');
-    return `${resources}`;
+
+    const items = agentRef.inventory.items.flat(2).filter((item) => !!item).map((item) => {
+      // TODO
+    });
+
+    return `<resources>${resources}</resources><items>${items}</items>`;
   }
 }
