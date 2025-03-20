@@ -28,3 +28,7 @@ export const CONTEXT = {
   RESOURCE_STACK: "RESOURCE_STACK",
   AGENT_ID: "AGENT_ID",
 }
+export const DAMAGE_CHARGE_MAX = 60; // Since pixi runs at 60 FPS
+
+// UI
+export const UI_Z_PANEL = 100;

@@ -110,8 +110,7 @@ export function generateTestingInventory(): LucaItem[] {
     capabilities: [],
     calculateModifiers: () => ({
       [AgentStatNames.DAMAGE]: 5,
-      [AgentStatNames.DAMAGE_CHARGE_TICK]: 0.01,
-      [AgentStatNames.DAMAGE_CHARGE_MAX]: 1
+      [AgentStatNames.DAMAGE_CHARGE_TICK]: 1,
     }),
     priorityCategory: ItemPriorityCategories.NONE,
     ui: {

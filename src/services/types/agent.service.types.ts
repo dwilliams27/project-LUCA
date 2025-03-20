@@ -21,6 +21,16 @@ export enum AgentStatNames {
   DEFENSE = "DEFENSE",
   SPEED = "SPEED"
 }
+export const StatToDisplayNameMap = {
+  [AgentStatNames.MAX_HEALTH]: "Max Health",
+  [AgentStatNames.CUR_HEALTH]: "Current Health",
+  [AgentStatNames.DAMAGE]: "Damage",
+  [AgentStatNames.DAMAGE_CHARGE_MAX]: "Attack Speed Max",
+  [AgentStatNames.DAMAGE_CHARGE_CURRENT]: "Current Attack Charge",
+  [AgentStatNames.DAMAGE_CHARGE_TICK]: "Attack Speed",
+  [AgentStatNames.DEFENSE]: "Defense",
+  [AgentStatNames.SPEED]: "Speed",
+}
 export interface AgentStats {
   [AgentStatNames.MAX_HEALTH]: number;
   [AgentStatNames.CUR_HEALTH]: number;

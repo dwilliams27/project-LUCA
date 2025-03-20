@@ -1,4 +1,5 @@
 import { DraggableGridItem, type GridItem } from '@/components/ui/DraggableGridItem';
+import { ItemInfoPanel } from '@/components/ui/ItemInfoPanel';
 import React, { useState, useRef } from 'react';
 
 interface DraggableGridProps {
@@ -21,11 +22,13 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
   const [draggedItem, setDraggedItem] = useState<GridItem | null>(null);
   const [availableItems, setAvailableItems] = useState<GridItem[]>(trayItems);
   
-  // Reference to the original state before drag starts (for cancelation)
   const originalGridRef = useRef<(GridItem | null)[][]>([]);
   const originalAvailableItemsRef = useRef<GridItem[]>([]);
 
-  const handleDragStart = (e: React.DragEvent, gridItem: GridItem, fromTray: boolean = true) => {    
+  const [showItemPanel, setShowItemPanel] = useState<{ enabled: boolean, id?: string }>({ enabled: false });
+
+  const handleDragStart = (e: React.DragEvent, gridItem: GridItem, fromTray: boolean = true) => {
+    setShowItemPanel({ enabled: false });
     setDraggedItem({ ...gridItem, fromTray });
     originalGridRef.current = [...grid.map(row => [...row])];
     originalAvailableItemsRef.current = [...availableItems];
@@ -165,10 +168,21 @@ export const DraggableGrid: React.FC<DraggableGridProps> = ({
                 onDrop={(e) => handleDrop(e, rowIndex, colIndex)}
               >
                 {gridItem ? (
-                  <DraggableGridItem
-                    onDragStart={(e) => handleDragStart(e, gridItem, false)}
-                    onDragEnd={handleDragEnd}
-                    gridItem={gridItem} />
+                  <div
+                    key={gridItem.item.id}
+                    className="relative flex w-20 h-20 min-w-20 min-h-20"
+                    onMouseEnter={() => setShowItemPanel({ enabled: true, id: gridItem.item.id })}
+                    onMouseLeave={() => setShowItemPanel({ enabled: false })}
+                  >
+                    <DraggableGridItem
+                      onDragStart={(e) => handleDragStart(e, gridItem, false)}
+                      onDragEnd={handleDragEnd}
+                      gridItem={gridItem} />
+                    {showItemPanel.enabled && showItemPanel.id === gridItem.item.id && (
+                      <ItemInfoPanel
+                        item={gridItem.item} />
+                    )}
+                  </div>
                 ) : null}
               </div>
             ))

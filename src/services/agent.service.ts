@@ -2,7 +2,7 @@ import { PromptService } from "@/services/prompt.service";
 import { GameServiceLocator, LocatableGameService } from "@/services/service-locator";
 import { AGENT_ID, CAPABILITY_ID, genId } from "@/utils/id";
 import { agentStore, dimensionStore, useGameStore } from "@/store/game-store";
-import { AGENT_DAMP, AGENT_RANDOM_MOTION, BASE_AGENT_INVENTORY_HEIGHT, BASE_AGENT_INVENTORY_WIDTH, BASE_AGENT_SPEED, CONTEXT } from "@/utils/constants";
+import { AGENT_DAMP, AGENT_RANDOM_MOTION, BASE_AGENT_INVENTORY_HEIGHT, BASE_AGENT_INVENTORY_WIDTH, BASE_AGENT_SPEED, CONTEXT, DAMAGE_CHARGE_MAX } from "@/utils/constants";
 import { ToolService } from "@/services/tool.service";
 import { MOVE_GRID_CELL_TOOL } from "@/ai/tools/move-grid-cell.tool";
 import { CELL_AGENT_PROMPT } from "@/ai/prompts/cell-agent.prompt";
@@ -132,7 +132,7 @@ export class AgentService extends LocatableGameService {
     const baseStats = {
       MAX_HEALTH: 100,
       DAMAGE: 0,
-      DAMAGE_CHARGE_MAX: 100,
+      DAMAGE_CHARGE_MAX,
       DAMAGE_CHARGE_CURRENT: 0,
       DAMAGE_CHARGE_TICK: 0,
       DEFENSE: 0,
