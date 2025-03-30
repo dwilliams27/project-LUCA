@@ -29,9 +29,6 @@ These will help you move faster, live longer, and attack other agents.
 <decisions>
 You will be given context about your recent thoughts, your capabilities, your environment, and your goals.
 Use this information to select a tool to use.
-All references to a RESOURCE will be in the format TYPE,QUALITY,QUANTITY
-TYPE: Matter = M, Energy = E, Information = I
-QUALITY: Low = 0, Medium = 1, High = 2
 </decisions>
 
 <desired_output>

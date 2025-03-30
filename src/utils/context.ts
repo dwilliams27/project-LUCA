@@ -1,5 +1,6 @@
 import { ResourceType, type Resource, type ResourceStack } from "@/services/types/inventory.service.types";
 import type { Position } from "@/services/types/physics.service.types";
+import { GRID_SIZE } from "@/utils/constants";
 
 export function resourceToStr(resource: Resource | ResourceStack, includeZero = false): string | null {
   if (resource.quantity === 0 && !includeZero) {
@@ -12,7 +13,15 @@ export function resourceToStr(resource: Resource | ResourceStack, includeZero = 
       ? 'M'
       : 'I';
   
-  return `${rtype},${resource.quality},${resource.quantity}`;
+  return `${rtype}(${resource.quality})x${resource.quantity}`;
+}
+
+export function cellToPossibleAdjacent(cellPosition: Position) {
+  const up = cellPosition.y > 0 ? 'U' : null;
+  const right = cellPosition.x + 1 < GRID_SIZE ? 'R' : null;
+  const down = cellPosition.y + 1 < GRID_SIZE ? 'D' : null;
+  const left = cellPosition.x > 0 ? 'L' : null;
+  return [up, right, down, left].filter((dir) => !!dir).join(',');
 }
 
 export function resourceTypeToEmoji(resourceType: ResourceType) {

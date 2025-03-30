@@ -11,7 +11,7 @@ export const CONVERT_MATTER_TO_SIZE_TOOL = "CONVERT_MATTER_TO_SIZE_TOOL";
 export const ConvertMatterToSizeTool: LucaTool = {
   name: CONVERT_MATTER_TO_SIZE_TOOL,
   tool: {
-    description: "Convert matter from your inventory into increasing your size",
+    description: `Convert matter from your "<inventory><resources>...</resources></inventory>" into increasing your size`,
     parameters: {
       type: "object",
       properties: {
