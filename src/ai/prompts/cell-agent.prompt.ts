@@ -5,6 +5,7 @@ import { GoalsContextAdapter } from "@/ai/contextAdapters/goals.context-adapter"
 import { RecentThoughtsContextAdapter } from "@/ai/contextAdapters/recent-thoughts.context-adapter";
 
 import type { Prompt } from "@/services/types/prompt.service.types";
+import { AgentStatsContextAdapter } from "@/ai/contextAdapters/agent-stats.context-adapter";
 
 export const CELL_AGENT_PROMPT = "CELL_AGENT_PROMPT";
 export const CellAgentPrompt: Prompt = {
@@ -16,6 +17,9 @@ export const CellAgentPrompt: Prompt = {
 <inventory>
 {{INVENTORY}}
 </inventory>
+<stats>
+{{AGENT_STATS}}
+</stats>
 <capabilities>
 {{CAPABILITIES}}
 </capabilities>
@@ -27,6 +31,7 @@ export const CellAgentPrompt: Prompt = {
 </goals>
   `,
   contextAdapters: [
+    AgentStatsContextAdapter,
     RecentThoughtsContextAdapter,
     InventoryContextAdapter,
     CapabilitiesContextAdapter,

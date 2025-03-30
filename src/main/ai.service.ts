@@ -170,7 +170,7 @@ export class AiService {
   }
 
   async generateImage(req: ImageGenerationRequest): Promise<ImageGenerationResponse> {
-    if (import.meta.env.MAIN_VITE_DEBUG_ENABLE_APIS === "false") {
+    if (import.meta.env.MAIN_VITE_DEBUG_ENABLE_APIS === "false" || import.meta.env.MAIN_VITE_DEBUG_ENABLE_IMAGE_GEN === "false") {
       return {
         url: "",
         b64_json: ""

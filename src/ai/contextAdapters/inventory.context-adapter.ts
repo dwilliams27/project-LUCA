@@ -19,10 +19,10 @@ export const InventoryContextAdapter: ContextAdapter = {
       return bucket.map((resource) => resourceToStr(resource))
     }).flat().filter((item) => item).join(',');
 
-    const items = agentRef.inventory.items.flat(2).filter((item) => !!item).map((item) => {
-      // TODO
-    });
+    // Maybe dont need to inform of items, can be pre-start phase only then gets info via stats
+    // const items = agentRef.inventory.items.flat(2).filter((item) => !!item).map((item) => {
+    // });
 
-    return `<resources>${resources}</resources><items>${items}</items>`;
+    return `<resources>${resources}</resources>`;
   }
 }
