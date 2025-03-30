@@ -33,7 +33,7 @@ export const SenseAdjacentCellTool: LucaTool = {
     const newCell = getRelativeGridCell(agentRef.physics.currentCell, params.direction);
     if (!newCell) {
       console.warn('No new cell found, exiting early for sense');
-      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } } as any, SENSE_ADJACENT_CELL_TOOL);
+      applyAgentUpdates({ [agentId]: { mental: { acting: false } } } as any, SENSE_ADJACENT_CELL_TOOL);
       return { status: 0, context: {} };
     }
 
@@ -41,7 +41,7 @@ export const SenseAdjacentCellTool: LucaTool = {
       mental: cloneWithMaxDepth(agentRef.mental, 3)
     };
     agentUpdates.mental.knownCells[newCell.y][newCell.x] = 1;
-    agentUpdates.mental.readyToThink = true;
+    agentUpdates.mental.acting = false;
 
     applyAgentUpdates({ [agentId]: agentUpdates }, SENSE_ADJACENT_CELL_TOOL);
 

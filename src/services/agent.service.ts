@@ -12,7 +12,7 @@ import { CELL_AGENT_SYSTEM_PROMPT } from "@/ai/prompts/cell-agent.system-prompt"
 import { GATHER_RESOURCE_TOOL } from "@/ai/tools/gather-resource.tool";
 import { CONVERT_MATTER_TO_SIZE_TOOL } from "@/ai/tools/convert-matter-to-size.tool";
 import { TextService } from "@/services/text.service";
-import { CollisionService } from "@/services/physics.service";
+import { CollisionService } from "@/services/collision.service";
 import { generateEmptyResourceBucket } from "@/utils/resources";
 import { applyAgentUpdates } from "@/utils/state";
 import { GROWTH_GOAL_PROMPT } from "@/ai/prompts/growth-goal.prompt";
@@ -26,6 +26,7 @@ import type { DeepPartial } from "@/types/utils";
 import type { LucaTool } from "@/services/types/tool.service.types";
 import type { IpcLlmChatResponse, ModelConfig } from "@/types/ipc-shared";
 import _ from "lodash";
+import { RoundService } from "@/services/round.service";
 
 const DEBUG_MAX_DECISIONS = 20;
 
@@ -164,7 +165,8 @@ export class AgentService extends LocatableGameService {
       mental: {
         activeModelConfigs: modelConfigs,
         thinking: false,
-        readyToThink: true,
+        acting: false,
+        canAct: false,
         recentThoughts: [],
         knownCells: this.createKnownCellsGrid(position, dimensionStore.getState().gridLength),
       },
@@ -197,8 +199,21 @@ export class AgentService extends LocatableGameService {
   }
 
   tick(delta: number) {
+    const roundService = this.serviceLocator.getService(RoundService);
+
+    if (!roundService.isRoundActive()) {
+      // Dont do any agent updates until round starts
+      return;
+    }
+
     const currentState = agentStore.getState();
     const agentMap = currentState.agentMap;
+
+    // sync so agents will wait until all are done taking current action before moving on
+    if (roundService.allAgentsReadyForNextAction(Object.values(agentMap))) {
+      roundService.advanceAgentsToNextAction(Object.keys(agentMap));
+      return;
+    }
 
     Object.values(agentMap).forEach((agentRef) => {
       let updates: Record<string, Partial<Agent>> = {
@@ -212,11 +227,12 @@ export class AgentService extends LocatableGameService {
       if (agentRef.physics.moving) {
         this.updateMovingAgent(delta, physicsUpdate, agentRef);
       } else {
-        if (!agentRef.mental.thinking && agentRef.mental.readyToThink && this.debugTotalDecisions < DEBUG_MAX_DECISIONS) {
+        if (!agentRef.mental.thinking && !agentRef.mental.acting && agentRef.mental.canAct && this.debugTotalDecisions < DEBUG_MAX_DECISIONS) {
           console.log("Making a decision...", agentRef);
           const mentalUpdate: DeepPartial<Agent["mental"]> = {};
           mentalUpdate.thinking = true;
-          mentalUpdate.readyToThink = false;
+          mentalUpdate.acting = true;
+          mentalUpdate.canAct = false;
           updates[agentRef.id].mental = mentalUpdate as Agent["mental"];
           this.makeDecision(agentRef);
         }
@@ -442,6 +458,11 @@ export class AgentService extends LocatableGameService {
     if (agentRef.pixi.thoughtEmoji) {
       agentRef.pixi.thoughtEmoji.visible = true;
       agentRef.pixi.thoughtEmoji.text = [...response.text][0];
+    }
+
+    if (response.toolCalls.length === 0) {
+      console.error(`Model failed to invoke any tools for agent ${agentRef.id}... :(`);
+      mentalUpdate.acting = false;
     }
 
     response.toolCalls.forEach((toolCall) => {

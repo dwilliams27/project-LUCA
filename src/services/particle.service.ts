@@ -1,4 +1,4 @@
-import { CollisionService } from "@/services/physics.service";
+import { CollisionService } from "@/services/collision.service";
 import { GameServiceLocator, LocatableGameService } from "@/services/service-locator";
 import { dimensionStore, gridStore } from "@/store/game-store";
 import { PARTICLE_DAMP, PARTICLE_SPEED, PARTICLE_TRAVEL_SPEED, SNAP_DISTANCE } from "@/utils/constants";

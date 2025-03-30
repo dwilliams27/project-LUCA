@@ -25,9 +25,12 @@ export const ChatLog: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {Object.values(agentMap).map(agent => (
-              <div key={agent.id} className="border border-gray-700 rounded-md p-2">
+              <div 
+                key={agent.id} 
+                className={`border border-gray-700 rounded-md p-2`}
+              >
                 <div className="font-medium text-blue-400 mb-1 flex justify-between items-center">
-                  <span>Agent {agent.id}</span>
+                  <span>Agent {agent.id} {agent.mental.acting || agent.mental.canAct ? '💭' : ''}</span>
                   <LucaButton onClick={() => openAgentConfigModal(agent.id)} className="ml-2">
                     Config
                   </LucaButton>

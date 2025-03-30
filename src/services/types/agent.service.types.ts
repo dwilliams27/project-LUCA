@@ -100,7 +100,8 @@ export interface Agent {
   mental: {
     activeModelConfigs: Record<AgentModel, ModelConfig>;
     thinking: boolean;
-    readyToThink: boolean;
+    acting: boolean;
+    canAct: boolean;
     recentThoughts: Thought[];
     knownCells: number[][];
   },

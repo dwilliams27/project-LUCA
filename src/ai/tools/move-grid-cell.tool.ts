@@ -33,7 +33,7 @@ export const MoveGridCellTool: LucaTool = {
     const agentState = agentStore.getState();
     const agentRef = agentState.agentMap[agentId];
     const agentUpdates: DeepPartial<Agent> = {
-      mental: { readyToThink: true, knownCells: cloneWithMaxDepth(agentRef.mental.knownCells, 2) },
+      mental: { acting: false, knownCells: cloneWithMaxDepth(agentRef.mental.knownCells, 2) },
       physics: {},
     };
     const newCell = getRelativeGridCell(agentRef.physics.currentCell, params.direction);

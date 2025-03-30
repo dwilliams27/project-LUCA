@@ -8,11 +8,12 @@ import { AgentService } from "@/services/agent.service";
 import { ToolService } from "@/services/tool.service";
 import { IpcService } from "@/services/ipc.service";
 import { TextService } from "@/services/text.service";
-import { CollisionService } from "@/services/physics.service";
+import { CollisionService } from "@/services/collision.service";
 import { ParticleService } from "@/services/particle.service";
 import { SubscriptionService } from "@/services/subscription.service";
 import { ImageService } from "@/services/image.service";
 import { InventoryService } from "@/services/inventory.service";
+import { RoundService } from "@/services/round.service";
 
 export function GameLoop() {
   const { gameServiceLocator } = useServiceStore();
@@ -27,6 +28,7 @@ export function GameLoop() {
 
     new PromptService(gameServiceLocator);
     new AgentService(gameServiceLocator);
+    new RoundService(gameServiceLocator);
     new ToolService(gameServiceLocator);
     new IpcService(gameServiceLocator);
     new TextService(gameServiceLocator);

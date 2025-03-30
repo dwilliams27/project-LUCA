@@ -6,6 +6,7 @@ import { ChatLog } from '@/components/game/ChatLog';
 import { AVAILABLE_MODELS, LLM_PROVIDERS, type LLMProvider } from '@/types/ipc-shared';
 import { AGENT_MODEL } from '@/services/types/agent.service.types';
 import { LucaButton } from '@/components/ui/LucaButton';
+import { RoundService } from '@/services/round.service';
 
 interface GameHUDProps {
   children: React.ReactNode;
@@ -34,6 +35,11 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
         }
       }
     );
+  }
+
+  const startRound = () => {
+    const roundService = gameServiceLocator.getService(RoundService);
+    roundService.advanceRound();
   }
 
   return (
@@ -73,9 +79,12 @@ export const GameHUD: React.FC<GameHUDProps> = ({ children }) => {
       </div>
 
       <div className="flex flex-grow overflow-hidden">
-        <div className="w-1/4 bg-gray-900 border-r border-gray-800 p-4">
+        <div className="w-1/4 bg-gray-900 border-r border-gray-800 p-4 flex flex-col space-y-2">
           <LucaButton onClick={addAgent}>
             Add Agent
+          </LucaButton>
+          <LucaButton onClick={startRound}>
+            Start Round
           </LucaButton>
         </div>
 

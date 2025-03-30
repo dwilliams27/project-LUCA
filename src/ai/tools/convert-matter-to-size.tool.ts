@@ -35,20 +35,20 @@ export const ConvertMatterToSizeTool: LucaTool = {
     
     if (![ResourceQuality.LOW, ResourceQuality.MEDIUM, ResourceQuality.HIGH].includes(params.quality)) {
       console.warn(`Invalid resource quality: ${params.quality}`);
-      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } } as any, CONVERT_MATTER_TO_SIZE_TOOL);
+      applyAgentUpdates({ [agentId]: { mental: { acting: false } } } as any, CONVERT_MATTER_TO_SIZE_TOOL);
       return { status: 0, context: {} };
     }
 
     if (params.amount <= 0) {
       console.warn(`Cannot convert negative or zero amount of matter: ${params.amount}`);
-      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } } as any, CONVERT_MATTER_TO_SIZE_TOOL);
+      applyAgentUpdates({ [agentId]: { mental: { acting: false } } } as any, CONVERT_MATTER_TO_SIZE_TOOL);
       return { status: 0, context: {} };
     }
 
     const availableMatter = agentRef.inventory.resourceBuckets[ResourceType.MATTER][params.quality].quantity;
     if (availableMatter < params.amount) {
       console.warn(`Not enough matter of quality ${params.quality}. Available: ${availableMatter}, Requested: ${params.amount}`);
-      applyAgentUpdates({ [agentId]: { mental: { readyToThink: true } } } as any, CONVERT_MATTER_TO_SIZE_TOOL);
+      applyAgentUpdates({ [agentId]: { mental: { acting: false } } } as any, CONVERT_MATTER_TO_SIZE_TOOL);
       return { status: 0, context: {} };
     }
 
@@ -65,7 +65,7 @@ export const ConvertMatterToSizeTool: LucaTool = {
     };
     
     agentUpdates.inventory.resourceBuckets[ResourceType.MATTER][params.quality].quantity -= params.amount;
-    agentUpdates.mental.readyToThink = true;
+    agentUpdates.mental.acting = false;
 
     applyAgentUpdates({ [agentId]: agentUpdates } as any, CONVERT_MATTER_TO_SIZE_TOOL);
 
